@@ -1,0 +1,7 @@
+*.bak
+*~
+
+*.swp
+*.pyc
+*.sqlite
+*.swo

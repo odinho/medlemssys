@@ -1,0 +1,16 @@
+.desc textarea { height: 3.5em; width: 12em; }
+.left { float: left; clear: left; }
+.vTextField { width: 14em; }
+.kid .vTextField { width: 8em; }
+.belop .vIntegerField { width: 2em; }
+.module.aligned:before { position: absolute; }
+.module.aligned { width: 325px; }
+.inline-group { margin-top: 0; margin-left: 335px; }
+.submit-row { clear: both; }
+.form-row .stacked { width: 300px; }
+
+.stacked select,
+.stacked .selector-available,
+.stacked .selector-chosen { width: 100%; }
+
+.stacked .selector-available input { width: 90%; }
