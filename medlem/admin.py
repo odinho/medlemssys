@@ -1,10 +1,8 @@
 # vim: ts=4 sts=4 expandtab ai
 from django.contrib import admin
+from reversion.admin import VersionAdmin
 from models import *
 
-class LokallagsmedlemskapInline(admin.TabularInline):
-    model = Lokallagsmedlemskap
-    extra = 1
 class GiroInline(admin.TabularInline):
     model = Giro
     extra = 1
@@ -15,14 +13,14 @@ class RolleInline(admin.TabularInline):
     extra = 1
     classes = ['left']
 
-class MedlemAdmin(admin.ModelAdmin):
+class MedlemAdmin(VersionAdmin):
     model_admin_manager = Medlem.objects
     list_display = ('id', '__unicode__', 'get_lokallag', 'er_innmeldt',
                     'har_betalt', 'fodt_farga')
     list_display_links = ('id', '__unicode__')
-    list_filter = ('lokallag_denorm',)
+    list_filter = ('lokallag',)
     save_on_top = True
-    inlines = [LokallagsmedlemskapInline, RolleInline, GiroInline,]
+    inlines = [RolleInline, GiroInline,]
     search_fields = ('fornamn', 'etternamn', '=pk',)
     filter_vertical = ('val',)
     fieldsets = (
@@ -30,7 +28,7 @@ class MedlemAdmin(admin.ModelAdmin):
             'classes': ('left',),
             'fields': (('fornamn', 'etternamn'),
                 ('postadr', 'postnr', 'epost', 'mobnr'),
-                'fodt', 'innmeldt_dato',)
+                'lokallag', 'fodt', 'innmeldt_dato',)
             }),
         (u'Ikkje pakravde felt', {
             'classes': ('left', 'collapse'),
@@ -42,9 +40,6 @@ class MedlemAdmin(admin.ModelAdmin):
         css = {
             "all": ("/site_media/medlem.css",)
         }
-
-    class LokallagAdmin():
-        pass
 
 admin.site.register(Medlem, MedlemAdmin)
 admin.site.register(Tilskiping)

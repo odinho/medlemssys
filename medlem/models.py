@@ -49,13 +49,6 @@ class Tilskiping(models.Model):
     def __unicode__(self):
         return u"%s (%s)" % (self.namn, self.start.strftime("%Y"))
 
-
-class AktivManager(models.Manager):
-    def get_query_set(self):
-        return super(AktivManager, self).get_query_set().filter(    \
-            utmeldt_dato__isnull=True).filter(                      \
-            lokallagsmedlemskap__stopp__isnull=True)
-
 class Medlem(models.Model):
     fornamn = models.CharField(_("fornamn"), max_length=256)
     etternamn = models.CharField(_("etternamn"), max_length=256)
@@ -74,20 +67,12 @@ class Medlem(models.Model):
     utmeldt_dato = models.DateField(_("utmeldt"), blank=True, null=True)
 
     # Tilkopla felt
-    lokallag = models.ManyToManyField(Lokallag, through='Lokallagsmedlemskap')
+    lokallag = models.ForeignKey(Lokallag)
     val = models.ManyToManyField(Val, blank=True, null=True)
     nemnd = models.ManyToManyField(Nemnd, blank=True, null=True)
     tilskiping = models.ManyToManyField(Tilskiping, blank=True, null=True)
     lokallagsrolle = models.ManyToManyField(Lokallag,
         through='Rolle', related_name="rollemedlem", blank=True, null=True)
-
-    # Denormaliserte felt
-    lokallag_denorm = models.ForeignKey(Lokallag,
-        related_name="aktive_medlem", verbose_name="aktivt lokallag",
-        null=True, editable=False,)
-
-    aktiv = AktivManager()
-    objects = models.Manager()
 
     class Meta:
         verbose_name_plural = "medlem"
@@ -174,43 +159,10 @@ class Rolle(models.Model):
     medlem = models.ForeignKey(Medlem)
     lokallag = models.ForeignKey(Lokallag)
     rolletype = models.ForeignKey(Rolletype, blank=True, null=True)
-    start = models.DateField(_("Rollestart"), default=date.today)
-    stopp = models.DateField(_("Rollestopp"), blank=True, null=True)
 
     class Meta:
-        ordering = ('-start',)
         verbose_name_plural = "rolle i lokallag"
 
     def __unicode__(self):
-        if self.stopp:
-            aktiv = "Inaktiv"
-        else:
-            aktiv = "Aktiv"
-
-        return u"%s, %s, %s (%s)" % (self.medlem, self.lokallag, self.rolletype, aktiv)
-
-class Lokallagsmedlemskap(models.Model):
-    medlem = models.ForeignKey(Medlem, related_name="lokallagsmedlemskap")
-    lokallag = models.ForeignKey(Lokallag, related_name="medlemsmedlemskap")
-    start = models.DateField(_("start av medlemskap"), default=date.today)
-    stopp = models.DateField(_("medlemskap slutt"), blank=True, null=True)
-
-    class Meta:
-        ordering = ('-start',)
-        verbose_name_plural = "medlemskap i lokallag"
-
-    def __unicode__(self):
-        if self.stopp:
-            aktiv = "Inaktiv"
-        else:
-            aktiv = "Aktiv"
-
-        return u"%s, %s (%s)" % (self.medlem, self.lokallag, aktiv)
-
-    def save(self, *args, **kwargs):
-        print self.stopp, self.lokallag, self.medlem
-        if not self.stopp:
-            self.medlem.lokallag_denorm = self.lokallag
-            self.medlem.save()
-        super(Lokallagsmedlemskap, self).save(*args, **kwargs)
+        return u"%s, %s, %s (%s)" % (self.medlem, self.lokallag, self.rolletype)
 
