@@ -1,9 +1,10 @@
 # vim: ts=4 sts=4 expandtab ai
-#from reversion.admin import VersionAdmin
+from reversion.admin import VersionAdmin
 from django.contrib import admin
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
 import csv
+from settings import ADMIN_MEDIA_PREFIX
 from models import *
 
 class GiroInline(admin.TabularInline):
@@ -16,7 +17,7 @@ class RolleInline(admin.TabularInline):
     extra = 1
     classes = ['left']
 
-class MedlemAdmin(admin.ModelAdmin):
+class MedlemAdmin(VersionAdmin):
     model_admin_manager = Medlem.objects
     list_display = ('id', '__unicode__', 'lokallag', 'er_innmeldt',
                     'har_betalt', 'fodt_farga')
@@ -42,7 +43,8 @@ class MedlemAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            "all": ("/site_media/medlem.css",)
+            "all": (ADMIN_MEDIA_PREFIX + "medlem.css",
+                ADMIN_MEDIA_PREFIX + "css/forms.css",)
         }
 
     def print_member_list(self, request, queryset):
@@ -65,6 +67,12 @@ class MedlemInline(admin.TabularInline):
 class LokallagAdmin(admin.ModelAdmin):
     inlines = [MedlemInline,]
 
+# XXX: Dette fungerer i Django 1.2
+#class NemndmedlemskapInline(MedlemInline):
+#    model = Medlem.nemnd.through
+#class NemndAdmin(admin.ModelAdmin):
+#    inlines = [NemndmedlemskapInline,]
+#admin.site.register(Nemnd, NemndAdmin)
 
 admin.site.register(Medlem, MedlemAdmin)
 admin.site.register(Lokallag, LokallagAdmin)
