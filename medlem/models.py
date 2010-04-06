@@ -56,7 +56,7 @@ class Medlem(models.Model):
 
     # Kontakt
     postadr = models.CharField(_("postadresse"), max_length=256)
-    postnr = models.IntegerField(_("postnr"))
+    postnr = models.IntegerField(_("postnr"), default=5000)
     mobnr = models.CharField(_("mobiltelefon"), max_length=50)
     heimenr = models.CharField(_("heimetelefon"), max_length=50,
                                blank=True, default="")
@@ -81,10 +81,6 @@ class Medlem(models.Model):
     def __unicode__(self):
         return "%s %s" % (self.fornamn, self.etternamn)
     __unicode__.admin_order_field = 'etternamn'
-
-    def get_lokallag(self):
-        return self.lokallag.get(medlemsmedlemskap__stopp__isnull=True)
-    get_lokallag.short_description = _("Lokallag")
 
     def er_innmeldt(self):
         if (self.utmeldt_dato):
