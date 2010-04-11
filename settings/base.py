@@ -19,7 +19,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
 
-    'medlemssys.medlem',
+    'medlem',
     'reversion',
 )
 

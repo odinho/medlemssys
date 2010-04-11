@@ -18,7 +18,7 @@ class Val(models.Model):
         return self.tittel
 
 class Lokallag(models.Model):
-    namn = models.CharField(_("namn"), max_length=256, unique=True)
+    namn = models.CharField(_("namn"), max_length=255, unique=True)
 
     class Meta:
         verbose_name_plural = "lokallag"
@@ -50,17 +50,17 @@ class Tilskiping(models.Model):
         return u"%s (%s)" % (self.namn, self.start.strftime("%Y"))
 
 class Medlem(models.Model):
-    fornamn = models.CharField(_("fornamn"), max_length=256)
-    etternamn = models.CharField(_("etternamn"), max_length=256)
+    fornamn = models.CharField(_("fornamn"), max_length=255)
+    etternamn = models.CharField(_("etternamn"), max_length=255)
     fodt = models.IntegerField(_(u"født"), max_length=4, default=date.today().year - 17)
 
     # Kontakt
-    postadr = models.CharField(_("postadresse"), max_length=256)
+    postadr = models.CharField(_("postadresse"), max_length=255)
     postnr = models.IntegerField(_("postnr"), default=5000)
     mobnr = models.CharField(_("mobiltelefon"), max_length=50)
     heimenr = models.CharField(_("heimetelefon"), max_length=50,
                                blank=True, default="")
-    epost = models.CharField(_("epost") ,max_length=256, unique=True)
+    epost = models.CharField(_("epost") ,max_length=255, unique=True)
 
     # Medlemsskapet
     innmeldt_dato = models.DateField(_("innmeldt"), default=date.today)
@@ -121,10 +121,10 @@ class Medlem(models.Model):
 class Giro(models.Model):
     medlem = models.ForeignKey(Medlem)
     belop = models.PositiveIntegerField(_(u"Beløp"))
-    kid = models.CharField(_("KID-nummer"), max_length=256, blank=True)
+    kid = models.CharField(_("KID-nummer"), max_length=255, blank=True)
     oppretta = models.DateTimeField(_("Giro lagd"), blank=True, default=datetime.now)
     innbetalt = models.DateField(_("Dato betalt"), blank=True, null=True)
-    desc = models.TextField(_("Forklaring"), max_length=256, blank=True, default="")
+    desc = models.TextField(_("Forklaring"), max_length=255, blank=True, default="")
 
     class Meta:
         verbose_name_plural = "giroar"
