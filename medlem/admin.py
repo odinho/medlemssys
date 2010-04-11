@@ -39,7 +39,7 @@ class MedlemAdmin(VersionAdmin):
             'fields': ('utmeldt_dato', 'val', 'nemnd', 'tilskiping', 'heimenr',)
         }),
     )
-    actions = ['print_member_list',]
+    actions = ['csv_member_list','pdf_member_list',]
 
     class Media:
         css = {
@@ -47,7 +47,7 @@ class MedlemAdmin(VersionAdmin):
                 ADMIN_MEDIA_PREFIX + "css/forms.css",)
         }
 
-    def print_member_list(self, request, queryset):
+    def csv_member_list(self, request, queryset):
         liste = ""
 
         response = HttpResponse(mimetype="text/plain")
@@ -58,6 +58,44 @@ class MedlemAdmin(VersionAdmin):
             dc.writerow(m.__dict__)
 
         return response
+
+    def pdf_member_list(self, request, queryset):
+        from cStringIO import StringIO
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.units import cm, mm
+
+        response = HttpResponse(mimetype="application/pdf")
+        response['Content-Disposition'] = 'filename=noko.pdf'
+
+        buf = StringIO()
+
+        # Create the PDF object, using the StringIO object as its "file."
+        pdf = canvas.Canvas(buf)
+
+        # Draw things on the PDF. Here's where the PDF generation happens.
+        # See the ReportLab documentation for the full list of functionality.
+        for m in queryset:
+            pdf.setFontSize(10)
+
+            tekst = pdf.beginText(1.5*cm, 6*cm)
+            tekst.textLine("%s %s" % (m.fornamn, m.etternamn) )
+            tekst.textLine("%s" % (m.postadr,) )
+            tekst.textLine("%s" % (m.postnr,) )
+
+            pdf.drawText(tekst)
+
+            pdf.showPage()
+
+        # Close the PDF object cleanly.
+        pdf.save()
+
+        # Get the value of the StringIO buffer and write it to the response.
+        pdf = buf.getvalue()
+        buf.close()
+        response.write(pdf)
+
+        return response
+
 
 class MedlemInline(admin.TabularInline):
     model = Medlem
