@@ -3,8 +3,10 @@ from reversion.admin import VersionAdmin
 from django.contrib import admin
 from django.shortcuts import render_to_response
 from django.http import HttpResponse
-import csv
+from django.forms.models import model_to_dict
 from settings import ADMIN_MEDIA_PREFIX
+import csv
+
 from models import *
 
 class GiroInline(admin.TabularInline):
@@ -22,7 +24,8 @@ class MedlemAdmin(VersionAdmin):
     list_display = ('id', '__unicode__', 'lokallag', 'er_innmeldt',
                     'har_betalt', 'fodt_farga')
     list_display_links = ('id', '__unicode__')
-    list_filter = ('lokallag',)
+    date_hierarchy = 'innmeldt_dato'
+    list_filter = ('lokallag', 'fodt')
     save_on_top = True
     inlines = [RolleInline, GiroInline,]
     search_fields = ('fornamn', 'etternamn', '=pk',)
@@ -51,11 +54,12 @@ class MedlemAdmin(VersionAdmin):
         liste = ""
 
         response = HttpResponse(mimetype="text/plain")
-        dc = csv.DictWriter(response, queryset[0].__dict__)
 
-        dc.writerow(list(queryset[0].__dict__))
+        dc = csv.writer(response)
+        dc.writerow(model_to_dict(queryset[0]).keys())
         for m in queryset:
-            dc.writerow(m.__dict__)
+            a = model_to_dict(m).values()
+            dc.writerow([unicode(s).encode("utf-8") for s in a])
 
         return response
 
