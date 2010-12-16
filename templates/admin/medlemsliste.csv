@@ -1,0 +1,2 @@
+{% for obj in queryset %}{{obj.pk}},"{{obj.fornamn}}","{{obj.etternamn}}","{{obj.lokallag}}"
+{% endfor %}
