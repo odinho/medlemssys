@@ -21,10 +21,14 @@ INSTALLED_APPS = (
 
     'medlem',
     'reversion',
+    'emencia.django.newsletter',
+    'tagging',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
     'django.core.context_processors.auth',
     'django.core.context_processors.request',
+    'django.core.context_processors.i18n',
+    'emencia.django.newsletter.context_processors.media',
 )
