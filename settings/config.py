@@ -1,3 +1,4 @@
+# vim: encoding=utf8
 from os.path import join, dirname
 
 PROJECT_ROOT = dirname(__file__) + "/../"
@@ -50,3 +51,6 @@ ADMIN_MEDIA_PREFIX = MEDIA_URL + 'admin/'
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'e!(o%l1myqy-v(ocxf*xkr)q#=l-^%yxgcod_uicne1wh5ggi1'
 
+NEWSLETTER_USE_WORKGROUPS = True
+NEWSLETTER_DEFAULT_HEADER_REPLY = NEWSLETTER_DEFAULT_HEADER_SENDER = \
+        'Norsk Målungdom <skriv@nynorsk.no>'
