@@ -20,7 +20,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
 
-    'medlem',
+    'medlemssys.medlem',
     'reversion',
     'emencia.django.newsletter',
     'tagging',
