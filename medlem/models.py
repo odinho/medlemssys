@@ -3,6 +3,8 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from datetime import date, datetime
+from django.forms import ModelForm
+
 from medlemssys import mod10
 
 # Create your models her
@@ -120,6 +122,11 @@ class Medlem(models.Model):
             return False
     har_betalt.short_description = _("Betalt")
     har_betalt.boolean = True
+
+class MedlemForm(ModelForm):
+    class Meta:
+        model = Medlem
+
 
 class Giro(models.Model):
     medlem = models.ForeignKey(Medlem)
