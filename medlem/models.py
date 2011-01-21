@@ -3,7 +3,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from datetime import date, datetime
-import mod10
+from medlemssys import mod10
 
 # Create your models her
 
