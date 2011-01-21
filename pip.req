@@ -1,0 +1,9 @@
+BeautifulSoup==3.2.0
+django-reversion==1.3.2
+django-tagging==0.3.1
+-e git://github.com/Fantomas42/emencia-django-newsletter.git@051cc6b4e9b17405b8de87411f4dd5a45009dbda#egg=emencia.django.newsletter-0.1-py2.6-dev
+html2text==2.38
+python-dateutil==1.5
+vobject==0.8.1c
+xlrd==0.7.1
+xlwt==0.7.2
