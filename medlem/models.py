@@ -52,15 +52,18 @@ class Tilskiping(models.Model):
 class Medlem(models.Model):
     fornamn = models.CharField(_("fornamn"), max_length=255)
     etternamn = models.CharField(_("etternamn"), max_length=255)
-    fodt = models.IntegerField(_(u"født"), max_length=4, default=date.today().year - 17)
+    fodt = models.IntegerField(_(u"født"), max_length=4,
+            default=date.today().year - 17, blank=True, null=True)
 
     # Kontakt
-    postadr = models.CharField(_("postadresse"), max_length=255)
     postnr = models.IntegerField(_("postnr"), default=5000)
-    mobnr = models.CharField(_("mobiltelefon"), max_length=50)
-    heimenr = models.CharField(_("heimetelefon"), max_length=50,
-                               blank=True, default="")
     epost = models.CharField(_("epost") ,max_length=255, unique=True)
+    postadr = models.CharField(_("postadresse"), max_length=255,
+            blank=True, null=True)
+    mobnr = models.CharField(_("mobiltelefon"), max_length=50,
+            blank=True, null=True)
+    heimenr = models.CharField(_("heimetelefon"), max_length=50,
+            blank=True, null=True)
 
     # Medlemsskapet
     innmeldt_dato = models.DateField(_("innmeldt"), default=date.today)
