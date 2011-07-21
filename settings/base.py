@@ -24,6 +24,7 @@ INSTALLED_APPS = (
     'reversion',
     'emencia.django.newsletter',
     'tagging',
+#    'south',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (

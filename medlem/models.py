@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
-from django.db import models
-from django.utils.translation import ugettext_lazy as _
 from datetime import date, datetime
+from django.db import models
 from django.forms import ModelForm
+from django.utils.translation import ugettext_lazy as _
+#from emencia.django.newsletter.mailer import mailing_started
 
 from medlemssys import mod10
 
-# Create your models her
 
 class Val(models.Model):
     tittel = models.CharField(_("kort forklaring"), max_length=100, unique=True)
@@ -21,6 +21,9 @@ class Val(models.Model):
 
 class Lokallag(models.Model):
     namn = models.CharField(_("namn"), max_length=255, unique=True)
+    fylkeslag = models.CharField(_("fylkeslag"), max_length=255)
+    distrikt = models.CharField(_("distrikt"), max_length=255)
+    andsvar = models.CharField(_("andsvar"), max_length=255)
 
     class Meta:
         verbose_name_plural = "lokallag"
@@ -53,13 +56,16 @@ class Tilskiping(models.Model):
 
 class Medlem(models.Model):
     fornamn = models.CharField(_("fornamn"), max_length=255)
+    mellomnamn = models.CharField(_("mellomnamn"), max_length=255,
+            blank=True, null=True)
     etternamn = models.CharField(_("etternamn"), max_length=255)
     fodt = models.IntegerField(_(u"født"), max_length=4,
             default=date.today().year - 17, blank=True, null=True)
 
     # Kontakt
     postnr = models.IntegerField(_("postnr"), default=5000)
-    epost = models.CharField(_("epost") ,max_length=255, unique=True)
+    epost = models.CharField(_("epost") ,max_length=255,
+            blank=True, null=True)
     postadr = models.CharField(_("postadresse"), max_length=255,
             blank=True, null=True)
     mobnr = models.CharField(_("mobiltelefon"), max_length=50,
@@ -72,7 +78,7 @@ class Medlem(models.Model):
     utmeldt_dato = models.DateField(_("utmeldt"), blank=True, null=True)
 
     # Tilkopla felt
-    lokallag = models.ForeignKey(Lokallag)
+    lokallag = models.ForeignKey(Lokallag, blank=True, null=True)
     val = models.ManyToManyField(Val, blank=True, null=True)
     nemnd = models.ManyToManyField(Nemnd, blank=True, null=True)
     tilskiping = models.ManyToManyField(Tilskiping, blank=True, null=True)
@@ -126,6 +132,44 @@ class Medlem(models.Model):
 class MedlemForm(ModelForm):
     class Meta:
         model = Medlem
+
+class InnmeldingMedlemForm(ModelForm):
+    class Meta:
+        model = Medlem
+        fields = ('fornamn', 'etternamn', 'postnr', 'epost', 'mobnr',)
+
+    def __init__(self, *args, **kwargs):
+        super(InnmeldingMedlemForm, self).__init__(*args, **kwargs)
+        #self.fields["lokallag"].initial = MyModel.objects.get(id=1)
+        print "i: " + str(dir(self))
+
+    def save(self, commit=True, *args, **kwargs):
+        m = super(InnmeldingMedlemForm, self).save(commit=False)
+        m.lokallag = Lokallag.objects.get(pk=1)
+        if commit:
+            m.save()
+        return m
+
+
+#def add_medlem_to_newsletters(sender, **kwargs):
+#    from emencia.django.newsletter.models import Contact, MailingList
+#
+#    medlemar = Medlem.objects.all()
+#
+#    subscribers = []
+#    for profile in medlemar:
+#        contact, created = Contact.objects.get_or_create(email=profile.epost,
+#                                                       defaults={'first_name': profile.fornamn,
+#                                                                 'last_name': profile.etternamn,
+#                                                                 'content_object': profile})
+#        subscribers.append(contact)
+#
+#    new_mailing, created = MailingList.objects.get_or_create(name='Alle medlem')
+#    if created:
+#        new_mailing.save()
+#    new_mailing.subscribers.add(*subscribers)
+#    new_mailing.save()
+#mailing_started.connect(add_medlem_to_newsletters)
 
 
 class Giro(models.Model):
