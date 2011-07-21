@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 5.0//EN"
+  "http://www.w3.org/TR/html5/strict.dtd">
+<html>
+  <head>
+    <title>nynorsk.no</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="/static/nynorsk-16.png">
+    {% block extrahead %}{% endblock %}
+
+    <style type="text/css" media="all">
+@import "/static/style.css";
+    </style>
+    <style type="text/css" media="print">
+#head { display: none; }
+nav { display: none; }
+#ekstra { display: none; }
+#footer { display: none; }
+    </style>
+
+    <script type="text/javascript">
+    </script>
+
+  </head>
+<body class="{% block bodyclass %}standard{% endblock %}">
+
+<div id="kontainer">
+
+<div id="hovud">
+  <h1><a href="/">Medlemssys</a></h1>
+</div>
+
+<nav>
+  <ul>
+    <li><a href="/">Framsida</a>
+    <li><a href="http://malungdom.no/">Norsk Målungdom</a>
+    <li><a href="http://www.nm.no">Noregs Mållag</a>
+  </ul>
+</nav>
+
+<div id="content">
+	{% block content %}Ingenting her{% endblock %}
+</div>
+
+<aside id="venstrefelt">
+</aside>
+
+<footer>
+	<p><small>Opphavsrett &copy; 1997-2010 nynorsk.no. Netbunad av <a href="http://velmont.no">Odin Hørthe</a></small></p>
+</footer>
+
+</div>
+
+<!-- Piwik
+<script type="text/javascript">
+var pkBaseURL = (("https:" == document.location.protocol) ? "https://stats.bonarjee.in/" : "http://stats.bonarjee.in/");
+document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+</script><script type="text/javascript">
+try {
+var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 12);
+piwikTracker.trackPageView();
+piwikTracker.enableLinkTracking();
+} catch( err ) {}
+</script><noscript><p><img src="http://stats.bonarjee.in/piwik.php?idsite=12" style="border:0" alt=""/></p></noscript>
+<!- End Piwik Tag -->
+</body>
+</html>

@@ -1,0 +1,7 @@
+<div id="unsubscription">
+  <a name="unsubscription"></a>
+  <p>
+    Du f&aring;r denne eposten av di du er medlem. Du kan
+    <a href="{% if uidb36 and token %}http://{{ domain }}{% url newsletter_mailinglist_unsubscribe slug=newsletter.slug,uidb36=uidb36,token=token %}{% else %}#{% endif %}">endra epostinnstillingane dine</a>.
+  </p>
+</div>
