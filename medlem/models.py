@@ -171,6 +171,12 @@ class Medlem(models.Model):
     har_betalt.short_description = _("Betalt")
     har_betalt.boolean = True
 
+    def set_val(self, tittel, add=True):
+        if add:
+            self.val.add(Val.objects.get_or_create(tittel=tittel)[0])
+        else:
+            self.val.remove(Val.objects.get(tittel=tittel))
+
 class MedlemForm(ModelForm):
     class Meta:
         model = Medlem
