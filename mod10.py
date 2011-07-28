@@ -22,7 +22,7 @@ def add_kid_controlbit(kid):
     _sum = 0
     alt = True
     kid_len = len(kid)
-    print kid
+    #print kid
     for s in reversed(str(kid)):
         d = int(s)
         assert 0 <= d <= 9
