@@ -117,21 +117,28 @@ class MedlemInline(admin.TabularInline):
 class LokallagAdmin(admin.ModelAdmin):
     inlines = [MedlemInline,]
 
+
 class TilskipInline(admin.TabularInline):
     model = Medlem.tilskiping.through
     raw_id_fields = ['medlem']
-
 class TilskipAdmin(admin.ModelAdmin):
     model = Tilskiping
     inlines = [TilskipInline,]
 
+
 class NemndInline(admin.TabularInline):
     model = Medlem.nemnd.through
     raw_id_fields = ['medlem']
-
 class NemndAdmin(admin.ModelAdmin):
     model = Nemnd
     inlines = [NemndInline,]
+
+class ValInline(admin.TabularInline):
+    model = Medlem.val.through
+    raw_id_fields = ['medlem']
+class ValAdmin(admin.ModelAdmin):
+    model = Val
+    inlines = [ValInline,]
 
 # XXX: Dette fungerer i Django 1.2
 #class NemndmedlemskapInline(MedlemInline):
@@ -144,5 +151,5 @@ admin.site.register(Medlem, MedlemAdmin)
 admin.site.register(Lokallag, LokallagAdmin)
 admin.site.register(Tilskiping, TilskipAdmin)
 admin.site.register(Nemnd, NemndAdmin)
+admin.site.register(Val, ValAdmin)
 admin.site.register(Rolletype)
-admin.site.register(Val)
