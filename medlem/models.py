@@ -54,6 +54,7 @@ class Nemnd(models.Model):
 
 class Tilskiping(models.Model):
     namn = models.CharField(_("namn"), max_length=64)
+    slug = models.SlugField(_("kortnamn"), max_length=64)
     start = models.DateField(_("start"), default=date.today)
     stopp = models.DateField(_("stopp"))
 
@@ -67,6 +68,16 @@ STATUSAR = (
     ("M", "Vanleg medlem"),
     ("I", "Infoperson"),
     ("L", "Livstidsmedlem"),
+)
+
+INNMELDINGSTYPAR = (
+    ("H", "Heimesida"),
+    ("M", "Målferd"),
+    ("V", "Vervekampanje"),
+    ("F", "Flygeblad"),
+    ("L", "Lagsskiping"),
+    ("D", "Direkteverva"),
+    ("A", "Anna"),
 )
 
 class Medlem(models.Model):
@@ -103,9 +114,10 @@ class Medlem(models.Model):
             default=None)
     status = models.CharField(_("medlstatus"), max_length=1,
             choices=STATUSAR, default="M")
-    innmeldingstype = models.ForeignKey(Innmeldingstype, blank=True, null=True)
+    innmeldingstype = models.CharField(_("innmtype"), max_length=1,
+            choices=INNMELDINGSTYPAR, blank=True, null=True)
     innmeldingsdetalj = models.CharField(_("detalj om innmelding"), max_length=255,
-        blank=True, null=True)
+        blank=True, null=True, help_text=_("Skriv inn vervemedlem i hakeparantes ([1234])"))
 
     # Tilkopla felt
     lokallag = models.ForeignKey(Lokallag, blank=True, null=True)
@@ -120,7 +132,7 @@ class Medlem(models.Model):
         ordering = ['-id']
 
     def __unicode__(self):
-        return "%s %s" % (self.fornamn, self.etternamn)
+        return " ".join([self.fornamn, self.mellomnamn, self.etternamn])
     __unicode__.admin_order_field = 'etternamn'
 
     def er_innmeldt(self):
