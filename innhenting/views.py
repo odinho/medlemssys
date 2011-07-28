@@ -35,6 +35,10 @@ nmu_csv_map = {
 
 VAL = (
         (40, 0, 'Ikkje nyhendebrev'), # EPOST_B = 40
+        (28, 0, 'Ikkje ring'), # RING_B = 28
+        (29, 0, 'Ikkje post'), # POST_B = 29
+        (30, 0, 'Ikkje Motmæle'), # MM_B = 30
+        (31, 0, 'Ikkje Norsk Tidend'), # MNM_B = 31
 )
 
 def fraa_nmu_csv(request):
