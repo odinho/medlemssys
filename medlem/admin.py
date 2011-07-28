@@ -24,11 +24,11 @@ class MedlemAdmin(VersionAdmin):
                     'har_betalt', 'fodt_farga')
     list_display_links = ('id', '__unicode__')
     date_hierarchy = 'innmeldt_dato'
-    list_filter = ('lokallag', 'fodt')
+    list_filter = ('lokallag', 'fodt', 'status')
     save_on_top = True
     inlines = [RolleInline, GiroInline,]
     search_fields = ('fornamn', 'etternamn', '=pk',)
-    filter_vertical = ('val',)
+    filter_horizontal = ('val', 'tilskiping', 'nemnd')
     fieldsets = (
         (None, {
             'classes': ('left',),
@@ -117,6 +117,15 @@ class MedlemInline(admin.TabularInline):
 class LokallagAdmin(admin.ModelAdmin):
     inlines = [MedlemInline,]
 
+class TilskipInline(admin.TabularInline):
+    model = Medlem.tilskiping.through
+    raw_id_fields = ['medlem']
+
+class TilskipAdmin(admin.ModelAdmin):
+    model = Tilskiping
+    inlines = [TilskipInline,]
+    fields = ['namn', 'slug', 'start', 'stopp',]
+
 # XXX: Dette fungerer i Django 1.2
 #class NemndmedlemskapInline(MedlemInline):
 #    model = Medlem.nemnd.through
@@ -126,7 +135,7 @@ class LokallagAdmin(admin.ModelAdmin):
 
 admin.site.register(Medlem, MedlemAdmin)
 admin.site.register(Lokallag, LokallagAdmin)
-admin.site.register(Tilskiping)
+admin.site.register(Tilskiping, TilskipAdmin)
 admin.site.register(Rolletype)
 admin.site.register(Nemnd)
 admin.site.register(Val)
