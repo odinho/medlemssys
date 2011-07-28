@@ -1,2 +1,8 @@
 .ikkje-teljande { color: #f00; }
 .er-gamal { color: #850; }
+
+.kid input { width: 8em; }
+.desc .vLargeTextField {
+    width: 10em;
+    height: 2em;
+}

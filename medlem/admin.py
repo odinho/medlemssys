@@ -1,7 +1,6 @@
 # vim: ts=4 sts=4 expandtab ai
 from reversion.admin import VersionAdmin
 from django.contrib import admin
-from django.shortcuts import render_to_response
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
 from settings import ADMIN_MEDIA_PREFIX
@@ -33,13 +32,22 @@ class MedlemAdmin(VersionAdmin):
     fieldsets = (
         (None, {
             'classes': ('left',),
-            'fields': (('fornamn', 'etternamn'),
-                ('postadr', 'postnr', 'epost', 'mobnr'),
-                'lokallag', 'fodt', 'innmeldt_dato',)
+            'fields': (
+                ('fornamn', 'mellomnamn', 'etternamn', 'fodt', 'kjon'),
+                ('postadr', 'postnr', 'ekstraadr'),
+                ('epost', 'mobnr'),
+                ('lokallag', 'status', 'innmeldt_dato'),
+            )
             }),
         (u'Ikkje pakravde felt', {
             'classes': ('left', 'collapse'),
-            'fields': ('utmeldt_dato', 'val', 'nemnd', 'tilskiping', 'heimenr',)
+            'fields': ('utmeldt_dato',
+                'val',
+                ('nemnd', 'tilskiping'),
+                ('innmeldingstype', 'innmeldingsdetalj'),
+                ('heimenr', 'gjer'),
+                'merknad',
+            )
         }),
     )
     actions = ['csv_member_list','pdf_member_list',]
@@ -66,7 +74,7 @@ class MedlemAdmin(VersionAdmin):
     def pdf_member_list(self, request, queryset):
         from cStringIO import StringIO
         from reportlab.pdfgen import canvas
-        from reportlab.lib.units import cm, mm
+        from reportlab.lib.units import cm #, mm
 
         response = HttpResponse(mimetype="application/pdf")
         response['Content-Disposition'] = 'filename=noko.pdf'
