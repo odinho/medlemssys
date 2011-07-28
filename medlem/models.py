@@ -31,6 +31,15 @@ class Lokallag(models.Model):
     def __unicode__(self):
         return self.namn
 
+class Innmeldingstype(models.Model):
+    namn = models.CharField(_("namn"), max_length=255, unique=True)
+
+    class Meta:
+        verbose_name_plural = "innmeldingstypar"
+
+    def __unicode__(self):
+        return self.namn
+
 class Nemnd(models.Model):
     namn = models.CharField(_("namn"), max_length=64)
     start = models.DateField(_("start"), default=date.today)
@@ -54,6 +63,12 @@ class Tilskiping(models.Model):
     def __unicode__(self):
         return u"%s (%s)" % (self.namn, self.start.strftime("%Y"))
 
+STATUSAR = (
+    ("M", "Vanleg medlem"),
+    ("I", "Infoperson"),
+    ("L", "Livstidsmedlem"),
+)
+
 class Medlem(models.Model):
     fornamn = models.CharField(_("fornamn"), max_length=255)
     mellomnamn = models.CharField(_("mellomnamn"), max_length=255,
@@ -68,14 +83,29 @@ class Medlem(models.Model):
             blank=True, null=True)
     postadr = models.CharField(_("postadresse"), max_length=255,
             blank=True, null=True)
+    ekstraadr = models.CharField(_("ekstraadresse"), max_length=255,
+            blank=True, null=True)
     mobnr = models.CharField(_("mobiltelefon"), max_length=50,
             blank=True, null=True)
     heimenr = models.CharField(_("heimetelefon"), max_length=50,
             blank=True, null=True)
 
+    # Om medlemen
+    gjer = models.CharField(_("gjer"), max_length=255,
+        blank=True, null=True)
+    kjon = models.CharField(_("kjønn"), max_length=1, choices=(("M", "Mann"),
+        ("K", "Kvinne"), ("U", "Udefinert")), default="U")
+    merknad = models.TextField(_("merknad"), blank=True, default="")
+
     # Medlemsskapet
     innmeldt_dato = models.DateField(_("innmeldt"), default=date.today)
-    utmeldt_dato = models.DateField(_("utmeldt"), blank=True, null=True)
+    utmeldt_dato = models.DateField(_("utmeldt"), blank=True, null=True,
+            default=None)
+    status = models.CharField(_("medlstatus"), max_length=1,
+            choices=STATUSAR, default="M")
+    innmeldingstype = models.ForeignKey(Innmeldingstype, blank=True, null=True)
+    innmeldingsdetalj = models.CharField(_("detalj om innmelding"), max_length=255,
+        blank=True, null=True)
 
     # Tilkopla felt
     lokallag = models.ForeignKey(Lokallag, blank=True, null=True)
@@ -121,7 +151,7 @@ class Medlem(models.Model):
     fodt_farga.admin_order_field = 'fodt'
 
     def har_betalt(self):
-        if (self.giro_set.filter(oppretta__gt=date(date.today().year, 1, 1),
+        if (self.giro_set.filter(oppretta__gte=date(date.today().year, 1, 1),
                                  innbetalt__isnull=False)):
             return True
         else:
@@ -171,6 +201,17 @@ class InnmeldingMedlemForm(ModelForm):
 #    new_mailing.save()
 #mailing_started.connect(add_medlem_to_newsletters)
 
+KONTI = (
+    ('M', "Medlemskonto"),
+    ('K', "Kassa"),
+    ('B', "Brukskonto"),
+)
+HENSIKTER = (
+    ('P', "Medlemspengar"),
+    ('G', "Gåve"),
+    ('T', "Tilskiping"),
+    ('A', "Anna"),
+)
 
 class Giro(models.Model):
     medlem = models.ForeignKey(Medlem)
@@ -178,7 +219,10 @@ class Giro(models.Model):
     kid = models.CharField(_("KID-nummer"), max_length=255, blank=True)
     oppretta = models.DateTimeField(_("Giro lagd"), blank=True, default=datetime.now)
     innbetalt = models.DateField(_("Dato betalt"), blank=True, null=True)
-    desc = models.TextField(_("Forklaring"), max_length=255, blank=True, default="")
+    konto = models.CharField(_("Konto"), max_length=1, choices=KONTI, default="M")
+    hensikt = models.CharField(_("Hensikt"), max_length=1, choices=HENSIKTER,
+            default="P")
+    desc = models.TextField(_("Forklaring"), blank=True, default="")
 
     class Meta:
         verbose_name_plural = "giroar"
