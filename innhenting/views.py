@@ -46,7 +46,7 @@ def fraa_nmu_csv(request):
     lag = import_lag()
     import_medlem(lag)
     print "Ferdig m medlem"
-    #import_bet()
+    import_bet()
     fiks_tilskipingar()
 
     return HttpResponse('fina!')
@@ -136,6 +136,9 @@ def import_bet():
     liste.next()
 
     for rad in liste:
+        if(Giro.objects.filter(pk=rad[7]).exists()):
+            continue
+
         g = Giro(pk=rad[7], hensikt='P')
 
         # Finn andsvarleg medlem
