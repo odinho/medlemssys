@@ -296,5 +296,5 @@ class Rolle(models.Model):
         verbose_name_plural = "rolle i lokallag"
 
     def __unicode__(self):
-        return u"%s, %s, %s (%s)" % (self.medlem, self.lokallag, self.rolletype)
+        return u"%s, %s (%s)" % (self.medlem, self.lokallag, self.rolletype)
 
