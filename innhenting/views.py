@@ -6,7 +6,7 @@ from dateutil.parser import parse
 import datetime
 #from django.shortcuts import render_to_response
 
-from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping, Val
+from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping
 import csv
 
 

@@ -171,6 +171,12 @@ class Medlem(models.Model):
     har_betalt.short_description = _("Betalt")
     har_betalt.boolean = True
 
+    def status_html(self):
+        return "<abbr title='%s'>%s</abbr>" % (self.get_status_display(), self.status)
+    status_html.short_description = _("Status")
+    status_html.allow_tags = True
+    status_html.admin_order_field = 'status'
+
     def set_val(self, tittel, add=True):
         if add:
             self.val.add(Val.objects.get_or_create(tittel=tittel)[0])

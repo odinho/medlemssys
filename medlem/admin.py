@@ -21,7 +21,7 @@ class RolleInline(admin.TabularInline):
 class MedlemAdmin(VersionAdmin):
     model_admin_manager = Medlem.objects
     list_display = ('id', '__unicode__', 'lokallag', 'er_innmeldt',
-                    'har_betalt', 'fodt_farga')
+                    'har_betalt', 'fodt_farga', 'status_html')
     list_display_links = ('id', '__unicode__')
     date_hierarchy = 'innmeldt_dato'
     list_filter = ('lokallag', 'fodt', 'status')
