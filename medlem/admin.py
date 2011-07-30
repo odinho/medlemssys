@@ -24,7 +24,7 @@ class MedlemAdmin(VersionAdmin):
                     'har_betalt', 'fodt_farga', 'status_html')
     list_display_links = ('id', '__unicode__')
     date_hierarchy = 'innmeldt_dato'
-    list_filter = ('lokallag', 'fodt', 'status')
+    list_filter = ('lokallag', 'fodt', 'status', 'val')
     save_on_top = True
     inlines = [RolleInline, GiroInline,]
     search_fields = ('fornamn', 'etternamn', '=pk',)
@@ -41,7 +41,8 @@ class MedlemAdmin(VersionAdmin):
             }),
         (u'Ikkje pakravde felt', {
             'classes': ('left', 'collapse'),
-            'fields': ('utmeldt_dato',
+            'fields': (
+                ('utmeldt_dato',),
                 'val',
                 ('nemnd', 'tilskiping'),
                 ('innmeldingstype', 'innmeldingsdetalj'),
