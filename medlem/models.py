@@ -108,6 +108,10 @@ class Medlem(models.Model):
         ("K", "Kvinne"), ("U", "Udefinert")), default="U")
     merknad = models.TextField(_("merknad"), blank=True, default="")
 
+    # Spesialfelt, denormalisert felt frå Giro
+    _siste_medlemspengar = models.DateField(blank=True, null=True,
+            editable=False, default=None)
+
     # Medlemsskapet
     innmeldt_dato = models.DateField(_("innmeldt"), default=date.today)
     utmeldt_dato = models.DateField(_("utmeldt"), blank=True, null=True,
@@ -263,8 +267,18 @@ class Giro(models.Model):
     def save(self, *args, **kwargs):
         if len(self.kid) < 10:
             self.kid = str(self.medlem_id).zfill(5)
-            pk = super(Giro, self).save(*args, **kwargs)
+            super(Giro, self).save(*args, **kwargs)
             self.kid = mod10.add_kid_controlbit(self.kid + str(self.pk).zfill(5))
+
+        # Fiks det denormaliserte feltet til medlemen, som fortel um siste
+        # medlemspengebetaling.
+        if self.hensikt == 'P' \
+                and self.innbetalt is not None \
+                and (self.medlem._siste_medlemspengar is None \
+                    or self.medlem._siste_medlemspengar < self.oppretta.date()):
+            self.medlem._siste_medlemspengar = self.oppretta
+            self.medlem.save()
+
         super(Giro, self).save(*args, **kwargs)
 
 class Rolletype(models.Model):
