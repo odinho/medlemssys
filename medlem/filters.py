@@ -17,13 +17,15 @@ class IsTimeSinceFilterSpec(DateFieldFilterSpec):
     def __init__(self, f, request, params, model, model_admin, *args, **kwargs):
         super(IsTimeSinceFilterSpec, self).__init__(f, request, params, model,
                                                    model_admin, *args, **kwargs)
-        one_year_ago = date(date.today().year - 1, 1, 1)
-        two_years_ago = date(date.today().year - 2, 1, 1)
+        since_this_year = date(date.today().year, 1, 1)
+        since_last_year = date(date.today().year - 1, 1, 1)
         self.links = (
             (_('All'), {}),
-            (_(smart_unicode('Innan året')), {'%s__gte' % self.field.name: str(one_year_ago),
+            (_(smart_unicode('Innan året')), {'%s__gte' % self.field.name:
+                str(since_this_year),
                        }),
-            (_(smart_unicode('Innan fjoråret')), {'%s__gte' % self.field.name: str(two_years_ago),
+            (_(smart_unicode('Innan fjoråret')), {'%s__gte' % self.field.name:
+                str(since_last_year),
                     }),
             (_('Aldri'), {'%s__isnull' % self.field.name: str(True),
                     }),
