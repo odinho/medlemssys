@@ -35,7 +35,7 @@ class MedlemAdmin(VersionAdmin):
     readonly_fields = ('_siste_medlemspengar',)
     save_on_top = True
     inlines = [RolleInline, GiroInline,]
-    search_fields = ('fornamn', 'etternamn', '=pk',)
+    search_fields = ('fornamn', 'mellomnamn', 'etternamn', '=id',)
     filter_horizontal = ('val', 'tilskiping', 'nemnd')
     fieldsets = (
         (None, {
