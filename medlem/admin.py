@@ -24,7 +24,14 @@ class MedlemAdmin(VersionAdmin):
                     'har_betalt', 'fodt_farga', 'status_html')
     list_display_links = ('id', '__unicode__')
     date_hierarchy = 'innmeldt_dato'
-    list_filter = ('lokallag', 'fodt', 'status', 'val')
+    list_filter = (
+            'status',
+            'val',
+            '_siste_medlemspengar',
+            'lokallag',
+            'fodt',
+            'innmeldt_dato',
+        )
     save_on_top = True
     inlines = [RolleInline, GiroInline,]
     search_fields = ('fornamn', 'etternamn', '=pk',)

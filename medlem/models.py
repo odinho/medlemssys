@@ -6,6 +6,7 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 #from emencia.django.newsletter.mailer import mailing_started
 
+import filters
 from medlemssys import mod10
 
 
@@ -130,6 +131,10 @@ class Medlem(models.Model):
     tilskiping = models.ManyToManyField(Tilskiping, blank=True, null=True)
     lokallagsrolle = models.ManyToManyField(Lokallag,
         through='Rolle', related_name="rollemedlem", blank=True, null=True)
+
+
+    # Attributt
+    _siste_medlemspengar.is_timesince_filter = True
 
     class Meta:
         verbose_name_plural = "medlem"
