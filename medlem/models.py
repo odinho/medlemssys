@@ -111,7 +111,7 @@ class Medlem(models.Model):
 
     # Spesialfelt, denormalisert felt frå Giro
     _siste_medlemspengar = models.DateField(blank=True, null=True,
-            editable=False, default=None) #XXX Readonly
+            editable=False, default=None)
 
     # Medlemsskapet
     innmeldt_dato = models.DateField(_("innmeldt"), default=date.today)
