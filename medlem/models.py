@@ -173,7 +173,7 @@ class Medlem(models.Model):
 
     def har_betalt(self):
         if (self.giro_set.filter(oppretta__gte=date(date.today().year, 1, 1),
-                                 innbetalt__isnull=False)):
+                                 innbetalt__isnull=False)).exists():
             return True
         else:
             return False
