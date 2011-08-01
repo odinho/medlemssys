@@ -22,7 +22,7 @@ INSTALLED_APPS = (
 
     'medlemssys.medlem',
     'reversion',
-    'emencia.django.newsletter',
+#   'emencia.django.newsletter',
     'tagging',
 #    'south',
 )
@@ -32,5 +32,5 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.auth',
     'django.core.context_processors.request',
     'django.core.context_processors.i18n',
-    'emencia.django.newsletter.context_processors.media',
+#   'emencia.django.newsletter.context_processors.media',
 )
