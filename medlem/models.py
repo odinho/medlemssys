@@ -163,9 +163,9 @@ class Medlem(models.Model):
 
     def fodt_farga(self):
         if not self.er_teljande():
-            return "<span class='ikkje-teljande'>%s</span>" % self.fodt
+            return "<span class='ikkje-teljande' title='Medlemen er ikkje teljande'>%s</span>" % self.fodt
         elif self.er_gamal():
-            return "<span class='er-gamal'>%s</span>" % self.fodt
+            return "<span class='er-gamal' title='Medlemen er gamal, men framleis teljande (over 20)>%s</span>" % self.fodt
         return self.fodt
     fodt_farga.short_description = _(u"Født")
     fodt_farga.allow_tags = True
