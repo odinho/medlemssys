@@ -23,8 +23,8 @@ INSTALLED_APPS = (
     'medlemssys.medlem',
     'reversion',
 #   'emencia.django.newsletter',
-    'tagging',
-#    'south',
+#   'tagging',
+#   'south',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
