@@ -161,12 +161,22 @@ class Medlem(models.Model):
     er_teljande.short_description = _("Gamal")
     er_teljande.boolean = True
 
+    def alder(self):
+        alder = date.today().year - self.fodt
+        if alder >= 0 and alder < 120:
+            return alder
+        return None
+
     def fodt_farga(self):
+        if self.alder() == None:
+            return "?"
         if not self.er_teljande():
-            return "<span class='ikkje-teljande' title='Medlemen er ikkje teljande'>%s</span>" % self.fodt
+            return "<span class='ikkje-teljande' title='Medlemen er ikkje " + \
+               "teljande (%d år)'>%s</span>" % (self.alder(), self.fodt)
         elif self.er_gamal():
-            return "<span class='er-gamal' title='Medlemen er gamal, men framleis teljande (over 20)>%s</span>" % self.fodt
-        return self.fodt
+            return "<span class='er-gamal' title='Medlemen er gamal, men " + \
+        "framleis teljande (%d år)'>%s</span>" % (self.alder(), self.fodt)
+        return "<span title='%d år'>%d</span>" % (self.alder(), self.fodt)
     fodt_farga.short_description = _(u"Født")
     fodt_farga.allow_tags = True
     fodt_farga.admin_order_field = 'fodt'
