@@ -3,8 +3,8 @@ from os.path import join, dirname
 
 PROJECT_ROOT = dirname(__file__) + "/../"
 
-MEDIA_ROOT = join(PROJECT_ROOT, 'static')
-MEDIA_URL = '/static/'
+#MEDIA_ROOT = join(PROJECT_ROOT, 'static')
+#MEDIA_URL = '/static/'
 
 TEMPLATE_DIRS = (
     join(PROJECT_ROOT, 'templates'),
@@ -44,10 +44,24 @@ SITE_ID = 1
 USE_I18N = True
 USE_L10N = True
 
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
-# trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = MEDIA_URL + 'admin/'
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/home/media/media.lawrence.com/static/"
+STATIC_ROOT = join(PROJECT_ROOT, 'static')
+
+# URL prefix for static files.
+# Example: "http://media.lawrence.com/static/"
+STATIC_URL = '/static/'
+
+# Additional locations of static files
+STATICFILES_DIRS = (
+    # Put strings here, like "/home/html/static" or "C:/www/django/static".
+    # Always use forward slashes, even on Windows.
+    # Don't forget to use absolute paths, not relative paths.
+)
+
+
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'e!(o%l1myqy-v(ocxf*xkr)q#=l-^%yxgcod_uicne1wh5ggi1'

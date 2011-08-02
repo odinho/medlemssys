@@ -3,7 +3,7 @@ from reversion.admin import VersionAdmin
 from django.contrib import admin
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
-from settings import ADMIN_MEDIA_PREFIX
+from settings import STATIC_URL
 import csv
 
 from models import *
@@ -63,8 +63,8 @@ class MedlemAdmin(VersionAdmin):
 
     class Media:
         css = {
-            "all": (ADMIN_MEDIA_PREFIX + "medlem.css",
-                ADMIN_MEDIA_PREFIX + "css/forms.css",)
+            "all": (STATIC_URL + "medlem.css",
+                STATIC_URL + "css/forms.css",)
         }
 
     def csv_member_list(self, request, queryset):
