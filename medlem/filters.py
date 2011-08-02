@@ -37,3 +37,50 @@ class TimeSinceFilter(DateFieldListFilter):
 
     def used_params(self):
         return [self.lookup_kwarg_past_time, self.lookup_kwarg_isnull]
+
+
+class AdditiveSubtractiveFilter(RelatedFieldListFilter):
+    title = "test"
+    using_params = []
+
+    def __init__(self, field, request, params, model, model_admin, field_path):
+        super(AdditiveSubtractiveFilter, self).__init__(
+            field, request, params, model, model_admin, field_path)
+
+        self.paramstart = "adv_" + field.get_attname()
+
+    def has_output(self):
+        return len(self.lookup_choices) > 0
+
+    def _make_param(self, field_id):
+        return self.paramstart + str(field_id)
+
+    def used_params(self):
+        for lookup, title in self.lookup_choices:
+            self.using_params.append(self._make_param(lookup))
+        return self.using_params
+
+    def queryset(self, request, queryset):
+        print self.params
+        for key, value in self.params.items():
+            if value == 'e':
+                queryset = queryset.exclude(val__id=key.replace(self.paramstart, ''))
+            elif value == 'i':
+                queryset = queryset.filter(val__id=key.replace(self.paramstart, ''))
+        return queryset
+
+    def choices(self, cl):
+        yield {
+            'selected': False,
+            'query_string': cl.get_query_string({}, self.using_params),
+            'display': _('All'),
+        }
+        for p in (('i', 'Inkluder'), ('e', 'Ekskluder')):
+            for lookup, title in self.lookup_choices:
+                yield {
+                    'selected': p[0] == self.params.get(self._make_param(lookup)),
+                    'query_string': cl.get_query_string({
+                        self._make_param(lookup): p[0],
+                    }, []),
+                    'display': "%s %s" % (p[1], title),
+                }
