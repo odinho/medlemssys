@@ -40,13 +40,11 @@ class TimeSinceFilter(DateFieldListFilter):
 
 
 class AdditiveSubtractiveFilter(RelatedFieldListFilter):
-    title = "test"
-    using_params = []
-
     def __init__(self, field, request, params, model, model_admin, field_path):
         super(AdditiveSubtractiveFilter, self).__init__(
             field, request, params, model, model_admin, field_path)
 
+        self.using_params = []
         self.paramstart = "adv_" + field.get_attname()
 
     def has_output(self):
@@ -75,12 +73,12 @@ class AdditiveSubtractiveFilter(RelatedFieldListFilter):
             'query_string': cl.get_query_string({}, self.using_params),
             'display': _('All'),
         }
-        for p in (('i', 'Inkluder'), ('e', 'Ekskluder')):
+        for p in (('i', _('Vis')), ('e', _('Skjul'))):
             for lookup, title in self.lookup_choices:
                 yield {
                     'selected': p[0] == self.params.get(self._make_param(lookup)),
                     'query_string': cl.get_query_string({
                         self._make_param(lookup): p[0],
                     }, []),
-                    'display': "%s %s" % (p[1], title),
+                    'display': "%s '%s'" % (p[1], title),
                 }

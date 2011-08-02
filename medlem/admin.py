@@ -28,7 +28,6 @@ class MedlemAdmin(VersionAdmin):
     list_filter = (
             'status',
             ('val', AdditiveSubtractiveFilter),
-            'val',
             ('_siste_medlemspengar', TimeSinceFilter),
             'lokallag',
             'fodt',
