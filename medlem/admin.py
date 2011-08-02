@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.forms.models import model_to_dict
 from settings import STATIC_URL
 import csv
+from filters import AdditiveSubtractiveFilter, TimeSinceFilter
 
 from models import *
 
@@ -26,8 +27,9 @@ class MedlemAdmin(VersionAdmin):
     date_hierarchy = 'innmeldt_dato'
     list_filter = (
             'status',
+            ('val', AdditiveSubtractiveFilter),
             'val',
-            '_siste_medlemspengar',
+            ('_siste_medlemspengar', TimeSinceFilter),
             'lokallag',
             'fodt',
             'innmeldt_dato',
