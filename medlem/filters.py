@@ -69,7 +69,7 @@ class AdditiveSubtractiveFilter(RelatedFieldListFilter):
 
     def choices(self, cl):
         yield {
-            'selected': False,
+            'selected': len(set(self.params).intersection(self.using_params)) == 0,
             'query_string': cl.get_query_string({}, self.using_params),
             'display': _('All'),
         }
