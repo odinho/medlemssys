@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sw=4 expandtab ai
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponse
 from dateutil.parser import parse
 import datetime
@@ -186,6 +187,8 @@ def fiks_tilskipingar():
     tilskipingar = Tilskiping.objects.all()
 
     for tils in tilskipingar:
-        medlemar = Medlem.objects.filter(merknad__icontains=tils.slug)
+        medlemar = Medlem.objects.filter( \
+                Q(merknad__icontains=tils.slug) \
+                | Q(merknad__icontains=tils.namn))
         tils.medlem_set.add(*medlemar)
         tils.save()
