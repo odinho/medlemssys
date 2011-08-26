@@ -53,7 +53,7 @@ def fraa_nmu_csv(request):
 
 @transaction.commit_on_success
 def import_medlem(lagsliste):
-    liste = csv.reader(open("nmu-medl-liten.csv"))
+    liste = csv.reader(open("nmu-medl.csv"))
     mapping = nmu_mapping(headers=liste.next())
     nummer = 0
 
