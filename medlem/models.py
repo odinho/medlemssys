@@ -177,7 +177,7 @@ class Medlem(models.Model):
     fodt_farga.admin_order_field = 'fodt'
 
     def har_betalt(self):
-        if (self.giro_set.filter(oppretta__gte=date(date.today().year, 1, 1),
+        if (self.giroar.filter(oppretta__gte=date(date.today().year, 1, 1),
                                  innbetalt__isnull=False)).exists():
             return True
         else:
@@ -252,7 +252,7 @@ HENSIKTER = (
 )
 
 class Giro(models.Model):
-    medlem = models.ForeignKey(Medlem)
+    medlem = models.ForeignKey(Medlem, related_name='giroar')
     belop = models.PositiveIntegerField(_(u"Beløp"))
     kid = models.CharField(_("KID-nummer"), max_length=255, blank=True)
     oppretta = models.DateTimeField(_("Giro lagd"), blank=True, default=datetime.now)
