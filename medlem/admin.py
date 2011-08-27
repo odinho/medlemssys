@@ -1,8 +1,12 @@
 # vim: ts=4 sts=4 expandtab ai
 from reversion.admin import VersionAdmin
+from django.contrib.admin import helpers
 from django.contrib import admin
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
+from django.utils.encoding import force_unicode
+from django.utils.translation import ugettext as _
+from django.template.response import TemplateResponse
 from settings import STATIC_URL
 import csv
 from filters import AdditiveSubtractiveFilter, TimeSinceFilter
@@ -60,7 +64,7 @@ class MedlemAdmin(VersionAdmin):
             )
         }),
     )
-    actions = ['csv_member_list','pdf_member_list',]
+    actions = ['csv_member_list', 'pdf_member_list',]
 
     class Media:
         css = {
@@ -82,41 +86,71 @@ class MedlemAdmin(VersionAdmin):
         return response
 
     def pdf_member_list(self, request, queryset):
-        from cStringIO import StringIO
-        from reportlab.pdfgen import canvas
-        from reportlab.lib.units import cm #, mm
+        # User has already written some text, make PDF
+        if request.POST.get('post'):
+            from cStringIO import StringIO
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.units import cm #, mm
 
-        response = HttpResponse(mimetype="application/pdf")
-        response['Content-Disposition'] = 'filename=noko.pdf'
+            response = HttpResponse(mimetype="application/pdf")
+            response['Content-Disposition'] = 'filename=noko.pdf'
 
-        buf = StringIO()
+            buf = StringIO()
 
-        # Create the PDF object, using the StringIO object as its "file."
-        pdf = canvas.Canvas(buf)
+            # Create the PDF object, using the StringIO object as its "file."
+            pdf = canvas.Canvas(buf)
 
-        # Draw things on the PDF. Here's where the PDF generation happens.
-        # See the ReportLab documentation for the full list of functionality.
-        for m in queryset:
-            pdf.setFontSize(10)
+            # Draw things on the PDF. Here's where the PDF generation happens.
+            # See the ReportLab documentation for the full list of functionality.
+            for m in queryset:
+                pdf.setFontSize(16)
+                pdf.drawString(1.5*cm, 24*cm, "%s" % request.POST.get('title'))
 
-            tekst = pdf.beginText(1.5*cm, 6*cm)
-            tekst.textLine("%s %s" % (m.fornamn, m.etternamn) )
-            tekst.textLine("%s" % (m.postadr,) )
-            tekst.textLine("%s" % (m.postnr,) )
+                pdf.setFontSize(10)
+                infotekst = pdf.beginText(1.5*cm, 22*cm)
+                infotekst.textOut("%s" % request.POST.get('text'))
+                pdf.drawText(infotekst)
 
-            pdf.drawText(tekst)
+                pdf.setFontSize(10)
+                tekst = pdf.beginText(1.5*cm, 6*cm)
+                tekst.textLine("%s %s" % (m.fornamn, m.etternamn) )
+                tekst.textLine("%s" % (m.postadr,) )
+                tekst.textLine("%s" % (m.postnr,) )
+                pdf.drawText(tekst)
 
-            pdf.showPage()
+                pdf.showPage()
+                print "%s %s" % (m.fornamn, request.POST.get('title'))
 
-        # Close the PDF object cleanly.
-        pdf.save()
+            # Close the PDF object cleanly.
+            pdf.save()
 
-        # Get the value of the StringIO buffer and write it to the response.
-        pdf = buf.getvalue()
-        buf.close()
-        response.write(pdf)
+            # Get the value of the StringIO buffer and write it to the response.
+            pdf = buf.getvalue()
+            buf.close()
+            response.write(pdf)
+            print "Returning response!!"
+            return response
 
-        return response
+        opts = self.model._meta
+        app_label = opts.app_label
+        if len(queryset) == 1:
+            objects_name = force_unicode(opts.verbose_name)
+        else:
+            objects_name = force_unicode(opts.verbose_name_plural)
+
+        title = _("PDF-info")
+
+        context = {
+            "title": title,
+            "objects_name": objects_name,
+            'queryset': queryset,
+            "opts": opts,
+            "app_label": app_label,
+            'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
+        }
+
+        return TemplateResponse(request, 'admin/pdf_info.html', context,
+                current_app=self.admin_site.name)
 
 
 class MedlemInline(admin.TabularInline):
