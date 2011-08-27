@@ -32,6 +32,9 @@ class TimeSinceFilter(DateFieldListFilter):
                 self.lookup_kwarg_past_time: str(last_year),
                 self.lookup_kwarg_lt_time: str(this_year),
             }),
+            (_(smart_unicode('I fjor eller eldre')), {
+                self.lookup_kwarg_lt_time: str(this_year),
+            }),
             (_('Aldri'), {
                 self.lookup_kwarg_isnull: str(True),
             }),
