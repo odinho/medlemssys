@@ -13,19 +13,24 @@ class TimeSinceFilter(DateFieldListFilter):
                 model, model_admin, field_path)
 
 
-        past_year = date(date.today().year, 1, 1)
-        past_two_years = date(date.today().year - 1, 1, 1)
+        this_year = date(date.today().year, 1, 1)
+        last_year = date(date.today().year - 1, 1, 1)
 
         self.lookup_kwarg_past_time = '%s__gte' % self.field_path
+        self.lookup_kwarg_lt_time = '%s__lt' % self.field_path
         self.lookup_kwarg_isnull = '%s__isnull' % self.field_path
 
         self.links = (
             (_('All'), {}),
             (_(smart_unicode('Innan året')), {
-                self.lookup_kwarg_past_time: str(past_year),
+                self.lookup_kwarg_past_time: str(this_year),
             }),
             (_(smart_unicode('Innan fjoråret')), {
-                self.lookup_kwarg_past_time: str(past_two_years),
+                self.lookup_kwarg_past_time: str(last_year),
+            }),
+            (_(smart_unicode('I fjor')), {
+                self.lookup_kwarg_past_time: str(last_year),
+                self.lookup_kwarg_lt_time: str(this_year),
             }),
             (_('Aldri'), {
                 self.lookup_kwarg_isnull: str(True),
@@ -59,7 +64,6 @@ class AdditiveSubtractiveFilter(RelatedFieldListFilter):
         return self.using_params
 
     def queryset(self, request, queryset):
-        print self.params
         for key, value in self.params.items():
             if value == 'e':
                 queryset = queryset.exclude(val__id=key.replace(self.paramstart, ''))
