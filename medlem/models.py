@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 from datetime import date, datetime
-from django.db import models
+from django.db import models, transaction
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 #from emencia.django.newsletter.mailer import mailing_started
@@ -196,6 +196,16 @@ class Medlem(models.Model):
             self.val.add(Val.objects.get_or_create(tittel=tittel)[0])
         else:
             self.val.remove(Val.objects.get(tittel=tittel))
+
+@transaction.commit_on_success
+def update_denormalized_fields():
+    for date in Giro.objects.values('oppretta').distinct():
+        Medlem.objects.filter(giroar__innbetalt__gt=date['oppretta']) \
+                .exclude(giroar__oppretta__gt=date['oppretta']) \
+                .update(_siste_medlemspengar=date['oppretta'])
+
+    Medlem.objects.filter(giroar__isnull=True).update(_siste_medlemspengar=None)
+
 
 class MedlemForm(ModelForm):
     class Meta:
