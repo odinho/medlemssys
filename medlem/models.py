@@ -152,7 +152,7 @@ class Medlem(models.Model):
     er_teljande.boolean = True
 
     def er_gamal(self):
-        return self.fodt < (date.today().year - 20)
+        return self.fodt < (date.today().year - 23)
     er_teljande.short_description = _("Gamal")
     er_teljande.boolean = True
 
