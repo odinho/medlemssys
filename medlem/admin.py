@@ -158,7 +158,7 @@ class MedlemInline(admin.TabularInline):
     extra = 3
     fields = ['fornamn', 'etternamn', 'postadr', 'postnr', 'epost', 'mobnr', 'fodt']
 
-class LokallagAdmin(admin.ModelAdmin):
+class LokallagAdmin(VersionAdmin):
     inlines = [MedlemInline,]
 
 
