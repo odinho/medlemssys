@@ -6,6 +6,7 @@ admin.autodiscover()
 
 urlpatterns = patterns('',
     (r'^medlem/add', 'medlemssys.medlem.views.create_medlem'),
+    (r'^medlem/ringjelister', 'medlemssys.medlem.views.ringjelister'),
     (r'^takk', 'django.views.generic.simple.direct_to_template',
         {'template': 'takk.html', }),
     (r'^import/', 'medlemssys.innhenting.views.fraa_nmu_csv'),

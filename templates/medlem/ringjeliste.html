@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style type=text/css>
+    body { font: normal 0.8em sans-serif;}
+    thead { background-color: #333; color: #eee; }
+    th, td { padding: 4px; }
+    tr:nth-child(even) { background-color: #eee; }
+    table { width: 100%; }
+</style>
+{% for llag in lokallag %}
+  <h1>{{ llag }} {{ llag.andsvar }}</h1>
+    <table>
+        <thead><tr>
+                <th>ID</th>
+                <th>Namn</th>
+                <th>Født</th>
+                <th>mob/tlf</th>
+                <th>Postadr</th>
+                <th>Epost</th>
+                <th>bet</th>
+            </tr>
+        </thead>
+      <tbody>
+  {% for m in llag.medlem_set.all %}
+          <tr>
+            <td>{{ m.pk }}</td>
+            <td>{{ m }}</td>
+            <td>{{ m.fodt }}</td>
+            <td>{{ m.mobnr }}/{{ m.heimenr }}</td>
+            <td>{{ m.postadr }}</td>
+            <td>{{ m.epost }}</td>
+            <td>{{ m.har_betalt|yesno:"b,ub,?" }}</td>
+          </tr>
+  {% endfor %}
+        </tbody>
+      </table>
+{% endfor %}
+
+{% endblock %}

@@ -2,7 +2,7 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
 
-from models import Medlem, InnmeldingMedlemForm
+from models import Medlem, InnmeldingMedlemForm, Lokallag
 
 def create_medlem(request):
     if request.method == 'POST':
@@ -17,3 +17,10 @@ def create_medlem(request):
         'form': form,
     })
 
+def ringjelister(request):
+    lokallag = Lokallag.objects.all().order_by('andsvar')
+    Medlem.interessante.filter()
+
+    return render_to_response('medlem/ringjeliste.html', {
+        'lokallag': lokallag,
+    })
