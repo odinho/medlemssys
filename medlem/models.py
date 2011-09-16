@@ -24,6 +24,7 @@ class Lokallag(models.Model):
     fylkeslag = models.CharField(_("fylkeslag"), max_length=255)
     distrikt = models.CharField(_("distrikt"), max_length=255)
     andsvar = models.CharField(_("andsvar"), max_length=255)
+    lokalsats = models.IntegerField(_("lokalsats"), default=0)
 
     class Meta:
         verbose_name_plural = "lokallag"
