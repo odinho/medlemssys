@@ -80,6 +80,29 @@ INNMELDINGSTYPAR = (
     ("A", "Anna"),
 )
 
+class IkkjeUtmeld(models.Manager):
+    def get_query_set(self):
+        qs = super(IkkjeUtmeld, self).get_query_set()
+        return qs.filter(
+            utmeldt_dato__isnull=True
+        )
+
+class TeljandeMedlem(IkkjeUtmeld):
+    def get_query_set(self):
+        qs = super(TeljandeMedlem, self).get_query_set()
+        return qs.filter(
+            giroar__oppretta__gte=date(date.today().year, 1, 1),
+            giroar__innbetalt__isnull=False
+        )
+
+class InteressanteMedlem(IkkjeUtmeld):
+    def get_query_set(self):
+        qs = super(InteressanteMedlem, self).get_query_set()
+        return qs.filter(
+            giroar__oppretta__gte=date(date.today().year-2, 1, 1),
+            giroar__innbetalt__isnull=False
+                ).distinct()
+
 class Medlem(models.Model):
     fornamn = models.CharField(_("fornamn"), max_length=255)
     mellomnamn = models.CharField(_("mellomnamn"), max_length=255,
@@ -130,6 +153,11 @@ class Medlem(models.Model):
     tilskiping = models.ManyToManyField(Tilskiping, blank=True, null=True)
     lokallagsrolle = models.ManyToManyField(Lokallag,
         through='Rolle', related_name="rollemedlem", blank=True, null=True)
+
+    # Managers
+    interessante = InteressanteMedlem()
+    objects = IkkjeUtmeld()
+    teljande = TeljandeMedlem()
 
     class Meta:
         verbose_name_plural = "medlem"
