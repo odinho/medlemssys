@@ -8,8 +8,14 @@
     tr:nth-child(even) { background-color: #eee; }
     table { width: 100%; }
 </style>
+<style type=text/css media=screen>
+    h1 { border-bottom: 1px solid #000; margin-top: 3em; }
+</style>
 {% for llag in lokallag %}
-  <h1>{{ llag }} {{ llag.andsvar }}</h1>
+{% ifchanged llag.andsvar %}
+{% if not forloop.first %}</section>{%endif%}
+<section><h1>{{ llag.andsvar }}</h1>{% endifchanged %}
+<h2>{{ llag }}</h2>
     <table>
         <thead><tr>
                 <th>ID</th>
