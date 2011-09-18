@@ -33,7 +33,7 @@
             <td>{{ m.pk }}</td>
             <td>{{ m }}</td>
             <td>{{ m.fodt }}</td>
-            <td>{{ m.mobnr }}/{{ m.heimenr }}</td>
+	    <td>{{ m.mobnr }}{% if m.heimenr %}, {{ m.heimenr }}{% endif %}</td>
             <td>{{ m.postadr }}</td>
             <td>{{ m.epost }}</td>
             <td>{{ m.har_betalt|yesno:"b,ub,?" }}</td>
