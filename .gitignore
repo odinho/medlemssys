@@ -6,3 +6,6 @@
 *.sqlite
 *.swo
 *.log
+
+*.json
+*.csv
