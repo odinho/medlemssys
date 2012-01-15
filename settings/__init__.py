@@ -2,10 +2,10 @@
 LOGGING_CONFIG_FILE = None
 
 # load base configuration for whole app
-from settings.base import *
+from medlemssys.settings.base import *
 
 # load some dev env configuration options
-from settings.config import *
+from medlemssys.settings.config import *
 
 # try to import some settings from /etc/
 import sys
@@ -18,7 +18,7 @@ del sys.path[0]
 
 # load any settings for local development
 try:
-    from settings.local import *
+    from medlemssys.settings.local import *
 except ImportError:
     pass
 

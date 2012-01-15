@@ -7,7 +7,7 @@ from django.forms.models import model_to_dict
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext as _
 from django.template.response import TemplateResponse
-from settings import STATIC_URL
+from medlemssys.settings import STATIC_URL
 import csv
 from filters import AdditiveSubtractiveFilter, TimeSinceFilter
 
