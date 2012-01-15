@@ -1,0 +1,13 @@
+
+git clone git@skog.s0.no:medlemssys
+
+virtualenv env
+. env/bin/activate
+
+cd medlemssys
+pip install -r pip.req
+./manage.py syncdb
+./manage.py collectstatic
+./manage.py runserver
+
+# Test teh system :-)
