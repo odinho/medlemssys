@@ -54,6 +54,10 @@ class AdditiveSubtractiveFilter(RelatedFieldListFilter):
 
         self.using_params = []
         self.paramstart = "adv_" + field.get_attname()
+        # Setting this here, earlier it was done from within Django
+        # it's now into several different variables
+        if not hasattr(self, "params"):
+            self.params = params
 
     def has_output(self):
         return len(self.lookup_choices) > 0
