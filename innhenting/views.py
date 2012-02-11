@@ -7,6 +7,7 @@ from dateutil.parser import parse
 import datetime
 #from django.shortcuts import render_to_response
 
+from medlemssys.settings import PROJECT_ROOT
 from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping
 import csv
 
@@ -58,7 +59,7 @@ def fraa_nmu_csv(request):
 
 @transaction.commit_on_success
 def import_medlem(lagsliste):
-    liste = csv.reader(open("nmu-medl.csv"))
+    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-medl.csv"))
     mapping = nmu_mapping(headers=liste.next())
     nummer = 0
 
@@ -118,7 +119,7 @@ def nmu_mapping(headers):
 # model: namn, fylkeslag, distrikt, andsvar
 @transaction.commit_on_success
 def import_lag():
-    liste = csv.reader(open("nmu-lag.csv"))
+    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-lag.csv"))
     liste.next()
     alle_lag = {}
 
@@ -137,7 +138,7 @@ def import_lag():
 # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
 @transaction.commit_on_success
 def import_bet():
-    liste = csv.reader(open("nmu-bet.csv"))
+    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-bet.csv"))
     liste.next()
 
     for rad in liste:
