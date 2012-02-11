@@ -43,14 +43,18 @@ VAL = (
 )
 
 def fraa_nmu_csv(request):
+    def do_work():
+        yield "Startar import\n"
+        lag = import_lag()
+        yield "Importert lag\n"
+        import_medlem(lag)
+        yield "Importert medlem\n"
+        import_bet()
+        yield "Importert betalingar\n"
+        fiks_tilskipingar()
+        yield "Fiksa tilskipingar\n"
 
-    lag = import_lag()
-    import_medlem(lag)
-    print "Ferdig m medlem"
-    import_bet()
-    fiks_tilskipingar()
-
-    return HttpResponse('fina!')
+    return HttpResponse(do_work())
 
 @transaction.commit_on_success
 def import_medlem(lagsliste):
