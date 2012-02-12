@@ -24,7 +24,6 @@ class RolleInline(admin.TabularInline):
     classes = ['left']
 
 class MedlemAdmin(VersionAdmin):
-    model_admin_manager = Medlem.objects
     list_display = ('id', '__unicode__', 'lokallag', 'er_innmeldt',
                     'har_betalt', 'fodt_farga', 'status_html')
     list_display_links = ('id', '__unicode__')
@@ -71,6 +70,16 @@ class MedlemAdmin(VersionAdmin):
             "all": (STATIC_URL + "medlem.css",
                 STATIC_URL + "css/forms.css",)
         }
+
+    def queryset(self, request):
+        # use our manager, rather than the default one
+        qs = self.model.objects.get_query_set()
+
+        # we need this from the superclass method
+        ordering = self.ordering or () # otherwise we might try to *None, which is bad ;)
+        if ordering:
+            qs = qs.order_by(*ordering)
+        return qs
 
     def csv_member_list(self, request, queryset):
         liste = ""
@@ -160,6 +169,7 @@ class MedlemInline(admin.TabularInline):
 
 class LokallagAdmin(VersionAdmin):
     inlines = [MedlemInline,]
+    prepopulated_fields = {"slug": ("namn",)}
 
 
 class TilskipInline(admin.TabularInline):
