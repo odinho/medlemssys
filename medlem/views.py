@@ -1,6 +1,7 @@
 # vim: ts=4 sw=4 expandtab ai
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
+from django.contrib.auth.decorators import login_required
 
 from models import Medlem, InnmeldingMedlemForm, Lokallag
 
@@ -17,6 +18,7 @@ def create_medlem(request):
         'form': form,
     })
 
+@login_required
 def ringjelister(request):
     lokallag = Lokallag.objects.all().order_by('andsvar')
     Medlem.interessante.filter()
