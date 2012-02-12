@@ -4,11 +4,30 @@
   <head>
     <title>nynorsk.no</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="shortcut icon" href="/static/nynorsk-16.png">
+<!--    <link rel="shortcut icon" href="/static/nynorsk-16.png"> -->
     {% block extrahead %}{% endblock %}
 
     <style type="text/css" media="all">
 @import "/static/style.css";
+
+    body { font: normal 0.8em sans-serif;}
+    #kontainer { position: relative; }
+    thead { background-color: #333; color: #eee; }
+    th, td { padding: 4px; }
+    tr:nth-child(even) { background-color: #eee; }
+    table { width: 100%; }
+
+    .ikkje-teljande { color: #900; }
+    .ikkje-teljande:after { content: ' ×'; }
+
+    #site-title { margin: 0; padding: 0; }
+    #site-title a { color: #544; font-size: 15pt; text-decoration: none; }
+    nav ul { padding:0; margin: 0 0 0 200px; position: absolute; top: 10px; }
+    nav li { display: inline-block; margin:0; width: 150px; text-align: center; }
+    nav a { text-decoration: none; }
+
+    footer { color: #999; }
+    footer a { color: #999; }
     </style>
     <style type="text/css" media="print">
 #head { display: none; }
@@ -17,6 +36,7 @@ nav { display: none; }
 #footer { display: none; }
     </style>
 
+    <script type="text/javascript" src="/static/js/sorttable.js"></script>
     <script type="text/javascript">
     </script>
 
@@ -26,7 +46,7 @@ nav { display: none; }
 <div id="kontainer">
 
 <div id="hovud">
-  <h1><a href="/">Medlemssys</a></h1>
+  <h1 id=site-title><a href="/">Medlemssys</a></h1>
 </div>
 
 <nav>
@@ -45,7 +65,7 @@ nav { display: none; }
 </aside>
 
 <footer>
-	<p><small>Opphavsrett &copy; 1997-2010 nynorsk.no. Netbunad av <a href="http://velmont.no">Odin Hørthe</a></small></p>
+	<p><small>System av <a href="http://velmont.no">Odin Hørthe</a></small></p>
 </footer>
 
 </div>
