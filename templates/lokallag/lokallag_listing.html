@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Lokallag i NMU</h1>
+
+<ul>
+  {% for l in lokallag %}
+  <li><a href={{ l.slug }}/>{{ l }}</a>
+  {% endfor %}
+</ul>
+
+{% endblock content %}
