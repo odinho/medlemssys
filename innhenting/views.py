@@ -46,25 +46,29 @@ VAL = (
 def fraa_nmu_csv(request):
     def do_work():
         yield "Startar import\n"
+
         lag = import_lag()
         yield "Importert lag\n"
-        import_medlem(lag)
+
+        for i in import_medlem(lag):
+            yield "Medlem: %s\n" % unicode(i)
         yield "Importert medlem\n"
-        import_bet()
+
+        for i in import_bet():
+            yield "Betaling: %s\n" % unicode(i)
         yield "Importert betalingar\n"
+
         fiks_tilskipingar()
         yield "Fiksa tilskipingar\n"
 
-    return HttpResponse(do_work())
+    return HttpResponse(do_work(), content_type="text/plain")
 
 @transaction.commit_on_success
 def import_medlem(lagsliste):
     liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-medl.csv"))
     mapping = nmu_mapping(headers=liste.next())
-    nummer = 0
 
-    for rad in liste:
-        nummer += 1
+    for num, rad in enumerate(liste):
         tmp = {}
         for typ in nmu_csv_map.values():
             tmp[typ] = rad[mapping[typ]].decode("utf-8")
@@ -87,6 +91,14 @@ def import_medlem(lagsliste):
         except ValueError:
             del tmp['postnr']
 
+        if len(tmp.get('status', '')) > 1:
+            #print "%s(%s) status too long: %s" % (tmp['id'], tmp['fornamn'], tmp['status'])
+            tmp['status'] = tmp['status'][0]
+
+        if len(tmp.get('kjon', '')) > 1:
+            #print "%s(%s) kjon too long: %s" % (tmp['id'], tmp['fornamn'], tmp['kjon'])
+            tmp['kjon'] = tmp['kjon'][0]
+
         tmp['innmeldt_dato'] = parse(tmp['innmeldt_dato'],
                 default=datetime.datetime(1980, 1, 1, 0, 0))
         if len(tmp['utmeldt_dato']) > 2:
@@ -94,8 +106,8 @@ def import_medlem(lagsliste):
         else:
             del tmp['utmeldt_dato']
 
-#        print "%s(%s) utmdato:%s, org:%s" % (tmp['id'], tmp['fornamn'], tmp.get('utmeldt_dato',
-#            'g0ne'), p)
+        #print "%s(%s) utmdato:%s stat:%s" % (tmp['id'], tmp['fornamn'], tmp.get('utmeldt_dato',
+        #    'g0ne'), tmp.get('status', 'g0ne'))
         m = Medlem(**tmp)
         m.save()
 
@@ -103,8 +115,9 @@ def import_medlem(lagsliste):
             if int(rad[v[0]]) == int(v[1]):
                 m.set_val(v[2])
 
-        if nummer%200 == 0:
-            transaction.commit()
+        if num%200 == 0 and num != 0:
+            #transaction.commit()
+            yield unicode(num)
 
 
 def nmu_mapping(headers):
@@ -141,7 +154,11 @@ def import_bet():
     liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-bet.csv"))
     liste.next()
 
-    for rad in liste:
+    for num, rad in enumerate(liste):
+        if num % 1000 == 0 and num != 0:
+            transaction.commit()
+            yield unicode(num)
+
         if(Giro.objects.filter(pk=rad[7]).exists()):
             continue
 
@@ -193,7 +210,6 @@ def fiks_tilskipingar():
 
     for tils in tilskipingar:
         medlemar = Medlem.objects.filter( \
-                Q(merknad__icontains=tils.slug) \
-                | Q(merknad__icontains=tils.namn))
+                Q(merknad__icontains=tils.slug))
         tils.medlem_set.add(*medlemar)
         tils.save()
