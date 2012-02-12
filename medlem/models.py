@@ -6,6 +6,8 @@ from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 #from emencia.django.newsletter.mailer import mailing_started
 
+from django.contrib.auth.models import User
+from django.template.defaultfilters import slugify
 from medlemssys import mod10
 
 
@@ -21,6 +23,7 @@ class Val(models.Model):
 
 class Lokallag(models.Model):
     namn = models.CharField(_("namn"), max_length=255, unique=True)
+    slug = models.SlugField(_("nettnamn"), max_length=255, unique=True, blank=True)
     fylkeslag = models.CharField(_("fylkeslag"), max_length=255)
     distrikt = models.CharField(_("distrikt"), max_length=255)
     andsvar = models.CharField(_("andsvar"), max_length=255)
@@ -28,6 +31,11 @@ class Lokallag(models.Model):
 
     class Meta:
         verbose_name_plural = "lokallag"
+
+    def save(self, *args, **kwargs):
+        if not self.slug or self.slug == "":
+            self.slug = slugify(self.namn)
+        super(Lokallag, self).save(*args, **kwargs)
 
     def __unicode__(self):
         return self.namn
@@ -154,6 +162,9 @@ class Medlem(models.Model):
     tilskiping = models.ManyToManyField(Tilskiping, blank=True, null=True)
     lokallagsrolle = models.ManyToManyField(Lokallag,
         through='Rolle', related_name="rollemedlem", blank=True, null=True)
+
+    user = models.OneToOneField(User, verbose_name=_("innloggingsbrukar"),
+                                blank=True, null=True)
 
     # Managers
     interessante = InteressanteMedlem()
