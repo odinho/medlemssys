@@ -19,6 +19,8 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+AUTH_PROFILE_MODULE='medlem.Medlem'
+
 DATABASES = {
     'default': {
        'ENGINE': 'django.db.backends.sqlite3',

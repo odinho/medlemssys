@@ -5,6 +5,7 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    (r'^accounts/login/$', 'django.contrib.auth.views.login', { 'template_name': 'login.html'}),
     (r'^medlem/add', 'medlemssys.medlem.views.create_medlem'),
     (r'^medlem/ringjelister', 'medlemssys.medlem.views.ringjelister'),
     (r'^lokallag/$',
