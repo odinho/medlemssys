@@ -45,27 +45,22 @@ VAL = (
 
 def fraa_nmu_csv(request):
     def do_work():
-        yield "Startar import\n"
+        for i in import_lag():
+            yield "Lag: %s\n" % unicode(i)
 
-        lag = import_lag()
-        yield "Importert lag\n"
-
-        for i in import_medlem(lag):
+        for i in import_medlem():
             yield "Medlem: %s\n" % unicode(i)
-        yield "Importert medlem\n"
 
         for i in import_bet():
             yield "Betaling: %s\n" % unicode(i)
-        yield "Importert betalingar\n"
 
         fiks_tilskipingar()
-        yield "Fiksa tilskipingar\n"
 
-    return HttpResponse(do_work(), content_type="text/plain")
+    return HttpResponse(do_work(), content_type="text/plain; charset=utf-8")
 
 @transaction.commit_on_success
-def import_medlem(lagsliste):
-    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-medl.csv"))
+def import_medlem():
+    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-medl.csv.new"))
     mapping = nmu_mapping(headers=liste.next())
 
     for num, rad in enumerate(liste):
@@ -73,12 +68,11 @@ def import_medlem(lagsliste):
         for typ in nmu_csv_map.values():
             tmp[typ] = rad[mapping[typ]].decode("utf-8")
 
-        if tmp['lokallag'].isdigit():
-            try:
-               tmp['lokallag'] = lagsliste[tmp['lokallag']]
-            except KeyError:
-                del tmp['lokallag']
-        else:
+        try:
+            tmp['lokallag_id'] = int(tmp['lokallag'])
+        except KeyError, ValueError:
+            pass
+        finally:
             del tmp['lokallag']
 
         try:
@@ -115,8 +109,12 @@ def import_medlem(lagsliste):
             if int(rad[v[0]]) == int(v[1]):
                 m.set_val(v[2])
 
-        if num%200 == 0 and num != 0:
-            #transaction.commit()
+        # Print first 200 names
+        if num < 199:
+            yield u"{0:>3}. {1}".format(unicode(num), unicode(m))
+
+        elif num%200 == 0 and num != 0:
+            transaction.commit()
             yield unicode(num)
 
 
@@ -132,7 +130,7 @@ def nmu_mapping(headers):
 # model: namn, fylkeslag, distrikt, andsvar
 @transaction.commit_on_success
 def import_lag():
-    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-lag.csv"))
+    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-lag.csv.new"))
     liste.next()
     alle_lag = {}
 
@@ -151,7 +149,7 @@ def import_lag():
 # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
 @transaction.commit_on_success
 def import_bet():
-    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-bet.csv"))
+    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-bet.csv.new"))
     liste.next()
 
     for num, rad in enumerate(liste):
