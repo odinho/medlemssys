@@ -5,7 +5,7 @@ else
 	namn=nmu.mdb
 fi
 
-rsync -e "ssh -i $HOME/.ssh/fosse" -avzP aasen.nynorsk.no:"/srv/vinje/0\ MEDLEM/nmu.mdb" "$namn"
+rsync -e "ssh -i $HOME/.ssh/fosse" -aq aasen.nynorsk.no:"/srv/vinje/0\ MEDLEM/nmu.mdb" "$namn"
 
 mv nmu-medl.csv nmu-medl.csv.old
 mv nmu-lag.csv  nmu-lag.csv.old
