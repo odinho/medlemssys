@@ -83,7 +83,7 @@ def import_medlem():
             del tmp['fodt']
 
         try:
-            tmp['postnr'] = int(tmp['postnr'])
+            tmp['postnr'] = format(int(tmp['postnr']), "04d")
         except ValueError:
             del tmp['postnr']
 
