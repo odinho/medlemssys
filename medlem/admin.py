@@ -36,7 +36,7 @@ class MedlemAdmin(VersionAdmin):
             'fodt',
             'innmeldt_dato',
         )
-    readonly_fields = ('_siste_medlemspengar',)
+    readonly_fields = ('_siste_medlemspengar', 'oppretta', 'oppdatert')
     save_on_top = True
     inlines = [RolleInline, GiroInline,]
     search_fields = ('fornamn', 'mellomnamn', 'etternamn', '=id',)
@@ -55,11 +55,11 @@ class MedlemAdmin(VersionAdmin):
             'classes': ('left', 'collapse'),
             'fields': (
                 ('utmeldt_dato', '_siste_medlemspengar', 'user'),
-                'val',
-                ('nemnd', 'tilskiping'),
-                ('innmeldingstype', 'innmeldingsdetalj'),
                 ('heimenr', 'gjer'),
+                ('innmeldingstype', 'innmeldingsdetalj'),
                 'merknad',
+                ('val', 'nemnd', 'tilskiping'),
+                ('oppretta', 'oppdatert'),
             )
         }),
     )

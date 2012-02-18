@@ -97,6 +97,9 @@ def import_medlem():
 
         tmp['innmeldt_dato'] = parse(tmp['innmeldt_dato'],
                 default=datetime.datetime(1980, 1, 1, 0, 0))
+        tmp['oppretta'] = tmp['innmeldt_dato']
+        tmp['oppdatert'] = datetime.datetime.now()
+
         if len(tmp['utmeldt_dato']) > 2:
             tmp['utmeldt_dato'] = parse(tmp['utmeldt_dato'], default=None)
         else:

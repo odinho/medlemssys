@@ -153,7 +153,7 @@ class Medlem(models.Model):
     innmeldingstype = models.CharField(_("innmtype"), max_length=1,
             choices=INNMELDINGSTYPAR, blank=True, null=True)
     innmeldingsdetalj = models.CharField(_("detalj om innmelding"), max_length=255,
-        blank=True, null=True, help_text=_("Skriv inn vervemedlem i hakeparantes ([1234])"))
+        blank=True, null=True, help_text=_("Skriv inn vervemedlem i hakeparantesar ([1234])"))
 
     # Tilkopla felt
     lokallag = models.ForeignKey(Lokallag, blank=True, null=True)
@@ -165,6 +165,8 @@ class Medlem(models.Model):
 
     user = models.OneToOneField(User, verbose_name=_("innloggingsbrukar"),
                                 blank=True, null=True)
+    oppretta = models.DateTimeField(_("oppretta"), auto_now_add=True)
+    oppdatert = models.DateTimeField(_("oppdatert"), auto_now=True)
 
     # Managers
     interessante = InteressanteMedlem()
