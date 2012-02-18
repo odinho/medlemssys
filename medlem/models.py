@@ -121,8 +121,8 @@ class Medlem(models.Model):
             default=date.today().year - 17, blank=True, null=True)
 
     # Kontakt
-    postnr = models.IntegerField(_("postnr"), default=5000)
-    epost = models.CharField(_("epost") ,max_length=255,
+    postnr = models.CharField(_("postnr"), max_length=4, default="5000")
+    epost = models.CharField(_("epost"), max_length=255,
             blank=True, null=True)
     postadr = models.CharField(_("postadresse"), max_length=255,
             blank=True, null=True)
