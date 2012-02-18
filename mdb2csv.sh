@@ -1,27 +1,41 @@
 #!/bin/bash
+
 if [[ $# > 0 ]]; then
 	namn=$1
 else
 	namn=nmu.mdb
 fi
 
-rsync -e "ssh -i $HOME/.ssh/fosse" -aq aasen.nynorsk.no:"/srv/vinje/0\ MEDLEM/nmu.mdb" "$namn"
 
-mv nmu-medl.csv nmu-medl.csv.old
-mv nmu-lag.csv  nmu-lag.csv.old
-mv nmu-bet.csv  nmu-bet.csv.old
+####################### FUNCTIONS ##########################
 
-mdb-export $namn medl > nmu-medl.csv
-mdb-export $namn lag  > nmu-lag.csv
-mdb-export $namn bet  > nmu-bet.csv
-
-makediff() {
-	head -n 1 $1 > $1.new
-	diff $1.old $1 | egrep "^> " | sed 's/^> //' >> $1.new
+import()
+{
+	rsync -e "ssh -i $HOME/.ssh/fosse" -aq aasen.nynorsk.no:"/srv/vinje/0\ MEDLEM/nmu.mdb" "$namn"
 }
 
-makediff nmu-medl.csv
-makediff nmu-lag.csv
-makediff nmu-bet.csv
+make_diff()
+{
+	# Roter og ta inn nyimportert fil
+	#mv "nmu-$1.csv" "nmu-$1.csv.old"
+	mdb-export "$namn" "$1" > "nmu-$1.csv"
+
+	# fix rn to n
+	perl -p -i -e 's/\r\n/\\n/' "nmu-$1.csv"
+
+	head -n 1 "nmu-$1.csv" > "nmu-$1.csv.new"
+	diff "nmu-$1.csv.old" "nmu-$1.csv" |
+		egrep "^> " |
+		sed 's/^> //' >> "nmu-$1.csv.new"
+}
+
+############################################################
+
+
+#import
+
+make_diff medl
+make_diff lag
+make_diff bet
 
 GET http://medlem.nynorsk.no/import/

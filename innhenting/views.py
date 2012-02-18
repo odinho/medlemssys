@@ -66,7 +66,9 @@ def import_medlem():
     for num, rad in enumerate(liste):
         tmp = {}
         for typ in nmu_csv_map.values():
-            tmp[typ] = rad[mapping[typ]].decode("utf-8")
+            tmp[typ] = rad[mapping[typ]] \
+                        .decode("utf-8") \
+                        .replace(r"\n", "\n")
 
         try:
             tmp['lokallag_id'] = int(tmp['lokallag'])
