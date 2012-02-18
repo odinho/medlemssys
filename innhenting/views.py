@@ -70,7 +70,7 @@ def import_medlem():
 
         try:
             tmp['lokallag_id'] = int(tmp['lokallag'])
-        except KeyError, ValueError:
+        except (KeyError, ValueError):
             pass
         finally:
             del tmp['lokallag']
