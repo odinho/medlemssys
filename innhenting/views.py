@@ -9,6 +9,7 @@ import datetime
 
 from medlemssys.settings import PROJECT_ROOT
 from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping
+from medlemssys.medlem.models import update_denormalized_fields
 import csv
 
 
@@ -55,6 +56,8 @@ def fraa_nmu_csv(request):
             yield "Betaling: %s\n" % unicode(i)
 
         fiks_tilskipingar()
+
+        update_denormalized_fields()
 
     return HttpResponse(do_work(), content_type="text/plain; charset=utf-8")
 
