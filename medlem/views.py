@@ -21,7 +21,7 @@ def create_medlem(request):
 @login_required
 def ringjelister(request):
     lokallag = Lokallag.objects.all().order_by('andsvar')
-    Medlem.interessante.filter()
+    Medlem.objects.filter()
 
     return render_to_response('medlem/ringjeliste.html', {
         'lokallag': lokallag,

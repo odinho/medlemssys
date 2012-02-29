@@ -89,28 +89,45 @@ INNMELDINGSTYPAR = (
     ("A", "Anna"),
 )
 
-class IkkjeUtmeld(models.Manager):
-    def get_query_set(self):
-        qs = super(IkkjeUtmeld, self).get_query_set()
-        return qs.filter(
+class MedlemManager(models.Manager):
+    def alle(self):
+        if getattr(self, 'core_filters', None):
+            qs = super(MedlemManager, self).get_query_set().filter(**self.core_filters)
+        else:
+            qs = super(MedlemManager, self).get_query_set()
+
+        return qs
+
+    def ikkje_utmelde(self):
+        return self.alle().filter(
             utmeldt_dato__isnull=True
         )
 
-class TeljandeMedlem(IkkjeUtmeld):
-    def get_query_set(self):
-        qs = super(TeljandeMedlem, self).get_query_set()
-        return qs.filter(
-            giroar__oppretta__gte=date(date.today().year, 1, 1),
-            giroar__innbetalt__isnull=False
-        )
+    def betalande(self, year=date.today().year):
+        return self.ikkje_utmelde() \
+            .filter(
+                giroar__oppretta__gte=date(year, 1, 1),
+                giroar__oppretta__lt=date(year+1, 1, 1),
+                giroar__innbetalt__isnull=False
+            ).distinct()
 
-class InteressanteMedlem(IkkjeUtmeld):
+    def teljande(self, year=date.today().year):
+        return self.betalande(year) \
+            .filter(
+                fodt__gte = year - 25
+            )
+
+    def interessante(self):
+        """Viser berre 'interessante' medlem, dei som har betalt i år eller i fjor."""
+        return self.ikkje_utmelde() \
+            .filter(
+                giroar__oppretta__gte=date(date.today().year-1, 1, 1),
+                giroar__innbetalt__isnull=False
+            ).distinct()
+
     def get_query_set(self):
-        qs = super(InteressanteMedlem, self).get_query_set()
-        return qs.filter(
-            giroar__oppretta__gte=date(date.today().year-2, 1, 1),
-            giroar__innbetalt__isnull=False
-                ).distinct()
+        return self.interessante()
+
 
 class Medlem(models.Model):
     fornamn = models.CharField(_("fornamn"), max_length=255)
@@ -169,9 +186,7 @@ class Medlem(models.Model):
     oppdatert = models.DateTimeField(_("oppdatert"), auto_now=True)
 
     # Managers
-    interessante = InteressanteMedlem()
-    objects = IkkjeUtmeld()
-    teljande = TeljandeMedlem()
+    objects = MedlemManager()
 
     class Meta:
         verbose_name_plural = "medlem"
