@@ -29,6 +29,8 @@ class Lokallag(models.Model):
     andsvar = models.CharField(_("andsvar"), max_length=255)
     lokalsats = models.IntegerField(_("lokalsats"), default=0)
 
+    aktivt = models.BooleanField(_("aktivt"), default=True)
+
     class Meta:
         verbose_name_plural = "lokallag"
 
