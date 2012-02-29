@@ -167,7 +167,11 @@ class MedlemInline(admin.TabularInline):
     extra = 3
     fields = ['fornamn', 'etternamn', 'postadr', 'postnr', 'epost', 'mobnr', 'fodt']
 
-class LokallagAdmin(VersionAdmin):
+class LokallagAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'namn', 'num_medlem', 'andsvar',
+                    'fylkeslag', 'distrikt', 'lokalsats', 'aktivt')
+    list_editable = ('namn', 'andsvar', 'lokalsats', 'aktivt')
+    list_per_page = 200
     inlines = [MedlemInline,]
     prepopulated_fields = {"slug": ("namn",)}
 
@@ -184,7 +188,8 @@ class NemndInline(admin.TabularInline):
     model = Medlem.nemnd.through
     raw_id_fields = ['medlem']
 class NemndAdmin(admin.ModelAdmin):
-    model = Nemnd
+    list_display = ('pk', 'namn', 'start', 'stopp',)
+    list_editable = ('namn',)
     inlines = [NemndInline,]
 
 class ValInline(admin.TabularInline):
