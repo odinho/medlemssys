@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
+{% block bodyclass %}login{% endblock %}
+
 {% block content %}
 <h1>Logg inn</h1>
-<form method=post>
+<form method=post class=login-form>
 {% csrf_token %}
 <input type=hidden name=next value="{{next}}">
 <ul>
