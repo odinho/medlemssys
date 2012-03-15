@@ -34,6 +34,10 @@ class Lokallag(models.Model):
     class Meta:
         verbose_name_plural = "lokallag"
 
+    def num_medlem(self):
+        return self.medlem_set.count()
+    num_medlem.verbose_name = "medlemstal"
+
     def save(self, *args, **kwargs):
         if not self.slug or self.slug == "":
             self.slug = slugify(self.namn)
