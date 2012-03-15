@@ -17,7 +17,7 @@ import()
 make_diff()
 {
 	# Roter og ta inn nyimportert fil
-	#mv "nmu-$1.csv" "nmu-$1.csv.old"
+	mv "nmu-$1.csv" "nmu-$1.csv.old"
 	mdb-export "$namn" "$1" > "nmu-$1.csv"
 
 	# fix rn to n
@@ -32,7 +32,7 @@ make_diff()
 ############################################################
 
 
-#import
+import
 
 make_diff medl
 make_diff lag
