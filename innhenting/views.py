@@ -12,6 +12,7 @@ from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping
 from medlemssys.medlem.models import update_denormalized_fields
 import csv
 
+import reversion
 
 # REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA,FØDEÅR,Epost_B
 nmu_csv_map = {
@@ -62,9 +63,11 @@ def fraa_nmu_csv(request):
     return HttpResponse(do_work(), content_type="text/plain; charset=utf-8")
 
 @transaction.commit_on_success
+@reversion.create_revision()
 def import_medlem():
     liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-medl.csv.new"))
     mapping = nmu_mapping(headers=liste.next())
+    reversion.set_comment("Access-import")
 
     for num, rad in enumerate(liste):
         tmp = {}
