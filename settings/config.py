@@ -3,6 +3,10 @@ from os.path import join, dirname
 
 PROJECT_ROOT = dirname(__file__) + "/../"
 
+MEDLEM_CSV = PROJECT_ROOT + "nmu-medl.csv"
+GIRO_CSV   = PROJECT_ROOT + "nmu-bet.csv"
+LAG_CSV    = PROJECT_ROOT + "nmu-lag.csv"
+
 #MEDIA_ROOT = join(PROJECT_ROOT, 'static')
 #MEDIA_URL = '/static/'
 

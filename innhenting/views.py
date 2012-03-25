@@ -7,7 +7,7 @@ from dateutil.parser import parse
 import datetime
 #from django.shortcuts import render_to_response
 
-from medlemssys.settings import PROJECT_ROOT
+from medlemssys.settings import MEDLEM_CSV, GIRO_CSV, LAG_CSV
 from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping
 from medlemssys.medlem.models import update_denormalized_fields
 import csv
@@ -65,7 +65,7 @@ def fraa_nmu_csv(request):
 @transaction.commit_on_success
 @reversion.create_revision()
 def import_medlem():
-    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-medl.csv.new"))
+    liste = csv.reader(open(MEDLEM_CSV))
     mapping = nmu_mapping(headers=liste.next())
     reversion.set_comment("Access-import")
 
@@ -141,7 +141,7 @@ def nmu_mapping(headers):
 # model: namn, fylkeslag, distrikt, andsvar
 @transaction.commit_on_success
 def import_lag():
-    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-lag.csv.new"))
+    liste = csv.reader(open(LAG_CSV))
     liste.next()
     alle_lag = {}
 
@@ -160,7 +160,7 @@ def import_lag():
 # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
 @transaction.commit_on_success
 def import_bet():
-    liste = csv.reader(open(PROJECT_ROOT + "/../nmudb/nmu-bet.csv.new"))
+    liste = csv.reader(open(GIRO_CSV))
     liste.next()
 
     for num, rad in enumerate(liste):
