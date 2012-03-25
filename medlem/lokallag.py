@@ -20,14 +20,6 @@ def home(request):
 def lokallag_home(request, slug):
     lokallag = Lokallag.objects.get(slug=slug)
 
-    return render_to_response('lokallag/lokallag_home.html', {
-        'lokallag': lokallag,
-    })
-
-@login_required
-def medlemsliste(request, slug):
-    lokallag = Lokallag.objects.get(slug=slug)
-
     if not request.user.is_staff:
         try:
             medlem_prof = request.user.get_profile()
@@ -41,9 +33,11 @@ def medlemsliste(request, slug):
 
     medlem = Medlem.objects.filter(lokallag=lokallag)
     betalt_count = Medlem.objects.betalande().filter(lokallag=lokallag).count()
+    teljande_count = Medlem.objects.teljande().filter(lokallag=lokallag).count()
 
-    return render_to_response('lokallag/medlemsliste.html', {
+    return render_to_response('lokallag/lokallag_home.html', {
         'lokallag': lokallag,
         'medlem': medlem,
         'betalt_count': betalt_count,
+        'teljande_count': teljande_count,
     })
