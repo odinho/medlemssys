@@ -5,7 +5,7 @@
 
 <ul>
   {% for l in lokallag %}
-  <li><a href={{ l.slug }}/>{{ l }}</a>
+  <li><a href={{ l.slug }}/>{{ l }}</a> ({{ l.medlem_set.interessante|length }})
   {% endfor %}
 </ul>
 
