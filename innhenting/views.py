@@ -10,6 +10,7 @@ import datetime
 from medlemssys.settings import MEDLEM_CSV, GIRO_CSV, LAG_CSV
 from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping
 from medlemssys.medlem.models import update_denormalized_fields
+from medlemssys.medlem import admin # Needed to register reversion
 import csv
 
 import reversion
@@ -63,11 +64,10 @@ def fraa_nmu_csv(request):
     return HttpResponse(do_work(), content_type="text/plain; charset=utf-8")
 
 @transaction.commit_on_success
-@reversion.create_revision()
+#@reversion.create_revision() XXX There's a bug here somewhere
 def import_medlem():
     liste = csv.reader(open(MEDLEM_CSV))
     mapping = nmu_mapping(headers=liste.next())
-    reversion.set_comment("Access-import")
 
     for num, rad in enumerate(liste):
         tmp = {}
@@ -113,8 +113,10 @@ def import_medlem():
 
         #print "%s(%s) utmdato:%s stat:%s" % (tmp['id'], tmp['fornamn'], tmp.get('utmeldt_dato',
         #    'g0ne'), tmp.get('status', 'g0ne'))
-        m = Medlem(**tmp)
-        m.save()
+        with reversion.create_revision():
+            reversion.set_comment("Import frå Access")
+            m = Medlem(**tmp)
+            m.save()
 
         for v in VAL:
             if int(rad[v[0]]) == int(v[1]):
@@ -139,8 +141,10 @@ def nmu_mapping(headers):
 
 # csv: DIST,FLAG,LLAG,lid,ANDSVAR,LOKALSATS
 # model: namn, fylkeslag, distrikt, andsvar
+@reversion.create_revision()
 @transaction.commit_on_success
 def import_lag():
+    reversion.set_comment("Import frå Access")
     liste = csv.reader(open(LAG_CSV))
     liste.next()
     alle_lag = {}
@@ -158,6 +162,7 @@ def import_lag():
 
 # csv: MEDLNR,BETALT,KONTO,KONTONAMN,DATO,AR,SUM,BETID
 # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
+@reversion.create_revision()
 @transaction.commit_on_success
 def import_bet():
     liste = csv.reader(open(GIRO_CSV))
