@@ -101,13 +101,15 @@ def import_medlem():
             #print "%s(%s) kjon too long: %s" % (tmp['id'], tmp['fornamn'], tmp['kjon'])
             tmp['kjon'] = tmp['kjon'][0]
 
-        tmp['innmeldt_dato'] = parse(tmp['innmeldt_dato'],
+        tmp['oppretta'] = parse(tmp['innmeldt_dato'],
                 default=datetime.datetime(1980, 1, 1, 0, 0))
-        tmp['oppretta'] = tmp['innmeldt_dato']
+        tmp['innmeldt_dato'] = tmp['oppretta'].date()
         tmp['oppdatert'] = datetime.datetime.now()
 
         if len(tmp['utmeldt_dato']) > 2:
             tmp['utmeldt_dato'] = parse(tmp['utmeldt_dato'], default=None)
+            if hasattr(tmp['utmeldt_dato'], 'date'):
+                tmp['utmeldt_dato'] = tmp['utmeldt_dato'].date()
         else:
             del tmp['utmeldt_dato']
 
