@@ -4,11 +4,22 @@
 <h1>Lokallag i NMU</h1>
 
 <table>
- <thead><tr><th>Lokallag <th>Medlem</tr></thead>
+ <thead>
+   <tr>
+     <th>Lokallag
+     <th title="Interessante medlemar">Medlem
+     <th title="Teljande medlemar">Teljande
+     <th title="Medlemar, utmelde, innmelde, folk som ikkje har betalt o.l. Alle saman, historisk sett.">Alle
+   </tr>
+ </thead>
 
  <tbody>
   {% for l in lokallag %}
-  <tr> <td><a href={{ l.slug }}/>{{ l }}</a> <td>{{ l.medlem_set.interessante|length }} </tr>
+  <tr> <td><a href={{ l.slug }}>{{ l }}</a>
+       <td>{{ l.medlem_set.interessante|length }}
+       <td>{{ l.medlem_set.teljande|length }}
+       <td>{{ l.num_medlemar }}
+  </tr>
   {% endfor %}
  </tbody>
 

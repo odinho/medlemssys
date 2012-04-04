@@ -10,7 +10,9 @@ from models import Medlem, Lokallag
 
 @login_required
 def home(request):
-    lokallag = Lokallag.objects.annotate(num_medlemar=Count('medlem')).filter(num_medlemar__gt=0).order_by("-num_medlemar")
+    lokallag = Lokallag.objects.annotate(num_medlemar=Count('medlem'))  \
+                               .filter(num_medlemar__gt=0)              \
+                               .order_by("-num_medlemar")
 
     return render_to_response('lokallag/lokallag_listing.html', {
         'lokallag': lokallag,
