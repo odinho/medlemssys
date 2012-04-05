@@ -132,7 +132,7 @@ class MedlemManager(models.Manager):
             ).distinct()
 
     def get_query_set(self):
-        return self.interessante()
+        return self.alle()
 
 
 class Medlem(models.Model):
