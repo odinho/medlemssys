@@ -73,7 +73,7 @@ class MedlemAdmin(VersionAdmin):
 
     def queryset(self, request):
         # use our manager, rather than the default one
-        qs = self.model.objects.get_query_set()
+        qs = self.model.objects.alle()
 
         # we need this from the superclass method
         ordering = self.ordering or () # otherwise we might try to *None, which is bad ;)
