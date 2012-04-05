@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sw=4 expandtab ai
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
@@ -49,12 +50,21 @@ VAL = (
 def fraa_nmu_csv(request):
     def do_work():
         for i in import_lag():
+            if settings.DEBUG:
+                print "Lag: %s" % unicode(i)
+
             yield "Lag: %s\n" % unicode(i)
 
         for i in import_medlem():
+            if settings.DEBUG:
+                print "Medlem: %s" % unicode(i)
+
             yield "Medlem: %s\n" % unicode(i)
 
         for i in import_bet():
+            if settings.DEBUG:
+                print "Betaling: %s" % unicode(i)
+
             yield "Betaling: %s\n" % unicode(i)
 
         fiks_tilskipingar()
