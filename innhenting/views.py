@@ -71,76 +71,79 @@ def fraa_nmu_csv(request):
 
         update_denormalized_fields()
 
+        send_epostar()
+
     return HttpResponse(do_work(), content_type="text/plain; charset=utf-8")
 
-@transaction.commit_on_success
 #@reversion.create_revision() XXX There's a bug here somewhere
+@transaction.commit_on_success
 def import_medlem():
     liste = csv.reader(open(MEDLEM_CSV))
     mapping = nmu_mapping(headers=liste.next())
 
-    for num, rad in enumerate(liste):
-        tmp = {}
-        for typ in nmu_csv_map.values():
-            tmp[typ] = rad[mapping[typ]] \
-                        .decode("utf-8") \
-                        .replace(r"\n", "\n")
+    with reversion.create_revision():
+        reversion.set_comment("Import frå Access")
 
-        try:
-            tmp['lokallag_id'] = int(tmp['lokallag'])
-        except (KeyError, ValueError):
-            pass
-        finally:
-            del tmp['lokallag']
+        for num, rad in enumerate(liste):
+            tmp = {}
+            for typ in nmu_csv_map.values():
+                tmp[typ] = rad[mapping[typ]] \
+                            .decode("utf-8") \
+                            .replace(r"\n", "\n")
 
-        try:
-            tmp['fodt'] = int(tmp['fodt'])
-        except ValueError:
-            del tmp['fodt']
+            try:
+                tmp['lokallag_id'] = int(tmp['lokallag'])
+            except (KeyError, ValueError):
+                pass
+            finally:
+                del tmp['lokallag']
 
-        try:
-            tmp['postnr'] = format(int(tmp['postnr']), "04d")
-        except ValueError:
-            del tmp['postnr']
+            try:
+                tmp['fodt'] = int(tmp['fodt'])
+            except ValueError:
+                del tmp['fodt']
 
-        if len(tmp.get('status', '')) > 1:
-            #print "%s(%s) status too long: %s" % (tmp['id'], tmp['fornamn'], tmp['status'])
-            tmp['status'] = tmp['status'][0]
+            try:
+                tmp['postnr'] = format(int(tmp['postnr']), "04d")
+            except ValueError:
+                del tmp['postnr']
 
-        if len(tmp.get('kjon', '')) > 1:
-            #print "%s(%s) kjon too long: %s" % (tmp['id'], tmp['fornamn'], tmp['kjon'])
-            tmp['kjon'] = tmp['kjon'][0]
+            if len(tmp.get('status', '')) > 1:
+                #print "%s(%s) status too long: %s" % (tmp['id'], tmp['fornamn'], tmp['status'])
+                tmp['status'] = tmp['status'][0]
 
-        tmp['oppretta'] = parse(tmp['innmeldt_dato'],
-                default=datetime.datetime(1980, 1, 1, 0, 0))
-        tmp['innmeldt_dato'] = tmp['oppretta'].date()
-        tmp['oppdatert'] = datetime.datetime.now()
+            if len(tmp.get('kjon', '')) > 1:
+                #print "%s(%s) kjon too long: %s" % (tmp['id'], tmp['fornamn'], tmp['kjon'])
+                tmp['kjon'] = tmp['kjon'][0]
 
-        if len(tmp['utmeldt_dato']) > 2:
-            tmp['utmeldt_dato'] = parse(tmp['utmeldt_dato'], default=None)
-            if hasattr(tmp['utmeldt_dato'], 'date'):
-                tmp['utmeldt_dato'] = tmp['utmeldt_dato'].date()
-        else:
-            del tmp['utmeldt_dato']
+            tmp['oppretta'] = parse(tmp['innmeldt_dato'],
+                    default=datetime.datetime(1980, 1, 1, 0, 0))
+            tmp['innmeldt_dato'] = tmp['oppretta'].date()
+            tmp['oppdatert'] = datetime.datetime.now()
 
-        #print "%s(%s) utmdato:%s stat:%s" % (tmp['id'], tmp['fornamn'], tmp.get('utmeldt_dato',
-        #    'g0ne'), tmp.get('status', 'g0ne'))
-        with reversion.create_revision():
-            reversion.set_comment("Import frå Access")
+            if len(tmp['utmeldt_dato']) > 2:
+                tmp['utmeldt_dato'] = parse(tmp['utmeldt_dato'], default=None)
+                if hasattr(tmp['utmeldt_dato'], 'date'):
+                    tmp['utmeldt_dato'] = tmp['utmeldt_dato'].date()
+            else:
+                del tmp['utmeldt_dato']
+
+            #print "%s(%s) utmdato:%s stat:%s" % (tmp['id'], tmp['fornamn'], tmp.get('utmeldt_dato',
+            #    'g0ne'), tmp.get('status', 'g0ne'))
             m = Medlem(**tmp)
             m.save()
 
-        for v in VAL:
-            if int(rad[v[0]]) == int(v[1]):
-                m.set_val(v[2])
+            for v in VAL:
+                if int(rad[v[0]]) == int(v[1]):
+                    m.set_val(v[2])
 
-        # Print first 200 names
-        if num < 199:
-            yield u"{0:>3}. {1}".format(unicode(num), unicode(m))
+            # Print first 200 names
+            if num < 199:
+                yield u"{0:>3}. {1}".format(unicode(num), unicode(m))
 
-        elif num%200 == 0 and num != 0:
-            transaction.commit()
-            yield unicode(num)
+            elif num%200 == 0 and num != 0:
+                transaction.commit()
+                yield unicode(num)
 
 
 def nmu_mapping(headers):
