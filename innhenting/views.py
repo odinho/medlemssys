@@ -182,11 +182,16 @@ def import_lag():
 def import_bet():
     liste = csv.reader(open(GIRO_CSV))
     liste.next()
+    highest_pk = Giro.objects.all().order_by("-pk")[0].pk
 
     for num, rad in enumerate(liste):
         if num % 1000 == 0 and num != 0:
             transaction.commit()
             yield unicode(num)
+
+        # Hopp over ferdig-importerte betalingar
+        if int(rad[7]) < highest_pk:
+            continue
 
         if(Giro.objects.filter(pk=rad[7]).exists()):
             continue
@@ -195,7 +200,7 @@ def import_bet():
 
         # Finn andsvarleg medlem
         try:
-            g.medlem = Medlem.objects.get(pk=rad[0])
+            g.medlem = Medlem.objects.alle().get(pk=rad[0])
         except Medlem.DoesNotExist:
             continue
 
