@@ -9,7 +9,7 @@ import datetime
 #from django.shortcuts import render_to_response
 
 from medlemssys.settings import MEDLEM_CSV, GIRO_CSV, LAG_CSV
-from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping
+from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping, LokallagOvervaking
 from medlemssys.medlem.models import update_denormalized_fields
 from medlemssys.medlem import admin # Needed to register reversion
 import csv
@@ -247,3 +247,37 @@ def fiks_tilskipingar():
                 Q(merknad__icontains=tils.slug))
         tils.medlem_set.add(*medlemar)
         tils.save()
+
+from django.core.mail import EmailMultiAlternatives
+from django.template import Context, loader
+import smtplib
+
+def send_epostar():
+    lokallag = Lokallag.objects.filter(lokallagovervaking__isnull=False).distinct()
+
+    medlem = {}
+    for llag in lokallag:
+        medlem[llag.pk] = Medlem.objects.alle().filter(lokallag=llag,
+                                 oppdatert__gt=datetime.datetime.now() - datetime.timedelta(hours=1))
+
+    for overvak in LokallagOvervaking.objects.all():
+        epost = overvak.epost
+        if overvak.medlem:
+            epost = overvak.medlem.epost
+
+        # Have to use real context?
+        context = { 'epost' : epost,
+               'overvaking' : overvak,
+                 'lokallag' : overvak.lokallag,
+                   'medlem' : medlem[overvak.lokallag.pk] }
+
+        text_content = loader.get_template('epostar/lokallag_overvaking.txt').render(context)
+        html_content = loader.get_template('epostar/lokallag_overvaking.html').render(context)
+
+        msg = EmailMultiAlternatives('Lokallag endra', text_content, "skriv@nynorsk.no", [epost])
+        msg.attach_alternative(html_content, "text/html")
+        try:
+            msg.send()
+        except smtplib.SMTPRecipientsRefused:
+            # TODO Do logging
+            pass

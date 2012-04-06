@@ -1,0 +1,12 @@
+{{ lokallag }} oppdatering
+
+{% for m in medlem %} * {{ m }} er oppdatert
+{% endfor %}
+
+
+-- 
+{{ overvaking }}
+
+Hei {{ overvaking.medlem }}
+
+{{ epost }}

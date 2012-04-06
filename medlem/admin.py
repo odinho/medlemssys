@@ -211,4 +211,6 @@ admin.site.register(Lokallag, LokallagAdmin)
 admin.site.register(Tilskiping, TilskipAdmin)
 admin.site.register(Nemnd, NemndAdmin)
 admin.site.register(Val, ValAdmin)
+
+admin.site.register(LokallagOvervaking)
 admin.site.register(Rolletype)

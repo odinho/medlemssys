@@ -381,3 +381,19 @@ class Rolle(models.Model):
     def __unicode__(self):
         return u"%s, %s (%s)" % (self.medlem, self.lokallag, self.rolletype)
 
+
+class LokallagOvervaking(models.Model):
+    medlem = models.ForeignKey(Medlem, blank=True, null=True)
+    epost = models.CharField(_("epost"), max_length=255,
+            blank=True, null=True, help_text="""Vert brukt dersom medlem ikkje er satt""")
+
+    lokallag = models.ForeignKey(Lokallag)
+
+    class Meta:
+        verbose_name_plural = "overvaking av lokallag"
+
+    def __unicode__(self):
+        if self.medlem:
+            return u"%s overvakar %s" % (self.medlem, self.lokallag)
+        else:
+            return u"%s overvakar %s" % (self.epost, self.lokallag)

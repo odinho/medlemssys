@@ -1,0 +1,18 @@
+<!doctype html>
+<meta charset=utf-8>
+
+<h1>{{ lokallag }} oppdatering</h1>
+
+<ul>
+{% for m in medlem %}
+  <li>{{ m }} er oppdatert
+{% endfor %}
+</ul>
+
+<p>
+-- 
+{{ overvaking }}
+
+Hei {{ overvaking.medlem }}
+
+{{ epost }}
