@@ -1,18 +1,91 @@
+{% load humanize utils i18n %}
 <!doctype html>
 <meta charset=utf-8>
 
-<h1>{{ lokallag }} oppdatering</h1>
+<h1>{{ lokallag }} medlemsliste</h1>
 
-<ul>
-{% for m in medlem %}
-  <li>{{ m }} er oppdatert
-{% endfor %}
-</ul>
+<p>So, kva er endra dei siste {{ dagar }} dagane?
 
-<p>
--- 
-{{ overvaking }}
+{% if nye_medlem %}
 
-Hei {{ overvaking.medlem }}
+    {% blocktrans count counter=nye_medlem|length with num=nye_medlem|length|apnumber|capfirst intro_text="Wohoo!,Yay!,Kult!,Mogleg verving?,Jippi!,Hoho :D, Godt jobba ;-),Populært lag?"|split|random %}
+    <h2>Yay, ein ny medlem!</h2>
+    {% plural %}
+    <h2>{{ intro_text }} {{ num }} nye medlemar!</h2>
+    {% endblocktrans %}
 
-{{ epost }}
+    {% for m in nye_medlem %}
+        <p>{{ m }}, {{ m.alder|default:"me veit ikkje heilt kor mange" }} år. {{ m.pronomen|capfirst }} {{ m.har_betalt|yesno:"ar allereide betalt medlemspengar!,har ikkje registrert innbetalte medlemspengar enno." }} Kanhenda {% if m.epost %}ein velkomstepost til <a href="mailto:{{m.epost}}">{{m.epost}}</a>, eller {% endif %}{% if m.mobnr %}ein velkomst-SMS til <a href="sms:{{ m.mobnr }}">{{ m.mobnr }}</a>, eller {% endif %} noko personleg kontakt med {{ m.pronomen }} hadde gjort seg?
+    {% endfor %}
+{% endif %}
+
+{% if nye_infofolk %}
+    {% blocktrans count counter=nye_infofolk|length with num=nye_infofolk|length|apnumber|capfirst intro_text="J&oslosh;sses.,Hmmm.,Målferd?"|split|random %}
+    <h2>Ein ny infoperson</h2>
+    {% plural %}
+    <h2>{{ intro_text }} {{ counter|apnumber|capfirst }} nye infofolk</h2>
+    {% endblocktrans %}
+    <p>Infofolk har ikkje heilt bestemt seg for å melda seg inn. Kanhenda dei treng å h&oslash;yra frå nokon lokale folk? Eventuelt har dei berre skrive seg på informasjonsliste etter ei målferd... Men sjekk etter potensielle bra folk, ta kontakt med dei!</p>
+
+    <ul>
+    {% for m in nye_infofolk %}
+        <li>{{ m }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if flytta_medlem %}
+    {% blocktrans count counter=flytta_medlem|length with num=flytta_medlem|length|apnumber|capfirst intro_text="Ei lita folkevandring? :P,Laget tiltrekkjer visst folk.,Sjå her ja..."|split|random %}
+    <h2>Ein tilflytta medlem!</h2>
+    {% plural %}
+    <h2>{{ intro_text }} {{ num }} nytilflytta medlemar :D</h2>
+    {% endblocktrans %}
+    <p>Nytilflytta medlemar er nett som nye medlemar. Dei treng å få h&oslash;yra frå det nye laget sitt! Kanhenda dei er kome til ny plass og gjerne ynskjer folk å hengja med? Det er jo eit perfekt utgangspunkt :D</p>
+
+    <ul>
+    {% for m in flytta_medlem %}
+        <li>{{ m }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if endra_medlem %}
+    {% blocktrans count counter=endra_medlem|length with num=endra_medlem|length|apnumber|capfirst %}
+    <h2>Ein endra medlem</h2>
+    {% plural %}
+    <h2>{{ num }} medlemar med endringar</h2>
+    {% endblocktrans %}
+
+    <ul>
+    {% for m in endra_medlem %}
+        <li>{{ m }}<br>
+        <table>
+        <thead><tr><th>Kva <th>Frå <th>Til</tr></thead>
+        <tbody>
+        {% for change in m.changed %}
+            <tr><th>{{ change.0 }} <td>{{ change.1 }} <td>{{ change.2 }}</tr>
+        {% endfor %}
+        </tbody>
+        </table>
+        </li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if mista_medlem %}
+    {% blocktrans count counter=mista_medlem|length with num=mista_medlem|length|apnumber|capfirst intro_text="Bah :/,Blæ.,Argh!,Hrmf...,Æsj.,S&oslash;ren òg."|split|random  %}
+    <h2>Ein mindre medlem :/</h2>
+    {% plural %}
+    <h2>{{ intro_text }} {{ num }} nytilflytta medlemar :D</h2>
+    {% endblocktrans %}
+    <p>Nytilflytta medlemar er nett som nye medlemar. Dei treng å få h&oslash;yra frå det nye laget sitt! Kanhenda dei er kome til ny plass og gjerne ynskjer folk å hengja med? Det er jo eit perfekt utgangspunkt :D</p>
+
+    <ul>
+    {% for m in mista_medlem %}
+        <li>{{ m }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<p><small>{{ overvaking }}<br>
+Norsk Målungdom sitt medlemsregister</small></p>

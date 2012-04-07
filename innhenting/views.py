@@ -73,7 +73,8 @@ def fraa_nmu_csv(request):
 
         send_epostar()
 
-    return HttpResponse(do_work(), content_type="text/plain; charset=utf-8")
+    #return HttpResponse(do_work(), content_type="text/plain; charset=utf-8")
+    return HttpResponse(send_epostar(), content_type="text/plain; charset=utf-8")
 
 #@reversion.create_revision() XXX There's a bug here somewhere
 @transaction.commit_on_success
@@ -253,24 +254,54 @@ from django.template import Context, loader
 from django.db.models import Q
 import smtplib
 
+
 def send_epostar():
-    lokallag = Lokallag.objects.filter(lokallagovervaking__isnull=False).distinct()
-
-    medlem = {}
-    for llag in lokallag:
-        medlem[llag.pk] = Medlem.objects.alle().filter(lokallag=llag,
-                                 oppdatert__gt=datetime.datetime.now() - datetime.timedelta(hours=1))
-
     for overvak in LokallagOvervaking.objects.filter( Q(deaktivert__isnull=True) | Q(deaktivert__gt=datetime.datetime.now()) ):
         epost = overvak.epost
         if overvak.medlem:
             epost = overvak.medlem.epost
 
+        sist_oppdatering = datetime.datetime.now() - datetime.timedelta(days=1)
+        medlem = overvak.lokallag.medlem_set.alle().filter(oppdatert__gt=sist_oppdatering)
+        nye_medlem = list(medlem.filter(oppretta__gt=sist_oppdatering).exclude(status='I'))
+        nye_infofolk = list(medlem.filter(oppretta__gt=sist_oppdatering, status='I'))
+        # Alle andre, "gamle" medlemar
+        medlem = medlem.exclude(oppretta__gt=sist_oppdatering)
+
+        # Finn dei som har endra lokallag
+        flytta_medlem, mista_medlem, endra_medlem = [], [], []
+        for m in medlem:
+            old = reversion.get_for_date(m, sist_oppdatering)
+            new = reversion.get_for_object(m)[0]
+
+            changed_keys = filter(lambda k: old.field_dict[k] != new.field_dict[k], new.field_dict.keys())
+            m.changed = [ (k, old.field_dict[k], new.field_dict[k]) for k in changed_keys ]
+            print m, m.changed
+
+            if 'lokallag' in changed_keys:
+                flytta_medlem.append(m)
+            elif 'utmeldt_dato' in changed_keys and new['utmeldt_dato']:
+                mista_medlem.append(m)
+            elif 'status' in changed_keys and old['status'] == 'I':
+                nye_medlem.append(m)
+            else:
+                endra_medlem.append(m)
+
+        dagar = (datetime.datetime.now() - sist_oppdatering).days
+
         # Have to use real context?
-        context = Context({ 'epost' : epost,
+        context = Context({
+                    'epost' : epost,
                'overvaking' : overvak,
                  'lokallag' : overvak.lokallag,
-                   'medlem' : medlem[overvak.lokallag.pk] })
+         'sist_oppdatering' : sist_oppdatering,
+                    'dagar' : dagar,
+               'nye_medlem' : nye_medlem,
+             'nye_infofolk' : nye_infofolk,
+            'flytta_medlem' : flytta_medlem,
+             'endra_medlem' : endra_medlem,
+             'mista_medlem' : mista_medlem,
+             })
 
         text_content = loader.get_template('epostar/lokallag_overvaking.txt').render(context)
         html_content = loader.get_template('epostar/lokallag_overvaking.html').render(context)
@@ -282,3 +313,5 @@ def send_epostar():
         except smtplib.SMTPRecipientsRefused:
             # TODO Do logging
             pass
+
+    return "Ferdig"

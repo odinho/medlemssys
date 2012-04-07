@@ -33,6 +33,7 @@ class Lokallag(models.Model):
 
     class Meta:
         verbose_name_plural = "lokallag"
+        ordering = ['-aktivt', 'namn']
 
     def num_medlem(self):
         return self.medlem_set.count()
@@ -224,6 +225,13 @@ class Medlem(models.Model):
         if alder >= 0 and alder < 120:
             return alder
         return None
+
+    def pronomen(self):
+        if self.kjon == 'M':
+            return "han"
+        elif self.kjon == 'K':
+            return "ho"
+        return "ho/han"
 
     def fodt_farga(self):
         if self.alder() == None:
