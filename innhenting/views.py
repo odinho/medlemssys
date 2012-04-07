@@ -266,10 +266,10 @@ def send_epostar():
             epost = overvak.medlem.epost
 
         # Have to use real context?
-        context = { 'epost' : epost,
+        context = Context({ 'epost' : epost,
                'overvaking' : overvak,
                  'lokallag' : overvak.lokallag,
-                   'medlem' : medlem[overvak.lokallag.pk] }
+                   'medlem' : medlem[overvak.lokallag.pk] })
 
         text_content = loader.get_template('epostar/lokallag_overvaking.txt').render(context)
         html_content = loader.get_template('epostar/lokallag_overvaking.html').render(context)
