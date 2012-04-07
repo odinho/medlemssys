@@ -250,6 +250,7 @@ def fiks_tilskipingar():
 
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context, loader
+from django.db.models import Q
 import smtplib
 
 def send_epostar():
@@ -260,7 +261,7 @@ def send_epostar():
         medlem[llag.pk] = Medlem.objects.alle().filter(lokallag=llag,
                                  oppdatert__gt=datetime.datetime.now() - datetime.timedelta(hours=1))
 
-    for overvak in LokallagOvervaking.objects.all():
+    for overvak in LokallagOvervaking.objects.filter( Q(deaktivert__isnull=True) | Q(deaktivert__gt=datetime.datetime.now()) ):
         epost = overvak.epost
         if overvak.medlem:
             epost = overvak.medlem.epost

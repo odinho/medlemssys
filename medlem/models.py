@@ -388,6 +388,7 @@ class LokallagOvervaking(models.Model):
             blank=True, null=True, help_text="""Vert brukt dersom medlem ikkje er satt""")
 
     lokallag = models.ForeignKey(Lokallag)
+    deaktivert = models.DateTimeField(blank=True, null=True)
 
     class Meta:
         verbose_name_plural = "overvaking av lokallag"
