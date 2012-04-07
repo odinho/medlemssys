@@ -199,7 +199,7 @@ class Medlem(models.Model):
         ordering = ['-id']
 
     def __unicode__(self):
-        return " ".join([self.fornamn, self.mellomnamn, self.etternamn])
+        return " ".join([ x for x in [self.fornamn, self.mellomnamn, self.etternamn] if x ])
     __unicode__.admin_order_field = 'etternamn'
 
     def er_innmeldt(self):
