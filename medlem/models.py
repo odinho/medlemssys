@@ -394,7 +394,11 @@ class LokallagOvervaking(models.Model):
         verbose_name_plural = "overvaking av lokallag"
 
     def __unicode__(self):
+        ekstra = ""
+        if self.deaktivert and self.deaktivert < datetime.now():
+            ekstra = " (deaktivert)"
+
         if self.medlem:
-            return u"%s overvakar %s" % (self.medlem, self.lokallag)
+            return u"%s overvakar %s%s" % (self.medlem, self.lokallag, ekstra)
         else:
-            return u"%s overvakar %s" % (self.epost, self.lokallag)
+            return u"%s overvakar %s%s" % (self.epost, self.lokallag, ekstra)
