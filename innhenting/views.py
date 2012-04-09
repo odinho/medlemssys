@@ -157,8 +157,8 @@ def nmu_mapping(headers):
 
 # csv: DIST,FLAG,LLAG,lid,ANDSVAR,LOKALSATS
 # model: namn, fylkeslag, distrikt, andsvar
-@reversion.create_revision()
 @transaction.commit_on_success
+@reversion.create_revision()
 def import_lag():
     reversion.set_comment("Import frå Access")
     liste = csv.reader(open(LAG_CSV))
@@ -178,8 +178,8 @@ def import_lag():
 
 # csv: MEDLNR,BETALT,KONTO,KONTONAMN,DATO,AR,SUM,BETID
 # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
-@reversion.create_revision()
 @transaction.commit_on_success
+@reversion.create_revision()
 def import_bet():
     liste = csv.reader(open(GIRO_CSV))
     liste.next()
@@ -268,7 +268,7 @@ def send_epostar():
         # Alle andre, "gamle" medlemar
         medlem = medlem.exclude(oppretta__gt=sist_oppdatering)
 
-        # Finn dei som har endra lokallag
+
         flytta_medlem, mista_medlem, endra_medlem = [], [], []
         for m in medlem:
             old = reversion.get_for_date(m, sist_oppdatering)
@@ -286,6 +286,15 @@ def send_epostar():
                 nye_medlem.append(m)
             else:
                 endra_medlem.append(m)
+
+        # Finn dei som har flytta til eit ANNA lokallag
+        reversion_id = reversion.models.Revision.objects.filter(date_created__gt=sist_oppdatering) \
+                        .order_by("date_created")[0].pk
+
+        versions = reversion.models.Version.objects.filter( \
+                        serialized_data__contains='"lokallag": {}'.format(overvak.lokallag.pk), \
+                        revision__gte=reversion_id)
+        # XXX Faen det går jo ikkje... :SS aaargh
 
         dagar = (datetime.datetime.now() - sist_oppdatering).days
 

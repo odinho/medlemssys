@@ -1,5 +1,4 @@
 # vim: ts=4 sts=4 expandtab ai
-from reversion.admin import VersionAdmin
 from django.contrib.admin import helpers
 from django.contrib import admin
 from django.http import HttpResponse
@@ -7,8 +6,10 @@ from django.forms.models import model_to_dict
 from django.utils.encoding import force_unicode
 from django.utils.translation import ugettext as _
 from django.template.response import TemplateResponse
-from medlemssys.settings import STATIC_URL
+from reversion.admin import VersionAdmin
 import csv
+
+from medlemssys.settings import STATIC_URL
 from filters import AdditiveSubtractiveFilter, TimeSinceFilter
 
 from models import *
@@ -214,3 +215,7 @@ admin.site.register(Val, ValAdmin)
 
 admin.site.register(LokallagOvervaking)
 admin.site.register(Rolletype)
+
+# Ta med lokallag ekstra (XXX: Usikkert om eg treng rolletype og giro)
+#reversion.register(Medlem, follow=["rolle_set", "giroar", "lokallag"])
+#reversion.register(Lokallag)
