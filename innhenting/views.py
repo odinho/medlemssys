@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# vim: ts=4 sw=4 expandtab ai
+# vim: ts=4 sw=4 sts=4 expandtab ai
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
@@ -12,6 +12,7 @@ from medlemssys.settings import MEDLEM_CSV, GIRO_CSV, LAG_CSV
 from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping, LokallagOvervaking
 from medlemssys.medlem.models import update_denormalized_fields
 from medlemssys.medlem import admin # Needed to register reversion
+from medlemssys.statistikk.models import LokallagStat
 import csv
 
 import reversion
@@ -251,9 +252,7 @@ def fiks_tilskipingar():
 
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context, loader
-from django.db.models import Q
-import smtplib
-
+import smtplib, json
 
 def send_epostar():
     for overvak in LokallagOvervaking.objects.filter( Q(deaktivert__isnull=True) | Q(deaktivert__gt=datetime.datetime.now()) ):
@@ -261,44 +260,50 @@ def send_epostar():
         if overvak.medlem:
             epost = overvak.medlem.epost
 
-        sist_oppdatering = datetime.datetime.now() - datetime.timedelta(days=1)
+        sist_oppdatering = datetime.datetime.now() - datetime.timedelta(days=2)
         medlem = overvak.lokallag.medlem_set.alle().filter(oppdatert__gt=sist_oppdatering)
         nye_medlem = list(medlem.filter(oppretta__gt=sist_oppdatering).exclude(status='I'))
         nye_infofolk = list(medlem.filter(oppretta__gt=sist_oppdatering, status='I'))
         # Alle andre, "gamle" medlemar
         medlem = medlem.exclude(oppretta__gt=sist_oppdatering)
 
+        # Finn dei som har flytta til eit ANNA lokallag
+        try:
+            medlemar_sist = LokallagStat.objects                \
+                .get(                                           \
+                    veke="{:%Y-%W}".format(sist_oppdatering),   \
+                    lokallag=overvak.lokallag                   \
+                ).interessante
+            medlemar_sist = json.loads(medlemar_sist)
+        except LokallagStat.DoesNotExist:
+            print "Stat for {}, {:%Y-%W} fanst ikkje.".format(overvak.lokallag, sist_oppdatering)
+            vekkflytta_medlem = []
+        else:
+            medlemar_no = overvak.lokallag.medlem_set.interessante().values_list('pk', flat=True)
+            vekkflytta_medlem = Medlem.objects.filter(pk__in=set(medlemar_sist) - set(medlemar_no))
 
-        flytta_medlem, mista_medlem, endra_medlem = [], [], []
+
+        flytta_medlem, utmeld_medlem, endra_medlem = [], [], []
         for m in medlem:
             old = reversion.get_for_date(m, sist_oppdatering)
             new = reversion.get_for_object(m)[0]
 
             changed_keys = filter(lambda k: old.field_dict[k] != new.field_dict[k], new.field_dict.keys())
             m.changed = [ (k, old.field_dict[k], new.field_dict[k]) for k in changed_keys ]
-            print m, m.changed
 
             if 'lokallag' in changed_keys:
                 flytta_medlem.append(m)
             elif 'utmeldt_dato' in changed_keys and new['utmeldt_dato']:
-                mista_medlem.append(m)
+                utmeld_medlem.append(m)
             elif 'status' in changed_keys and old['status'] == 'I':
                 nye_medlem.append(m)
             else:
                 endra_medlem.append(m)
 
-        # Finn dei som har flytta til eit ANNA lokallag
-        reversion_id = reversion.models.Revision.objects.filter(date_created__gt=sist_oppdatering) \
-                        .order_by("date_created")[0].pk
-
-        versions = reversion.models.Version.objects.filter( \
-                        serialized_data__contains='"lokallag": {}'.format(overvak.lokallag.pk), \
-                        revision__gte=reversion_id)
-        # XXX Faen det går jo ikkje... :SS aaargh
+        print "medlemar_sist:", vekkflytta_medlem
 
         dagar = (datetime.datetime.now() - sist_oppdatering).days
 
-        # Have to use real context?
         context = Context({
                     'epost' : epost,
                'overvaking' : overvak,
@@ -309,7 +314,8 @@ def send_epostar():
              'nye_infofolk' : nye_infofolk,
             'flytta_medlem' : flytta_medlem,
              'endra_medlem' : endra_medlem,
-             'mista_medlem' : mista_medlem,
+            'utmeld_medlem' : utmeld_medlem,
+        'vekkflytta_medlem' : vekkflytta_medlem,
              })
 
         text_content = loader.get_template('epostar/lokallag_overvaking.txt').render(context)

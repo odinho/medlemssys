@@ -72,17 +72,30 @@
     </ul>
 {% endif %}
 
-{% if mista_medlem %}
-    {% blocktrans count counter=mista_medlem|length with num=mista_medlem|length|apnumber|capfirst intro_text="Bah :/,Blæ.,Argh!,Hrmf...,Æsj.,S&oslash;ren òg."|split|random  %}
-    <h2>Ein mindre medlem :/</h2>
+{% if utmeld_medlem %}
+    {% blocktrans count counter=utmeld_medlem|length with num=utmeld_medlem|length|apnumber|capfirst intro_text="Bah :/,Blæ.,Argh!,Hrmf...,Æsj.,S&oslash;ren òg."|split|random  %}
+    <h2>Ein medlem har meld seg ut :/</h2>
     {% plural %}
-    <h2>{{ intro_text }} {{ num }} nytilflytta medlemar :D</h2>
+    <h2>{{ intro_text }} {{ num }} utmelde medlemar :|</h2>
     {% endblocktrans %}
-    <p>Nytilflytta medlemar er nett som nye medlemar. Dei treng å få h&oslash;yra frå det nye laget sitt! Kanhenda dei er kome til ny plass og gjerne ynskjer folk å hengja med? Det er jo eit perfekt utgangspunkt :D</p>
 
     <ul>
-    {% for m in mista_medlem %}
+    {% for m in utmeld_medlem %}
         <li>{{ m }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+{% if vekkflytta_medlem %}
+    {% blocktrans count counter=vekkflytta_medlem|length with num=vekkflytta_medlem|length|apnumber|capfirst intro_text="Folkevandring feil veg?,Er graset gr&oslash;nare i andre lag?,Gjorde me noko feil?,Slikt skjer."|split|random medlemsnamn=vekkflytta_medlem.0.fornamn %}
+    <h2>{{ medlemsnamn }} har byta beite :-/</h2>
+    {% plural %}
+    <h2>{{ intro_text }} {{ num }} fråflytta medlemar :-/</h2>
+    {% endblocktrans %}
+
+    <ul>
+    {% for m in vekkflytta_medlem %}
+        <li>{{ m }} er i {{ m.lokallag }} no.</li>
     {% endfor %}
     </ul>
 {% endif %}
