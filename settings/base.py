@@ -29,6 +29,7 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
 
     'medlemssys.medlem',
+    'medlemssys.innhenting',
     'medlemssys.statistikk',
     'reversion',
 

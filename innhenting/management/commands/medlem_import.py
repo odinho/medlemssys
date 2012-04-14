@@ -1,21 +1,62 @@
-# -*- coding: utf-8 -*-
-# vim: ts=4 sw=4 sts=4 expandtab ai
+#!/usr/bin/env python
+# vim: fileencoding=utf-8 shiftwidth=4 tabstop=4 expandtab softtabstop=4 ai
+from __future__ import print_function
 from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+
+import os
+
+obj = ""
+
+class Command(BaseCommand):
+    args = '[ lokallag.csv [ medlem.csv [ betaling.csv ] ] ]'
+    help = 'Importerer medlemane inn i databasen'
+
+    def handle(self, *args, **options):
+        global obj
+        obj = self
+
+        lag_csv = self.get_filename(args, 0, 'LAG_CSV', 'nmu-lag.csv')
+        medlem_csv = self.get_filename(args, 1, 'MEDLEM_CSV', 'nmu-medl.csv')
+        bet_csv = self.get_filename(args, 2, 'GIRO_CSV', 'nmu-bet.csv')
+
+        for i in import_lag(lag_csv).values():
+            self.stdout.write(u"Lag: {0}\n".format(unicode(i)).encode('utf8'))
+
+        for i in import_medlem(medlem_csv):
+            self.stdout.write(u"Medlem: {0}\n".format(unicode(i)).encode('utf8'))
+
+        for i in import_bet(bet_csv):
+            self.stdout.write(u"Betaling: {0}\n".format(unicode(i)).encode('utf8'))
+
+        fiks_tilskipingar()
+        update_denormalized_fields()
+        send_epostar()
+
+        self.stdout.write("Ferdig med import.\n")
+
+
+    def get_filename(self, args, num, setting, fallback):
+        if len(args) > num:
+            fn = args[0]
+        else:
+            fn = getattr(settings, setting, fallback)
+        if not os.path.isfile(fn):
+            raise CommandError("Fila finst ikkje ({0})".format(fn).encode('utf8'))
+        return fn
+
+
 from django.db import transaction
 from django.db.models import Q
-from django.http import HttpResponse
 from dateutil.parser import parse
+import reversion
 import datetime
-#from django.shortcuts import render_to_response
+import csv
 
-from medlemssys.settings import MEDLEM_CSV, GIRO_CSV, LAG_CSV
 from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping, LokallagOvervaking
 from medlemssys.medlem.models import update_denormalized_fields
 from medlemssys.medlem import admin # Needed to register reversion
 from medlemssys.statistikk.models import LokallagStat
-import csv
-
-import reversion
 
 # REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA,FØDEÅR,Epost_B
 nmu_csv_map = {
@@ -48,39 +89,11 @@ VAL = (
         (31, 0, 'Ikkje Norsk Tidend'), # MNM_B = 31
 )
 
-def fraa_nmu_csv(request):
-    def do_work():
-        for i in import_lag():
-            if settings.DEBUG:
-                print "Lag: %s" % unicode(i)
-
-            yield "Lag: %s\n" % unicode(i)
-
-        for i in import_medlem():
-            if settings.DEBUG:
-                print "Medlem: %s" % unicode(i)
-
-            yield "Medlem: %s\n" % unicode(i)
-
-        for i in import_bet():
-            if settings.DEBUG:
-                print "Betaling: %s" % unicode(i)
-
-            yield "Betaling: %s\n" % unicode(i)
-
-        fiks_tilskipingar()
-
-        update_denormalized_fields()
-
-        send_epostar()
-
-    #return HttpResponse(do_work(), content_type="text/plain; charset=utf-8")
-    return HttpResponse(send_epostar(), content_type="text/plain; charset=utf-8")
 
 #@reversion.create_revision() XXX There's a bug here somewhere
 @transaction.commit_on_success
-def import_medlem():
-    liste = csv.reader(open(MEDLEM_CSV))
+def import_medlem(medlem_csv_fil):
+    liste = csv.reader(open(medlem_csv_fil))
     mapping = nmu_mapping(headers=liste.next())
 
     with reversion.create_revision():
@@ -160,21 +173,21 @@ def nmu_mapping(headers):
 # model: namn, fylkeslag, distrikt, andsvar
 @transaction.commit_on_success
 @reversion.create_revision()
-def import_lag():
+def import_lag(lag_csv_fil):
     reversion.set_comment("Import frå Access")
-    liste = csv.reader(open(LAG_CSV))
+    liste = csv.reader(open(lag_csv_fil))
     liste.next()
     alle_lag = {}
 
     for rad in liste:
-        namn = rad[2].decode('utf-8')   \
-                .title()                \
-                .replace('Og', 'og')    \
-                .replace('I', 'i')      \
-                .replace(u'På', u'på')  \
-                .replace('Fmu', 'FMU')  \
-                .replace('Mu', 'MU')    \
-                .replace('Nmu', 'NMU')
+        namn = rad[2].decode('utf-8')       \
+                .title()                    \
+                .replace(' Og ', ' og ')    \
+                .replace(' I ', ' i ')      \
+                .replace(u' På ', u' på ')  \
+                .replace('Fmu', 'FMU')      \
+                .replace('Nmu', 'NMU')      \
+                .replace(' Mu', ' MU')
 
         lag = Lokallag(pk=rad[3],
                 namn=namn,
@@ -190,12 +203,15 @@ def import_lag():
 # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
 @transaction.commit_on_success
 @reversion.create_revision()
-def import_bet():
-    liste = csv.reader(open(GIRO_CSV))
+def import_bet(bet_csv_fil):
+    liste = csv.reader(open(bet_csv_fil))
     liste.next()
     highest_pk = Giro.objects.all().order_by("-pk")[0].pk
 
     for num, rad in enumerate(liste):
+        if num < 999 and num % 100 == 0:
+            yield unicode(num)
+
         if num % 1000 == 0 and num != 0:
             transaction.commit()
             yield unicode(num)
@@ -228,7 +244,7 @@ def import_bet():
             # Viss det er pengar gjeng me ut i frå at det er snakk om kasse
             g.konto = 'K'
         else:
-            print "kjenner ikkje att konto", rad, g.medlem
+            obj.stderr.write("Kjenner ikkje att konto: {0}, {1}\n".format(rad, g.medlem))
             continue
 
         # Kor mykje pengar inn?
@@ -236,7 +252,7 @@ def import_bet():
             g.belop = float(rad[6])
         except ValueError:
             g.belop = 0
-            print "belop=0", rad, g.medlem
+            obj.stderr.write(u"Beløp = 0: {0}, {1}\n".format(rad, g.medlem))
 
         if len(rad[4]) > 3:
             g.innbetalt = parse(rad[4])
@@ -280,12 +296,12 @@ def send_epostar():
         try:
             medlemar_sist = LokallagStat.objects                \
                 .get(                                           \
-                    veke="{:%Y-%W}".format(sist_oppdatering),   \
+                    veke="{0:%Y-%W}".format(sist_oppdatering),   \
                     lokallag=overvak.lokallag                   \
                 ).interessante
             medlemar_sist = json.loads(medlemar_sist)
         except LokallagStat.DoesNotExist:
-            print "Stat for {}, {:%Y-%W} fanst ikkje.".format(overvak.lokallag, sist_oppdatering)
+            obj.stderr.write("LokallagStat for {0}, {1:%Y-%W} fanst ikkje.".format(overvak.lokallag, sist_oppdatering))
             vekkflytta_medlem = []
         else:
             medlemar_no = overvak.lokallag.medlem_set.interessante().values_list('pk', flat=True)
@@ -308,8 +324,6 @@ def send_epostar():
                 nye_medlem.append(m)
             else:
                 endra_medlem.append(m)
-
-        print "medlemar_sist:", vekkflytta_medlem
 
         dagar = (datetime.datetime.now() - sist_oppdatering).days
 
