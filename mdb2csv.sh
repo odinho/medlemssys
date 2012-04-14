@@ -38,4 +38,9 @@ make_diff medl
 make_diff lag
 make_diff bet
 
-GET http://medlem.nynorsk.no/import/
+#GET http://medlem.nynorsk.no/import/
+cd ..
+. env/bin/activate
+
+cd medlemssys/
+./manage.py medlem_import
