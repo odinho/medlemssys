@@ -3,7 +3,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from medlem.models import Lokallag
+from medlemssys.medlem.models import Lokallag
 
 class LokallagStat(models.Model):
     lokallag = models.ForeignKey(Lokallag)
