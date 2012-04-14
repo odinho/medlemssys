@@ -167,8 +167,17 @@ def import_lag():
     alle_lag = {}
 
     for rad in liste:
+        namn = rad[2].decode('utf-8')   \
+                .title()                \
+                .replace('Og', 'og')    \
+                .replace('I', 'i')      \
+                .replace(u'På', u'på')  \
+                .replace('Fmu', 'FMU')  \
+                .replace('Mu', 'MU')    \
+                .replace('Nmu', 'NMU')
+
         lag = Lokallag(pk=rad[3],
-                namn=rad[2].decode('utf-8').capitalize(),
+                namn=namn,
                 fylkeslag=rad[1].decode('utf-8'), distrikt=rad[0].decode('utf-8'),
                 andsvar=rad[4].decode('utf-8'))
         lag.save()
