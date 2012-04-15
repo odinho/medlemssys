@@ -3,7 +3,7 @@
 from __future__ import print_function
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-
+from optparse import make_option
 import os
 
 obj = ""
@@ -11,10 +11,20 @@ obj = ""
 class Command(BaseCommand):
     args = '[ lokallag.csv [ medlem.csv [ betaling.csv ] ] ]'
     help = 'Importerer medlemane inn i databasen'
+    force_update = False
+    option_list = BaseCommand.option_list + (
+        make_option('-f', '--force-update',
+            action='store_true',
+            dest='force_update',
+            default=False,
+            help='Tving gjennom oppdatering av giroar'),
+        )
 
     def handle(self, *args, **options):
         global obj
         obj = self
+        if options['force_update']:
+            self.force_update = True
 
         lag_csv = self.get_filename(args, 0, 'LAG_CSV', 'nmu-lag.csv')
         medlem_csv = self.get_filename(args, 1, 'MEDLEM_CSV', 'nmu-medl.csv')
@@ -54,9 +64,13 @@ import datetime
 import csv
 
 from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping, LokallagOvervaking
-from medlemssys.medlem.models import update_denormalized_fields
+from medlemssys.medlem.models import KONTI, update_denormalized_fields
 from medlemssys.medlem import admin # Needed to register reversion
 from medlemssys.statistikk.models import LokallagStat
+
+def stderr(msg):
+    obj.stderr.write((unicode(msg) + "\n").encode('utf-8'))
+
 
 # REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA,FØDEÅR,Epost_B
 nmu_csv_map = {
@@ -116,32 +130,35 @@ def import_medlem(medlem_csv_fil):
             try:
                 tmp['fodt'] = int(tmp['fodt'])
             except ValueError:
-                del tmp['fodt']
+                tmp['fodt'] = None
 
             try:
                 tmp['postnr'] = format(int(tmp['postnr']), "04d")
             except ValueError:
-                del tmp['postnr']
+                tmp['postnr'] = "9999"
 
             if len(tmp.get('status', '')) > 1:
-                #print "%s(%s) status too long: %s" % (tmp['id'], tmp['fornamn'], tmp['status'])
-                tmp['status'] = tmp['status'][0]
+                stderr(u"%s(%s) status too long: %s" % (tmp['id'], tmp['fornamn'], tmp['status']))
+                tmp['status'] = tmp['status'][0].upper()
 
             if len(tmp.get('kjon', '')) > 1:
-                #print "%s(%s) kjon too long: %s" % (tmp['id'], tmp['fornamn'], tmp['kjon'])
-                tmp['kjon'] = tmp['kjon'][0]
+                stderr(u"%s(%s) kjon too long: %s" % (tmp['id'], tmp['fornamn'], tmp['kjon']))
+                tmp['kjon'] = tmp['kjon'][0].upper()
 
             tmp['oppretta'] = parse(tmp['innmeldt_dato'],
-                    default=datetime.datetime(1980, 1, 1, 0, 0))
+                    default=datetime.datetime(1800, 1, 1, 0, 0))
             tmp['innmeldt_dato'] = tmp['oppretta'].date()
             tmp['oppdatert'] = datetime.datetime.now()
 
             if len(tmp['utmeldt_dato']) > 2:
+                a = tmp['utmeldt_dato']
                 tmp['utmeldt_dato'] = parse(tmp['utmeldt_dato'], default=None)
                 if hasattr(tmp['utmeldt_dato'], 'date'):
                     tmp['utmeldt_dato'] = tmp['utmeldt_dato'].date()
+                else:
+                    stderr(u"%s(%s) utmeldt er null: %s -- org: %s" % (tmp['id'], tmp['fornamn'], tmp['utmeldt_dato'], a))
             else:
-                del tmp['utmeldt_dato']
+                tmp['utmeldt_dato'] = None
 
             #print "%s(%s) utmdato:%s stat:%s" % (tmp['id'], tmp['fornamn'], tmp.get('utmeldt_dato',
             #    'g0ne'), tmp.get('status', 'g0ne'))
@@ -199,14 +216,17 @@ def import_lag(lag_csv_fil):
 
     return alle_lag
 
-# csv: MEDLNR,BETALT,KONTO,KONTONAMN,DATO,AR,SUM,BETID
+# csv: 0:MEDLNR, 1:BETALT, 2:KONTO, 3:KONTONAMN, 4;DATO, 5:AR, 6:SUM, 7:BETID
 # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
 @transaction.commit_on_success
 @reversion.create_revision()
 def import_bet(bet_csv_fil):
     liste = csv.reader(open(bet_csv_fil))
     liste.next()
-    highest_pk = Giro.objects.all().order_by("-pk")[0].pk
+    try:
+        highest_pk = Giro.objects.all().order_by("-pk")[0].pk
+    except:
+        highest_pk = -1
 
     for num, rad in enumerate(liste):
         if num < 999 and num % 100 == 0:
@@ -217,10 +237,10 @@ def import_bet(bet_csv_fil):
             yield unicode(num)
 
         # Hopp over ferdig-importerte betalingar
-        if int(rad[7]) < highest_pk:
+        if not obj.force_update and int(rad[7]) < highest_pk:
             continue
 
-        if(Giro.objects.filter(pk=rad[7]).exists()):
+        if not obj.force_update and Giro.objects.filter(pk=rad[7]).exists():
             continue
 
         g = Giro(pk=rad[7], hensikt='P')
@@ -229,22 +249,26 @@ def import_bet(bet_csv_fil):
         try:
             g.medlem = Medlem.objects.alle().get(pk=rad[0])
         except Medlem.DoesNotExist:
+            stderr(u"Fann ikkje medlem %s. %s " % (rad[0], rad))
             continue
 
         # Kva konto
-        if rad[2].upper() in ('M', 'K', 'B'):
+        if rad[2].upper() in [ k[0] for k in KONTI ]:
             g.konto = rad[2].upper()
         elif rad[1].upper() == 'L':
             # Livstidsmedlem
             if not g.medlem.status == 'L':
                 g.medlem.status = 'L'
                 g.medlem.save()
+                stderr(u"Oppdaterte %s til L. %s " % (g.medlem, rad))
+            stderr(u"Hopper over %s (L). %s " % (g.medlem, rad))
             continue
         elif rad[6].isdigit():
             # Viss det er pengar gjeng me ut i frå at det er snakk om kasse
             g.konto = 'K'
+            stderr(u"Gjettar at pengar (%s) er til KASSE %s -- %s" % (rad[6], g.medlem, rad))
         else:
-            obj.stderr.write("Kjenner ikkje att konto: {0}, {1}\n".format(rad, g.medlem))
+            stderr(u"Kjenner ikkje att konto: {0}, {1}".format(g.medlem, rad))
             continue
 
         # Kor mykje pengar inn?
@@ -252,13 +276,17 @@ def import_bet(bet_csv_fil):
             g.belop = float(rad[6])
         except ValueError:
             g.belop = 0
-            obj.stderr.write(u"Beløp = 0: {0}, {1}\n".format(rad, g.medlem))
+            stderr(u"Beløp = 0: {0}, {1}".format(g.medlem, rad))
 
         if len(rad[4]) > 3:
             g.innbetalt = parse(rad[4])
+        else:
+            stderr(u"Ikkje innbetalt! {0}, {1}".format(g.medlem, rad))
+
         try:
             g.oppretta = datetime.datetime(int(rad[5]), 1, 1, 0, 0)
         except ValueError:
+            stderr(u"Gjettar oppretta==innbetalt: {0}, {1}".format(g.medlem, rad))
             g.oppretta = g.innbetalt
 
         if rad[3] != "MEDLEMSKONTO":
@@ -301,7 +329,7 @@ def send_epostar():
                 ).interessante
             medlemar_sist = json.loads(medlemar_sist)
         except LokallagStat.DoesNotExist:
-            obj.stderr.write("LokallagStat for {0}, {1:%Y-%W} fanst ikkje.".format(overvak.lokallag, sist_oppdatering))
+            stderr(u"LokallagStat for {0}, {1:%Y-%W} fanst ikkje.".format(overvak.lokallag, sist_oppdatering))
             vekkflytta_medlem = []
         else:
             medlemar_no = overvak.lokallag.medlem_set.interessante().values_list('pk', flat=True)
