@@ -2,6 +2,7 @@
 # vim: ts=4 sts=4 expandtab ai
 from datetime import date, datetime
 from django.db import models, transaction
+from django.db.models import Q
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 #from emencia.django.newsletter.mailer import mailing_started
@@ -105,13 +106,13 @@ class MedlemManager(models.Manager):
 
         return qs
 
-    def ikkje_utmelde(self):
+    def ikkje_utmelde(self, year=date.today().year):
         return self.alle().filter(
-            utmeldt_dato__isnull=True
+            Q(utmeldt_dato__isnull=True) | Q(utmeldt_dato__gt=date(year+1, 1, 1))
         )
 
     def betalande(self, year=date.today().year):
-        return self.ikkje_utmelde() \
+        return self.ikkje_utmelde(year) \
             .filter(
                 giroar__oppretta__gte=date(year, 1, 1),
                 giroar__oppretta__lt=date(year+1, 1, 1),
@@ -124,11 +125,12 @@ class MedlemManager(models.Manager):
                 fodt__gte = year - 25
             )
 
-    def interessante(self):
+    def interessante(self, year=date.today().year):
         """Viser berre 'interessante' medlem, dei som har betalt i år eller i fjor."""
-        return self.ikkje_utmelde() \
+        return self.ikkje_utmelde(year) \
             .filter(
-                giroar__oppretta__gte=date(date.today().year-1, 1, 1),
+                giroar__oppretta__gte=date(year-1, 1, 1),
+                giroar__oppretta__lt=date(year+1, 1, 1),
                 giroar__innbetalt__isnull=False
             ).distinct()
 
@@ -142,10 +144,11 @@ class Medlem(models.Model):
             blank=True, null=True)
     etternamn = models.CharField(_("etternamn"), max_length=255)
     fodt = models.IntegerField(_(u"født"), max_length=4,
-            default=date.today().year - 17, blank=True, null=True)
+            blank=True, null=True)
+    # Hadde denne før, men importering gjorde folk so gamle då: default=date.today().year - 17,
 
     # Kontakt
-    postnr = models.CharField(_("postnr"), max_length=4, default="5000")
+    postnr = models.CharField(_("postnr"), max_length=4)
     epost = models.CharField(_("epost"), max_length=255,
             blank=True, null=True)
     postadr = models.CharField(_("postadresse"), max_length=255,
@@ -221,6 +224,8 @@ class Medlem(models.Model):
     er_teljande.boolean = True
 
     def alder(self):
+        if not self.fodt:
+            return None
         alder = date.today().year - self.fodt
         if alder >= 0 and alder < 120:
             return alder
@@ -324,6 +329,7 @@ KONTI = (
     ('M', "Medlemskonto"),
     ('K', "Kassa"),
     ('B', "Brukskonto"),
+    ('S', "SMS"),
 )
 HENSIKTER = (
     ('P', "Medlemspengar"),
