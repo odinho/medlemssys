@@ -43,4 +43,4 @@ cd ..
 . env/bin/activate
 
 cd medlemssys/
-./manage.py --force-update medlem_import
+./manage.py medlem_import --force-update

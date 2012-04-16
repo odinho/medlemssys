@@ -43,9 +43,6 @@ class Command(BaseCommand):
         update_denormalized_fields()
         send_epostar()
 
-        self.stdout.write("Ferdig med import.\n")
-
-
     def get_filename(self, args, num, setting, fallback):
         if len(args) > num:
             fn = args[0]
