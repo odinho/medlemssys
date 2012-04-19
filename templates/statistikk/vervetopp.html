@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table><thead><tr><th>Vervar <th>Vervingar</tr></thead>
+    <tbody>
+    {% for o in objects %}
+        <tr><td>{{ o.namn }} <td>
+            {% for v in o.bet_teljande %}[B] {% endfor %}
+            {% for v in o.ubet_teljande %}[U] {% endfor %}
+            {% for v in o.verva %}[a] {% endfor %}
+            </td>
+        </tr>
+        {% comment %}
+        <ul>
+        {% for v in o.verva %}
+          <li>{{ v }}</li>
+        {% endfor %}
+        </ul>
+        {% endcomment %}
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock content %}
