@@ -59,6 +59,7 @@ from dateutil.parser import parse
 import reversion
 import datetime
 import csv
+import re
 
 from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping, LokallagOvervaking
 from medlemssys.medlem.models import KONTI, update_denormalized_fields
@@ -68,6 +69,7 @@ from medlemssys.statistikk.models import LokallagStat
 def stderr(msg):
     obj.stderr.write((unicode(msg) + "\n").encode('utf-8'))
 
+RE_MEDLNR = re.compile(r'\[(\d+)\]')
 
 # REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA,FØDEÅR,Epost_B
 nmu_csv_map = {
@@ -156,6 +158,12 @@ def import_medlem(medlem_csv_fil):
                     stderr(u"%s(%s) utmeldt er null: %s -- org: %s" % (tmp['id'], tmp['fornamn'], tmp['utmeldt_dato'], a))
             else:
                 tmp['utmeldt_dato'] = None
+
+            # Sjekk etter [<medlemsnummer>] frå verveinfo
+            if tmp['innmeldingsdetalj']:
+                m = RE_MEDLNR.search(tmp['innmeldingsdetalj'])
+                if m:
+                    tmp['verva_av_id'] = m.group(1)
 
             #print "%s(%s) utmdato:%s stat:%s" % (tmp['id'], tmp['fornamn'], tmp.get('utmeldt_dato',
             #    'g0ne'), tmp.get('status', 'g0ne'))

@@ -37,6 +37,7 @@ class MedlemAdmin(VersionAdmin):
             'fodt',
             'innmeldt_dato',
         )
+    raw_id_fields = ['verva_av']
     readonly_fields = ('_siste_medlemspengar', 'oppretta', 'oppdatert')
     save_on_top = True
     inlines = [RolleInline, GiroInline,]
@@ -57,7 +58,7 @@ class MedlemAdmin(VersionAdmin):
             'fields': (
                 ('utmeldt_dato', '_siste_medlemspengar', 'user'),
                 ('heimenr', 'gjer'),
-                ('innmeldingstype', 'innmeldingsdetalj'),
+                ('innmeldingstype', 'innmeldingsdetalj', 'verva_av'),
                 'merknad',
                 ('val', 'nemnd', 'tilskiping'),
                 ('oppretta', 'oppdatert'),
