@@ -92,9 +92,12 @@ INNMELDINGSTYPAR = (
     ("M", "Målferd"),
     ("V", "Vervekampanje"),
     ("F", "Flygeblad"),
-    ("L", "Lagsskiping"),
+    ("L", "Lagsskiping/årsmøte"),
     ("D", "Direkteverva"),
+    ("S", "SMS"),
+    ("O", "Vitjing"),
     ("A", "Anna"),
+    ("U", "--"),
 )
 
 class MedlemManager(models.Manager):
@@ -178,7 +181,7 @@ class Medlem(models.Model):
     status = models.CharField(_("medlstatus"), max_length=1,
             choices=STATUSAR, default="M")
     innmeldingstype = models.CharField(_("innmtype"), max_length=1,
-            choices=INNMELDINGSTYPAR, blank=True, null=True)
+            choices=INNMELDINGSTYPAR, default='U')
     innmeldingsdetalj = models.CharField(_("detalj om innmelding"), max_length=255,
         blank=True, null=True, help_text=_("Skriv inn vervemedlem i hakeparantesar ([1234])"))
     verva_av = models.ForeignKey('Medlem', blank=True, null=True)

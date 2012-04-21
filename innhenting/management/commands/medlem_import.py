@@ -164,6 +164,21 @@ def import_medlem(medlem_csv_fil):
                 m = RE_MEDLNR.search(tmp['innmeldingsdetalj'])
                 if m:
                     tmp['verva_av_id'] = m.group(1)
+                    tmp['innmeldingstype'] = 'D'
+                elif any([x for x in ["Heimesida", "heimesida", "heimeside", "Heimeside", "heimesidene", "nettskjema"] if x in tmp['innmeldingsdetalj']]):
+                    tmp['innmeldingstype'] = 'H'
+                elif any([x for x in [u"Målferd", u"målferd", "MF", u"målfer"] if x in tmp['innmeldingsdetalj']]):
+                    tmp['innmeldingstype'] = 'M'
+                elif any([x for x in ["Flygeblad", "flygeblad", "flygis", "flogskrift", "Flogskrift", "Opprop", "opprop"] if x in tmp['innmeldingsdetalj']]):
+                    tmp['innmeldingstype'] = 'F'
+                elif any([x for x in ["SMS", "sms"] if x in tmp['innmeldingsdetalj']]):
+                    tmp['innmeldingstype'] = 'S'
+                elif any([x for x in ["Lagsskiping", "lagsskiping", u"årsmøte", u"Årsmøte"] if x in tmp['innmeldingsdetalj']]):
+                    tmp['innmeldingstype'] = 'L'
+                elif any([x for x in ["Vitjing", "leir", "Leir"] if x in tmp['innmeldingsdetalj']]):
+                    tmp['innmeldingstype'] = 'O'
+                elif any([x for x in ["Telefon", "telefon", "tlf"] if x in tmp['innmeldingsdetalj']]):
+                    tmp['innmeldingstype'] = 'A'
 
             #print "%s(%s) utmdato:%s stat:%s" % (tmp['id'], tmp['fornamn'], tmp.get('utmeldt_dato',
             #    'g0ne'), tmp.get('status', 'g0ne'))
