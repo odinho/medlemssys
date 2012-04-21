@@ -37,7 +37,7 @@ class Lokallag(models.Model):
         ordering = ['-aktivt', 'namn']
 
     def num_medlem(self):
-        return self.medlem_set.count()
+        return self.medlem_set.betalande().count()
     num_medlem.verbose_name = "medlemstal"
 
     def save(self, *args, **kwargs):
