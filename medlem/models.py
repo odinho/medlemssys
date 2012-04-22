@@ -38,7 +38,7 @@ class Lokallag(models.Model):
 
     def num_medlem(self):
         return self.medlem_set.betalande().count()
-    num_medlem.verbose_name = "medlemstal"
+    num_medlem.short_description = "medlemstal"
 
     def save(self, *args, **kwargs):
         if not self.slug or self.slug == "":
@@ -78,8 +78,13 @@ class Tilskiping(models.Model):
     class Meta:
         verbose_name_plural = "tilskipingar"
 
+    def num_deltakarar(self):
+        return self.medlem_set.count()
+    num_deltakarar.short_description = _("deltakarar")
+
     def __unicode__(self):
         return u"%s (%s)" % (self.namn, self.start.strftime("%Y"))
+    __unicode__.admin_order_field = 'namn'
 
 STATUSAR = (
     ("M", "Vanleg medlem"),

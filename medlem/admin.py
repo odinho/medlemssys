@@ -183,6 +183,7 @@ class TilskipInline(admin.TabularInline):
     raw_id_fields = ['medlem']
 class TilskipAdmin(admin.ModelAdmin):
     model = Tilskiping
+    list_display = ('__unicode__', 'slug', 'start', 'stopp', 'num_deltakarar')
     inlines = [TilskipInline,]
 
 
