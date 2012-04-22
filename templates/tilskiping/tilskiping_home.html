@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ tilskiping }}</h1>
+    <dl><dt title="Deltakarar på tilskipinga">Deltakarar</dt>
+        <dd>{{ medlem|length }}</dd>
+
+        <dt title="Har betalt i inneverande år">Betalande medlem</dt>
+        <dd>{{ betalt_count }}</dd>
+
+        <dt title="Under 26 og har betalt for i år">Teljande medlem</dt>
+        <dd>{{ teljande_count }}</dd>
+    </dl>
+
+    <h2>Medlemsliste</h2>
+    <table>
+        <thead><tr>
+                <th>ID</th>
+                <th>Namn</th>
+                <th>Født</th>
+                <th>Lokallag</th>
+                <th>mob/tlf</th>
+                <!--<th>Postadr</th>-->
+                <th>Epost</th>
+                <th>bet</th>
+            </tr>
+        </thead>
+      <tbody>
+  {% for m in medlem %}
+          <tr>
+            <td>{{ m.pk }}</td>
+            <td>{{ m }}</td>
+            <td>{{ m.fodt_farga|safe }}</td>
+            <td>{{ m.lokallag }}</td>
+	    <td>{{ m.mobnr }}{% if m.heimenr %}, {{ m.heimenr }}{% endif %}</td>
+            <!--td>{{ m.postadr }}</td-->
+            <td>{{ m.epost }}</td>
+            <td>{{ m.har_betalt|yesno:"b,ub,?" }}</td>
+          </tr>
+  {% endfor %}
+        </tbody>
+      </table>
+
+{% endblock %}

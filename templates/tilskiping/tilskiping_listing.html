@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Tilskipingar</h1>
+
+<table>
+ <thead>
+   <tr>
+     <th>Tilskiping
+     <th title="">Deltakarar
+   </tr>
+ </thead>
+
+ <tbody>
+  {% for o in objects %}
+  <tr> <td><a href={{ o.slug }}>{{ o }}</a>
+       <td>{{ o.medlem_set.count }}
+  </tr>
+  {% endfor %}
+ </tbody>
+
+</table>
+
+{% endblock content %}
