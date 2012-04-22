@@ -201,6 +201,25 @@ class ValAdmin(admin.ModelAdmin):
     model = Val
     inlines = [ValInline,]
 
+class GiroAdmin(admin.ModelAdmin):
+    model = Giro
+    raw_id_fields = ['medlem']
+    list_display = ('pk', 'medlem', 'kid', 'belop', 'oppretta', 'innbetalt', 'konto')
+    list_editable = ('innbetalt', )
+    fieldsets = (
+        (None, {
+            'fields': (
+                'medlem',
+                'belop',
+                ('konto', 'hensikt'),
+                'innbetalt',
+                'kid',
+                'oppretta',
+                'desc',
+            )
+        }),
+    )
+
 # XXX: Dette fungerer i Django 1.2
 #class NemndmedlemskapInline(MedlemInline):
 #    model = Medlem.nemnd.through
@@ -212,7 +231,7 @@ admin.site.register(Medlem, MedlemAdmin)
 admin.site.register(Lokallag, LokallagAdmin)
 admin.site.register(Tilskiping, TilskipAdmin)
 admin.site.register(Nemnd, NemndAdmin)
-admin.site.register(Val, ValAdmin)
+admin.site.register(Giro, GiroAdmin)
 
 admin.site.register(LokallagOvervaking)
 admin.site.register(Rolletype)
