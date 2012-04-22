@@ -27,8 +27,8 @@ def detail(request, slug):
             ikkje kopla opp mot ein medlemsprofil. Det må til for å få løyve til å
             sjå ting.""" })
 
-        if not medlem_prof.lokallagsrolle.filter(slug=slug).exists():
-            return render_to_response("error.html", { 'message': "Du har inga rolle i dette lokallaget." })
+        if not medlem_prof.tilskiping.filter(slug=slug).exists():
+            return render_to_response("error.html", { 'message': "Du var ikkje med på denne tilskipinga." })
 
     medlem = Medlem.objects.filter(tilskiping=tilskiping)
     betalt_count = Medlem.objects.betalande().filter(tilskiping=tilskiping).count()
