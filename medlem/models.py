@@ -345,7 +345,9 @@ HENSIKTER = (
 class Giro(models.Model):
     medlem = models.ForeignKey(Medlem, related_name='giroar')
     belop = models.PositiveIntegerField(_(u"Beløp"))
+
     kid = models.CharField(_("KID-nummer"), max_length=255, blank=True)
+
     oppretta = models.DateTimeField(_("Giro lagd"), blank=True, default=datetime.now)
     innbetalt = models.DateField(_("Dato betalt"), blank=True, null=True)
     konto = models.CharField(_("Konto"), max_length=1, choices=KONTI, default="M")
@@ -366,10 +368,10 @@ class Giro(models.Model):
         return u"%s, %s (%s)" % (self.medlem, self.oppretta.year, betalt)
 
     def save(self, *args, **kwargs):
-        if len(self.kid) < 10:
-            self.kid = str(self.medlem_id).zfill(5)
+        if len(self.kid) < 1:
             super(Giro, self).save(*args, **kwargs)
-            self.kid = mod10.add_kid_controlbit(self.kid + str(self.pk).zfill(5))
+            self.kid = str(self.pk % 100000).zfill(5)
+            self.kid = mod10.add_kid_controlbit(self.kid)
 
         # Fiks det denormaliserte feltet til medlemen, som fortel um siste
         # medlemspengebetaling.

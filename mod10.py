@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# vim: ts=4 sts=4 expandtab :
+# vim: ts=4 sts=4 expandtab ai
 
 import sys, random
 
@@ -44,14 +44,14 @@ def add_kid_controlbit(kid):
 
 
 if __name__ == '__main__':
-    kid = 234567
+    kid = str(234567)
     for i in range(10000):
-        nkid, cbit = add_kid_controlbit(kid)
+        nkid = add_kid_controlbit(kid)
         correct = check_number(nkid)
 
-        print "%d\t%s\t(frå %d, cbit %d, nr %3d)" % (nkid, correct, kid, cbit, i)
+        print "%s\t%s\t(fra %s, nr %3d)" % (nkid, correct, kid, i)
 
         if (not correct):
             sys.exit()
 
-        kid = random.randrange(100000000, 999999999)
+        kid = str(random.randrange(100000000, 999999999))
