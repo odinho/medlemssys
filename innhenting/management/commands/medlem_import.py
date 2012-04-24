@@ -249,9 +249,6 @@ def import_bet(bet_csv_fil):
         highest_pk = -1
 
     for num, rad in enumerate(liste):
-        if num < 999 and num % 100 == 0:
-            yield unicode(num)
-
         if num % 1000 == 0 and num != 0:
             transaction.commit()
             yield unicode(num)
@@ -313,6 +310,10 @@ def import_bet(bet_csv_fil):
             g.desc = rad[3]
 
         g.save()
+
+        if num < 99:
+            yield unicode(g)
+
 
 def fiks_tilskipingar():
     tilskipingar = Tilskiping.objects.all()
