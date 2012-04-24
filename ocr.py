@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # vim: set fileencoding=UTF8 tabstop=4 softtabstop=4 expandtab autoindent :
 
-import sys, mod10
+import datetime
+import sys
+
+import mod10
 
 TRANSAKSJONSTYPE = {
     "10": "Giro belasta konto",
@@ -18,59 +21,72 @@ TRANSAKSJONSTYPE = {
     "21": "Nettgiro - kjøp m fritekst",
 }
 
-if (len(sys.argv) < 2):
-    print "Usage:  %s <in_ocr_file>\n" % sys.argv[0]
-    sys.exit()
+def parse_ocr(ocrfile):
+    for row in ocrfile:
+        row = row.strip()
+        if row[0:8] == "NY000010":
+            # Startrecord for sending
+            forsendelsesnr = row[16:23]
+            break
 
-ocrfile = open(sys.argv[1])
+    if not forsendelsesnr:
+        raise Exception('Fann ikkje startrecord for sending')
 
-for row in ocrfile:
-    row = row.strip()
-    if row[0:8] == "NY000010":
-        print "# Startrecord for forsendelse"
-        forsendelsesnr = row[16:23]
-        break
+    info = []
 
-if not forsendelsesnr:
-    print "# Fann ikkje startrecord for forsendelse"
-    sys.exit()
+    for row in ocrfile:
+        row = row.strip()
 
-for row in ocrfile:
-    row = row.strip()
+        if row[0:6] == "NY0900":
+            if row[6:8] == "20":
+                # Startrecord for oppdrag
+                pass
+            elif row[6:8] == "88":
+                # Sluttrecord for oppdrag
+                pass
+            else:
+                raise Exception("Forstår ikkje kode {0} ({1})!".format(row[6:8], row))
+            continue
 
-    if row[0:6] == "NY0900":
-        if row[6:8] == "20":
-            print "# Startrecord for oppdrag"
-            print "%7s [%6s] %6s  %s" % ("dato", "kid", "belop", "transaksjon")
-        elif row[6:8] == "88":
-            print "# Sluttrecord for oppdrag"
-        else:
-            print "# Forstår ikkje kode!"
-        continue
+        elif row[0:4] == "NY09":
+            if row[6:8] != "30":
+                raise Exception("Venta startrecord 30, fekk {0}. ({1})!".format(row[6:8], row))
 
-    elif row[0:4] == "NY09":
-        if row[6:8] != "30":
-            print "# Venta startrecord, dette er ikkje!"
-            print row
-            sys.exit()
+            # Transaksjon
+            trans = TRANSAKSJONSTYPE[row[4:6]]
+            dato = row[15:21]
+            dato = datetime.date(2000 + int(dato[4:6]), int(dato[2:4]), int(dato[0:2]))
+            belop = int(row[32:49])/100.0
+            kid = row[49:74].strip()
+            if not mod10.check_number(kid.strip()):
+                raise Exception("KID-nummer validerte ikkje ({0})".format(kid))
 
-        # Transaksjon
-        trans = TRANSAKSJONSTYPE[row[4:6]]
-        dato = row[15:21]
-        belop = int(row[32:49])/100.0
-        kid = row[49:74]
-        if mod10.check_number(kid.strip()):
-            kid_ok = "KID ok"
-        else:
-            kid_ok = "KID FEIL"
+            row2 = ocrfile.next()
+            oppdr_dato = row2[41:47]
+            fra_konto = row2[47:58]
 
-        row2 = ocrfile.next()
-        oppdr_dato = row2[41:47]
-        fra_konto = row2[47:58]
+            fritekst = ""
+            if row[4:6] == "20" or row[4:6] == "21":
+                row3 = ocrfile.next()
+                fritekst = row3[15:55]
 
-        print "%7s [%6s] %6d  %s" % (dato, kid_ok, belop, trans)
+            info.append(dict(
+                        transaksjon=trans,
+                        dato=dato,
+                        belop=belop,
+                        kid=kid,
+                        oppdragsdato=oppdr_dato,
+                        fra_konto=fra_konto,
+                        fritekst=fritekst,
+                    ))
+    return info
 
-        if row[4:6] == "20" or row[4:6] == "21":
-            row3 = ocrfile.next()
-            fritekst = row3[15:55]
-            print fritekst
+if __name__ == '__main__':
+    if (len(sys.argv) < 2):
+        print "Usage:  %s <in_ocr_file>\n" % sys.argv[0]
+        sys.exit()
+
+    info = parse_ocr(open(sys.argv[1]))
+
+    for f in info:
+        print "{dato} {belop} {transaksjon}".format(**f)
