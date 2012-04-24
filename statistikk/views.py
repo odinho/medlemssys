@@ -54,8 +54,11 @@ def vervetopp_json(request):
     return HttpResponse(unicode(json.dumps(count)).encode('utf8'),
             content_type="application/json; charset=utf-8")
 
+from django.views.decorators.clickjacking import xframe_options_exempt
+
+@xframe_options_exempt
 def vervetopp(request):
-    nye = Medlem.objects.filter(oppretta__year=2012, status='M')
+    nye = Medlem.objects.filter(oppretta__gte=datetime.date(2012, 04, 25), oppretta__lte=datetime.date(2012, 06, 30), status='M')
 
     count = defaultdict(lambda: dict(verva=[], bet_teljande=[], ubet_teljande=[], totalt=0))
     for n in nye:
@@ -72,4 +75,4 @@ def vervetopp(request):
 
     newlist = sorted(count.values(), key=lambda x: (-len(x['bet_teljande']), -len(x['ubet_teljande'])))
 
-    return render_to_response('statistikk/vervetopp.html', dict(objects=newlist))
+    return render_to_response('statistikk/vervetopp-embed.html', dict(objects=newlist))

@@ -1,0 +1,40 @@
+<!doctype html>
+<meta charset=utf-8>
+<title>Vervetopp</title>
+
+<style type=text/css>
+    body { font-family: "Arial", "Helvetica", sans-serif; line-height: 1.5em; font-size: 10pt; max-width: 800px; }
+    .info { text-align: right; padding: 0; margin: 0; }
+    .betalt, .ubetalt { padding: 2px; font-family: monospace; font-weight: bold; color: #ded; display: inline-block; margin: 0; text-shadow: 1px 1px 0 rgba(0,0,0,0.2); }
+    .betalt { background-color: #5D927D; }
+    .ubetalt { background-color: #bbc6bb; }
+</style>
+
+<p class=info><small><span class=betalt>B</span> betalt &ndash; <span class=ubetalt>u</span> ikkje betalt</small></p>
+
+{% if not objects %}
+<p><strong>Ingen har verva nokon enno, skund deg, so vert du den fyrste.</strong></p>
+{% else %}
+<table><thead><tr><th>Vervar <th>Vervingar</tr></thead>
+    <tbody>
+    {% for o in objects %}
+        <tr><td>{{ o.namn }} <td>{% spaceless %}
+            {% for v in o.bet_teljande %}<span class=betalt>B</span>{% endfor %}
+            {% for v in o.ubet_teljande %}<span class=ubetalt>u</span>{% endfor %}
+            {#% for v in o.verva %}[a] {% endfor %#}
+            {% endspaceless %}
+            </td>
+        </tr>
+        {% comment %}
+        <ul>
+        {% for v in o.verva %}
+          <li>{{ v }}</li>
+        {% endfor %}
+        </ul>
+        {% endcomment %}
+        </li>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+<p><small>Oppdaterast ved midnatt kvar arbeidsdag.</small></p>
