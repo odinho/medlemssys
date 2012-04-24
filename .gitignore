@@ -9,3 +9,5 @@
 
 *.json
 *.csv
+
+settings/local.py
