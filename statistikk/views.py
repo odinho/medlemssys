@@ -55,7 +55,7 @@ def vervetopp_json(request):
             content_type="application/json; charset=utf-8")
 
 from django.views.decorators.clickjacking import xframe_options_exempt
-from innhenting.management.commands.medlem_import import RE_MEDLNR
+from medlemssys.innhenting.management.commands.medlem_import import RE_MEDLNR
 
 @xframe_options_exempt
 def vervetopp(request):
