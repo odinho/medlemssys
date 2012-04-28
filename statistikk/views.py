@@ -68,8 +68,7 @@ def vervetopp(request):
         try:
             pers_id = RE_MEDLNR.search(n.innmeldingsdetalj).group(1)
         except:
-            pers_id = n.innmeldingsdetalj
-            count[pers_id]['namn'] = pers_id
+            continue
         else:
             try:
                 count[pers_id]['namn'] = unicode(Medlem.objects.get(pk=pers_id))
