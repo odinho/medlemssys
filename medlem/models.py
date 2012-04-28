@@ -189,7 +189,7 @@ class Medlem(models.Model):
             choices=INNMELDINGSTYPAR, default='U')
     innmeldingsdetalj = models.CharField(_("detalj om innmelding"), max_length=255,
         blank=True, null=True, help_text=_("Skriv inn vervemedlem i hakeparantesar ([1234])"))
-    verva_av = models.ForeignKey('Medlem', blank=True, null=True)
+    verva_av = models.ForeignKey('Medlem', related_name='har_verva', blank=True, null=True)
 
     # Tilkopla felt
     lokallag = models.ForeignKey(Lokallag, blank=True, null=True)
