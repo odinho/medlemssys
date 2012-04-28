@@ -55,23 +55,35 @@ def vervetopp_json(request):
             content_type="application/json; charset=utf-8")
 
 from django.views.decorators.clickjacking import xframe_options_exempt
+from innhenting.management.commands.medlem_import import RE_MEDLNR
 
 @xframe_options_exempt
 def vervetopp(request):
-    nye = Medlem.objects.filter(oppretta__gte=datetime.date(2012, 04, 25), oppretta__lte=datetime.date(2012, 06, 30), status='M')
+    nye = Medlem.objects.filter(innmeldt_dato__gte=datetime.date(2012, 04, 25),
+            innmeldt_dato__lte=datetime.date(2012, 06, 30),
+            status='M')
 
     count = defaultdict(lambda: dict(verva=[], bet_teljande=[], ubet_teljande=[], totalt=0))
     for n in nye:
-        pers = re.sub("(?i)Verva av ", "", n.innmeldingsdetalj).title()
-        count[pers]['namn'] = pers
-        count[pers]['totalt'] += 1
+        try:
+            pers_id = RE_MEDLNR.search(n.innmeldingsdetalj).group(1)
+        except:
+            pers_id = n.innmeldingsdetalj
+            count[pers_id]['namn'] = pers_id
+        else:
+            try:
+                count[pers_id]['namn'] = unicode(Medlem.objects.get(pk=pers_id))
+            except:
+                count[pers_id]['namn'] = pers_id
+
+        count[pers_id]['totalt'] += 1
 
         if n.er_teljande() and n.har_betalt():
-            count[pers]['bet_teljande'].append(n)
+            count[pers_id]['bet_teljande'].append(n)
         elif n.er_teljande() and not n.har_betalt():
-            count[pers]['ubet_teljande'].append(n)
+            count[pers_id]['ubet_teljande'].append(n)
         else:
-            count[pers]['verva'].append(n)
+            count[pers_id]['verva'].append(n)
 
     newlist = sorted(count.values(), key=lambda x: (-len(x['bet_teljande']), -len(x['ubet_teljande'])))
 
