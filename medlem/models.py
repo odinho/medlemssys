@@ -107,6 +107,7 @@ INNMELDINGSTYPAR = (
 
 class MedlemManager(models.Manager):
     def alle(self):
+        """Alle oppføringar i registeret"""
         if getattr(self, 'core_filters', None):
             qs = super(MedlemManager, self).get_query_set().filter(**self.core_filters)
         else:
@@ -115,11 +116,13 @@ class MedlemManager(models.Manager):
         return qs
 
     def ikkje_utmelde(self, year=date.today().year):
+        """Medlem som ikkje er eksplisitt utmelde"""
         return self.alle().filter(
             Q(utmeldt_dato__isnull=True) | Q(utmeldt_dato__gt=date(year+1, 1, 1))
         )
 
     def betalande(self, year=date.today().year):
+        """Medlem med ein medlemspengeinnbetaling inneverande år"""
         return self.ikkje_utmelde(year) \
             .filter(
                 giroar__oppretta__gte=date(year, 1, 1),
@@ -128,13 +131,14 @@ class MedlemManager(models.Manager):
             ).distinct()
 
     def teljande(self, year=date.today().year):
+        """Medlem i teljande alder, med postnr i Noreg og med betalte medlemspengar"""
         return self.betalande(year) \
             .filter(
                 fodt__gte = year - 25
             )
 
     def interessante(self, year=date.today().year):
-        """Viser berre 'interessante' medlem, dei som har betalt i år eller i fjor."""
+        """Medlem som har betalt i år eller i fjor."""
         return self.ikkje_utmelde(year) \
             .filter(
                 giroar__oppretta__gte=date(year-1, 1, 1),
