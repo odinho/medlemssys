@@ -130,12 +130,22 @@ class MedlemManager(models.Manager):
                 giroar__innbetalt__isnull=False
             ).distinct()
 
-    def teljande(self, year=date.today().year):
-        """Medlem i teljande alder, med postnr i Noreg og med betalte medlemspengar"""
-        return self.betalande(year) \
+    def unge(self, year=date.today().year):
+        """Medlem under 26 (altso i teljande alder)"""
+        return self.ikkje_utmelde(year) \
             .filter(
                 fodt__gte = year - 25
             )
+
+    def potensielt_teljande(self, year=date.today().year):
+        return self.unge(year).filter(postnr__gt="0000", postnr__lt="9999") \
+            .exclude(giroar__oppretta__gte=date(year, 1, 1),
+                giroar__oppretta__lt=date(year+1, 1, 1),
+                giroar__innbetalt__isnull=False)
+
+    def teljande(self, year=date.today().year):
+        """Medlem i teljande alder, med postnr i Noreg og med betalte medlemspengar"""
+        return self.betalande(year) & self.unge(year).distinct().filter(postnr__gt="0000", postnr__lt="9999")
 
     def interessante(self, year=date.today().year):
         """Medlem som har betalt i år eller i fjor."""
