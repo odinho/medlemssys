@@ -18,10 +18,9 @@
 <table><thead><tr><th>Vervar <th>Vervingar</tr></thead>
     <tbody>
     {% for o in objects %}
-        <tr><td>{{ o.namn }} <td>{% spaceless %}
-            {% for v in o.bet_teljande %}<span class=betalt>B</span>{% endfor %}
-            {% for v in o.ubet_teljande %}<span class=ubetalt>u</span>{% endfor %}
-            {#% for v in o.verva %}[a] {% endfor %#}
+        <tr><td>{{ o }} <td>{% spaceless %}
+            {% for v in o.har_verva.teljande %}<span class=betalt>B</span>{% endfor %}
+            {% for v in o.har_verva.potensielt_teljande %}<span class=ubetalt>u</span>{% endfor %}
             {% endspaceless %}
             </td>
         </tr>
