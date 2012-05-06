@@ -2,10 +2,44 @@
 # vim: ts=4 sts=4 expandtab ai
 
 #from django.db import models
-from django.contrib.admin.filters import RelatedFieldListFilter, DateFieldListFilter
+from django.contrib.admin.filters import RelatedFieldListFilter, DateFieldListFilter, SimpleListFilter
 from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext as _
+from django.db.models import Q
 from datetime import date
+
+class FodtFilter(SimpleListFilter):
+    parameter_name = "alder"
+    title = _(u"alder i år")
+
+    def lookups(self, request, model_admin):
+        return (
+                ('under-26',    u"Under 26 (teljande)"),
+                ('over-25',     u"26 og eldre"),
+                ('under-30',    u"Under 30"),
+                ('over-29',     u"30 og eldre"),
+                ('25',          u"25 år (sisteårs teljande)"),
+                ('26',          u"26 år (ikkje teljande fyrste år)"),
+                ('invalid',     u"Sære aldre"),
+            )
+
+    def queryset(self, request, queryset):
+        year = date.today().year
+
+        if self.value() == 'under-26':
+            return queryset.filter(fodt__lt=(year - 26))
+        elif self.value() == 'over-25':
+            return queryset.filter(fodt__gt=(year - 25))
+        if self.value() == 'under-30':
+            return queryset.filter(fodt__lt=(year - 30))
+        elif self.value() == 'over-29':
+            return queryset.filter(fodt__gt=(year - 29))
+        elif self.value() == '25':
+            return queryset.filter(fodt=(year - 25))
+        elif self.value() == '26':
+            return queryset.filter(fodt=(year - 26))
+        elif self.value() == 'invalid':
+            return queryset.filter(Q(fodt__isnull=True) | Q(fodt__lt=(year-120)) | Q(fodt__gt=year))
 
 class TimeSinceFilter(DateFieldListFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):

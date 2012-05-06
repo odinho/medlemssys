@@ -10,7 +10,7 @@ from reversion.admin import VersionAdmin
 import csv
 
 from medlemssys.settings import STATIC_URL
-from filters import AdditiveSubtractiveFilter, TimeSinceFilter
+from filters import AdditiveSubtractiveFilter, TimeSinceFilter, FodtFilter
 
 from models import *
 
@@ -30,12 +30,12 @@ class MedlemAdmin(VersionAdmin):
     list_display_links = ('id', '__unicode__')
     date_hierarchy = 'innmeldt_dato'
     list_filter = (
-            'status',
             ('val', AdditiveSubtractiveFilter),
             ('_siste_medlemspengar', TimeSinceFilter),
-            'lokallag',
-            'fodt',
+            FodtFilter,
             'innmeldt_dato',
+            'status',
+            'lokallag',
         )
     raw_id_fields = ['verva_av']
     readonly_fields = ('_siste_medlemspengar', 'oppretta', 'oppdatert')
