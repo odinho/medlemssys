@@ -86,7 +86,7 @@ class MedlemAdmin(VersionAdmin):
     def csv_member_list(self, request, queryset):
         liste = ""
 
-        response = HttpResponse(mimetype="text/plain")
+        response = HttpResponse(mimetype="text/plain; charset=utf-8")
 
         dc = csv.writer(response)
         dc.writerow(model_to_dict(queryset[0]).keys())
