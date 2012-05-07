@@ -23,6 +23,11 @@ class RolleInline(admin.TabularInline):
     model = Rolle
     extra = 1
     classes = ['left']
+class MedlemInline(admin.TabularInline):
+    model = Medlem
+    extra = 0
+    classes = ['left']
+    fields = ['innmeldingstype', 'innmeldingsdetalj', 'lokallag', 'fodt']
 
 class MedlemAdmin(VersionAdmin):
     list_display = ('id', '__unicode__', 'lokallag', 'er_innmeldt',
@@ -41,7 +46,7 @@ class MedlemAdmin(VersionAdmin):
     raw_id_fields = ['verva_av']
     readonly_fields = ('_siste_medlemspengar', 'oppretta', 'oppdatert')
     save_on_top = True
-    inlines = [RolleInline, GiroInline,]
+    inlines = [RolleInline, GiroInline, MedlemInline]
     search_fields = ('fornamn', 'mellomnamn', 'etternamn', '=id',)
     filter_horizontal = ('val', 'tilskiping', 'nemnd')
     fieldsets = (
