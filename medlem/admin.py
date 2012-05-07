@@ -18,7 +18,7 @@ class GiroInline(admin.TabularInline):
     model = Giro
     extra = 1
     classes = ['left']
-    fields = ['belop', 'kid', 'oppretta', 'innbetalt', 'desc']
+    fields = ['belop', 'innbetalt_belop', 'kid', 'oppretta', 'innbetalt', 'konto', 'desc']
 class RolleInline(admin.TabularInline):
     model = Rolle
     extra = 1
@@ -206,8 +206,8 @@ class ValAdmin(admin.ModelAdmin):
 class GiroAdmin(admin.ModelAdmin):
     model = Giro
     raw_id_fields = ['medlem']
-    list_display = ('pk', 'medlem', 'kid', 'belop', 'oppretta', 'innbetalt', 'konto')
-    list_editable = ('innbetalt', )
+    list_display = ('pk', 'medlem', 'kid', 'belop', 'innbetalt_belop', 'oppretta', 'innbetalt', 'konto')
+    list_editable = ('innbetalt', 'innbetalt_belop' )
     fieldsets = (
         (None, {
             'fields': (

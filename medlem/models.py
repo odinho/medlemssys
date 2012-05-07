@@ -364,6 +364,7 @@ HENSIKTER = (
 class Giro(models.Model):
     medlem = models.ForeignKey(Medlem, related_name='giroar')
     belop = models.PositiveIntegerField(_(u"Beløp"))
+    innbetalt_belop = models.PositiveIntegerField(_(u"Innbetalt beløp"), default=0)
 
     kid = models.CharField(_("KID-nummer"), max_length=255, blank=True)
 

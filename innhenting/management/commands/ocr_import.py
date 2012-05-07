@@ -40,15 +40,15 @@ class Command(BaseCommand):
 
             if f['belop'] < giro.belop:
                 self.err("{giro}: for lite betalt! Rekna {giro.belop}, fekk {belop} ({giro.pk})".format(giro=giro, belop=f['belop']))
-                self.err("FARE, lagrar ikkje denne her. Tenk ut noko lurt...")
-                # XXX: Kva skal eg gjera her?
-                continue
             elif f['belop'] > giro.belop:
+                # XXX: Splitt opp? Registrer ein donasjon?
                 self.err("{giro}: Betalte meir, venta {giro.belop}, fekk {belop} ({giro.pk})".format(giro=giro, belop=f['belop']))
-                # XXX: Registrer ein donasjon
+                giro.innbetalt = f['dato']
+            else:
+                giro.innbetalt = f['dato']
+                self.err("{belop:3n}kr ({giro.pk}) {giro} ".format(giro=giro, belop=f['belop']))
 
-            giro.innbetalt = f['dato']
-
+            giro.innbetalt_belop = f['belop']
             giro.save()
 
     def err(self, msg):
