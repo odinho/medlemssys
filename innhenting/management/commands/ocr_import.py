@@ -3,7 +3,11 @@
 from __future__ import print_function
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.db.models import Q
 import os
+
+from medlemssys.medlem.models import Giro
+from medlemssys.medlem.models import update_denormalized_fields
 from ocr import parse_ocr
 
 obj = ""
@@ -31,35 +35,21 @@ class Command(BaseCommand):
                         kid=f['kid'],
                     )
             except Giro.DoesNotExist:
-                self.stderr.write("Fann ikkje giroen, {dato:6s} {belop:4n} {kid:12s} {transaksjon}\n".format(**f))
+                self.err("Fann ikkje giroen, {dato:6s} {belop:4n} {kid:12s} {transaksjon}".format(**f))
                 continue
 
             if f['belop'] < giro.belop:
-                self.stderr("{giro}: for lite betalt! Rekna {giro.belop}, fekk {f.belop} ({giro.pk})".format(giro=giro, f=f))
-                self.stderr("FARE, lagrar ikkje denne her. Tenk ut noko lurt...")
+                self.err("{giro}: for lite betalt! Rekna {giro.belop}, fekk {belop} ({giro.pk})".format(giro=giro, belop=f['belop']))
+                self.err("FARE, lagrar ikkje denne her. Tenk ut noko lurt...")
                 # XXX: Kva skal eg gjera her?
                 continue
             elif f['belop'] > giro.belop:
-                self.stderr("{giro}: Betalte meir, venta {giro.belop}, fekk {f.belop} ({giro.pk})".format(giro=giro, f=f))
+                self.err("{giro}: Betalte meir, venta {giro.belop}, fekk {belop} ({giro.pk})".format(giro=giro, belop=f['belop']))
                 # XXX: Registrer ein donasjon
 
             giro.innbetalt = f['dato']
 
             giro.save()
 
-    def stderr(self, msg):
-        obj.stderr.write((unicode(msg) + "\n").encode('utf-8'))
-
-
-from django.db import transaction
-from django.db.models import Q
-from dateutil.parser import parse
-import reversion
-import datetime
-import csv
-import re
-
-from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping, LokallagOvervaking
-from medlemssys.medlem.models import KONTI, update_denormalized_fields
-from medlemssys.medlem import admin # Needed to register reversion
-from medlemssys.statistikk.models import LokallagStat
+    def err(self, msg):
+        self.stderr.write((unicode(msg) + "\n").encode('utf-8'))
