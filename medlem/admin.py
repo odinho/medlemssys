@@ -10,7 +10,7 @@ from reversion.admin import VersionAdmin
 import csv
 
 from medlemssys.settings import STATIC_URL
-from filters import AdditiveSubtractiveFilter, TimeSinceFilter, FodtFilter
+from filters import AdditiveSubtractiveFilter, TimeSinceFilter, FodtFilter, SporjingFilter
 
 from models import *
 
@@ -30,6 +30,7 @@ class MedlemAdmin(VersionAdmin):
     list_display_links = ('id', '__unicode__')
     date_hierarchy = 'innmeldt_dato'
     list_filter = (
+            SporjingFilter,
             ('val', AdditiveSubtractiveFilter),
             ('_siste_medlemspengar', TimeSinceFilter),
             FodtFilter,

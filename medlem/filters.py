@@ -8,6 +8,29 @@ from django.utils.translation import ugettext as _
 from django.db.models import Q
 from datetime import date
 
+class SporjingFilter(SimpleListFilter):
+    title = _(u"spørjingar")
+    parameter_name = 'sporjing'
+
+    def lookups(self, request, model_admin):
+        return (
+                ('teljande',    u"Teljande"),
+                ('interessante',u"Interessante"),
+                ('betalande',   u"Betalande"),
+                ('potensielle', u"Potensielt teljande"),
+            )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'teljande':
+            return queryset.model.objects.teljande()
+        elif self.value() == 'interessante':
+            return queryset.model.objects.interessante()
+        elif self.value() == 'betalande':
+            return queryset.model.objects.betalande()
+        elif self.value() == 'potensielle':
+            return queryset.model.objects.potensielt_teljande()
+
+
 class FodtFilter(SimpleListFilter):
     parameter_name = "alder"
     title = _(u"alder i år")
