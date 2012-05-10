@@ -391,7 +391,7 @@ class Giro(models.Model):
     def save(self, *args, **kwargs):
         if len(self.kid) < 1:
             super(Giro, self).save(*args, **kwargs)
-            self.kid = str(self.pk % 100000).zfill(5)
+            self.kid = str(int(self.pk) % 100000).zfill(5)
             self.kid = mod10.add_kid_controlbit(self.kid)
 
         # Fiks det denormaliserte feltet til medlemen, som fortel um siste
