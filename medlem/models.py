@@ -366,7 +366,8 @@ class Giro(models.Model):
     belop = models.PositiveIntegerField(_(u"Beløp"))
     innbetalt_belop = models.PositiveIntegerField(_(u"Innbetalt beløp"), default=0)
 
-    kid = models.CharField(_("KID-nummer"), max_length=255, blank=True)
+    # XXX This is not really unique, but unique per oppretta_year and oppretta_year - 1
+    kid = models.CharField(_("KID-nummer"), max_length=255, blank=True, unqiue=True)
 
     oppretta = models.DateTimeField(_("Giro lagd"), blank=True, default=datetime.now)
     innbetalt = models.DateField(_("Dato betalt"), blank=True, null=True)
