@@ -7,7 +7,7 @@ import datetime, json, re, operator
 from medlemssys.medlem.models import Lokallag, Medlem
 from models import LokallagStat
 
-def update(request):
+def update_lokallagstat():
     lokallag = Lokallag.objects.all()
 
     llstat = []
@@ -30,9 +30,9 @@ def update(request):
                     n_totalt = llag.medlem_set.count(),
                 ))
         except IntegrityError:
-            print "Already have this week"
-            return HttpResponse("Har allereie denne veka", content_type="text/plain; charset=utf-8")
-    return HttpResponse(unicode(llstat), content_type="text/plain; charset=utf-8")
+            pass # Already have this week
+
+    return llstat
 
 from collections import defaultdict
 from django.shortcuts import render_to_response

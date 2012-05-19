@@ -21,3 +21,6 @@ class LokallagStat(models.Model):
 
     class Meta:
         unique_together = ('lokallag', 'veke')
+
+    def __unicode__(self):
+        return u"{0} {1}".format(self.lokallag, self.veke)

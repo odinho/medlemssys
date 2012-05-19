@@ -6,6 +6,8 @@ from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
 import os
 
+from medlemssys.statistikk.views import update_lokallagstat
+
 obj = ""
 
 class Command(BaseCommand):
@@ -41,6 +43,8 @@ class Command(BaseCommand):
 
         fiks_tilskipingar()
         update_denormalized_fields()
+        for i in update_lokallagstat():
+            self.stdout.write(u"LokallagStat: {0}\n".format(unicode(i)).encode('utf8'))
         send_epostar()
 
     def get_filename(self, args, num, setting, fallback):
