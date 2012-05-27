@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     (r'^takk', 'django.views.generic.simple.direct_to_template',
         {'template': 'takk.html', }),
     (r'^stats/vervetopp/', 'medlemssys.statistikk.views.vervetopp'),
+    (r'^stats/vervometer/', 'medlemssys.statistikk.views.vervometer'),
 #    url(r'^newsletters/', include('emencia.django.newsletter.urls')),
     (r'^admin/', include(admin.site.urls)),
 )

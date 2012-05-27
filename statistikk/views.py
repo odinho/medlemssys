@@ -65,3 +65,21 @@ def vervetopp(request):
     nye_vervarar = sorted(vervarar, key=lambda v: (v.har_verva.teljande().count(), v.har_verva.potensielt_teljande().count()), reverse=True)
 
     return render_to_response('statistikk/vervetopp-embed.html', dict(objects=nye_vervarar))
+
+@xframe_options_exempt
+def vervometer(request):
+    teljande = Medlem.objects.teljande().filter(innmeldt_dato__gte="2012-04-25",
+            innmeldt_dato__lte="2012-06-30").distinct().count()
+    potensielt_teljande = Medlem.objects.potensielt_teljande().filter(innmeldt_dato__gte="2012-04-25",
+            innmeldt_dato__lte="2012-06-30").distinct().count()
+    maal = 300
+
+    gjenstaande = maal - (teljande + potensielt_teljande)
+
+    return render_to_response('statistikk/vervometer-embed.html',
+                              {
+                                 'teljande': teljande,
+                                 'potensielt_teljande': potensielt_teljande,
+                                 'maal': maal,
+                                 'gjenstaande': gjenstaande,
+                              })
