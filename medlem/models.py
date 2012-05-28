@@ -430,6 +430,7 @@ class LokallagOvervaking(models.Model):
 
     lokallag = models.ForeignKey(Lokallag)
     deaktivert = models.DateTimeField(blank=True, null=True)
+    sist_oppdatert = models.DateTimeField(auto_now=True)
 
     class Meta:
         verbose_name_plural = "overvaking av lokallag"
