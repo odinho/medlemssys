@@ -11,7 +11,7 @@ def update_lokallagstat():
     lokallag = Lokallag.objects.all()
 
     llstat = []
-    LokallagStat.objects.filter(veke="{:%Y-%W}".format(datetime.datetime.now())).delete()
+    LokallagStat.objects.filter(veke="{0:%Y-%W}".format(datetime.datetime.now())).delete()
 
     for llag in lokallag:
         teljande_list = list(llag.medlem_set.teljande().values_list('pk', flat=True))
@@ -19,7 +19,7 @@ def update_lokallagstat():
         try:
             llstat.append(LokallagStat.objects.create(
                     lokallag = llag,
-                    veke = "{:%Y-%W}".format(datetime.datetime.now()),
+                    veke = "{0:%Y-%W}".format(datetime.datetime.now()),
 
                     teljande = json.dumps(teljande_list),
                     interessante = json.dumps(interessante_list),
