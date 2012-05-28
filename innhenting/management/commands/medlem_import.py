@@ -337,7 +337,13 @@ def send_epostar():
         if overvak.medlem:
             epost = overvak.medlem.epost
 
-        sist_oppdatering = datetime.datetime.now() - datetime.timedelta(days=2)
+        if (datetime.datetime.now() - overvak.sist_oppdatert) > datetime.timedelta(days=6, seconds=22*60*60):
+            # Har sendt epost for mindre enn 7 dagar sidan, so ikkje send noko no.
+            # TODO: Dette er ein sjukt dårleg måte å gjera dette på, fiks betre
+            continue
+
+        sist_oppdatering = overvak.sist_oppdatert
+
         medlem = overvak.lokallag.medlem_set.alle().filter(oppdatert__gt=sist_oppdatering)
         nye_medlem = list(medlem.filter(oppretta__gt=sist_oppdatering).exclude(status='I'))
         nye_infofolk = list(medlem.filter(oppretta__gt=sist_oppdatering, status='I'))
