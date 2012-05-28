@@ -383,6 +383,12 @@ def send_epostar():
             else:
                 endra_medlem.append(m)
 
+        if not (len(nye_medlem) + len(nye_infofolk)      \
+                + len(flytta_medlem) + len(endra_medlem) \
+                + len(utmeld_medlem) + len(vekkflytta_medlem)):
+            # Ikkje send noko dersom det er ingenting å melda
+            continue
+
         dagar = (datetime.datetime.now() - sist_oppdatering).days
 
         context = Context({
