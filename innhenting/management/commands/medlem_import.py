@@ -43,8 +43,7 @@ class Command(BaseCommand):
 
         fiks_tilskipingar()
         update_denormalized_fields()
-        for i in update_lokallagstat():
-            self.stdout.write(u"LokallagStat: {0}\n".format(unicode(i)).encode('utf8'))
+        update_lokallagstat()
         send_epostar()
 
     def get_filename(self, args, num, setting, fallback):
@@ -349,7 +348,7 @@ def send_epostar():
         try:
             medlemar_sist = LokallagStat.objects                \
                 .get(                                           \
-                    veke="{0:%Y-%W}".format(sist_oppdatering),   \
+                    veke="{0:%Y-%W}".format(sist_oppdatering),  \
                     lokallag=overvak.lokallag                   \
                 ).interessante
             medlemar_sist = json.loads(medlemar_sist)
