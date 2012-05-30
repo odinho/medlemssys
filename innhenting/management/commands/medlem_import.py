@@ -70,7 +70,10 @@ from medlemssys.medlem import admin # Needed to register reversion
 from medlemssys.statistikk.models import LokallagStat
 
 def stderr(msg):
-    obj.stderr.write((unicode(msg) + "\n").encode('utf-8'))
+    if obj:
+        obj.stderr.write((unicode(msg) + "\n").encode('utf-8'))
+    else:
+        print((unicode(msg)).encode('utf-8'))
 
 RE_MEDLNR = re.compile(r'\[(\d+)\]')
 
@@ -337,12 +340,13 @@ def send_epostar():
         if overvak.medlem:
             epost = overvak.medlem.epost
 
-        if (datetime.datetime.now() - overvak.sist_oppdatert) > datetime.timedelta(days=6, seconds=22*60*60):
+        if (datetime.datetime.now() - overvak.sist_oppdatert) < datetime.timedelta(days=6, seconds=22*60*60):
             # Har sendt epost for mindre enn 7 dagar sidan, so ikkje send noko no.
             # TODO: Dette er ein sjukt dårleg måte å gjera dette på, fiks betre
             continue
 
         sist_oppdatering = overvak.sist_oppdatert
+        overvak.sist_oppdatert = datetime.datetime.now()
 
         medlem = overvak.lokallag.medlem_set.alle().filter(oppdatert__gt=sist_oppdatering)
         nye_medlem = list(medlem.filter(oppretta__gt=sist_oppdatering).exclude(status='I'))
@@ -368,7 +372,11 @@ def send_epostar():
 
         flytta_medlem, utmeld_medlem, endra_medlem = [], [], []
         for m in medlem:
-            old = reversion.get_for_date(m, sist_oppdatering)
+            try:
+                old = reversion.get_for_date(m, sist_oppdatering)
+            except reversion.models.Version.DoesNotExist:
+                continue
+
             new = reversion.get_for_object(m)[0]
 
             changed_keys = filter(lambda k: old.field_dict[k] != new.field_dict[k], new.field_dict.keys())
@@ -415,5 +423,7 @@ def send_epostar():
         except smtplib.SMTPRecipientsRefused:
             # TODO Do logging
             pass
+
+        overvak.save()
 
     return "Ferdig"
