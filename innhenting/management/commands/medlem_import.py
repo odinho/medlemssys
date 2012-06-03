@@ -399,7 +399,7 @@ def send_epostar():
             else:
                 endra_medlem.append(m)
 
-        if not (len(nye_medlem) + len(nye_infofolk)      \
+        if not (len(nye_medlem) + len(nye_infofolk)         \
                 + len(tilflytta_medlem) + len(endra_medlem) \
                 + len(utmeld_medlem) + len(vekkflytta_medlem)):
             # Ikkje send noko dersom det er ingenting å melda
@@ -424,7 +424,10 @@ def send_epostar():
         text_content = loader.get_template('epostar/lokallag_overvaking.txt').render(context)
         html_content = loader.get_template('epostar/lokallag_overvaking.html').render(context)
 
-        msg = EmailMultiAlternatives('Lokallag endra', text_content, "skriv@nynorsk.no", [epost])
+        emne = loader.get_template('epostar/lokallag_overvaking_emnefelt.txt').render(context)
+        stderr(emne)
+
+        msg = EmailMultiAlternatives(" ".join(emne.split())[:-1], text_content, "skriv@nynorsk.no", [epost])
         msg.attach_alternative(html_content, "text/html")
         try:
             msg.send()

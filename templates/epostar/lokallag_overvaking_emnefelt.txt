@@ -1,0 +1,9 @@
+{% spaceless %}
+  [{{ lokallag.slug }} register]
+  {% if nye_medlem %}{{ nye_medlem|length }} nye,{% endif %}
+  {% if nye_infofolk %}{{ nye_infofolk|length }} nye infofolk,{% endif %}
+  {% if endra_medlem %}{{ endra_medlem|length }} endringar,{% endif %}
+  {% if utmeld_medlem %}{{ utmeld_medlem|length }} utmeldingar,{% endif %}
+  {% if tilflytta_medlem %}{{ tilflytta_medlem|length }} tilflyttingar,{% endif %}
+  {% if vekkflytta_medlem %}{{ vekkflytta_medlem|length }} fråflytta,{% endif %}
+{% endspaceless %}
