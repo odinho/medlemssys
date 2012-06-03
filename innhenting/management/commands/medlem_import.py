@@ -356,18 +356,26 @@ def send_epostar():
 
         # Finn dei som har flytta til eit ANNA lokallag
         try:
-            medlemar_sist = LokallagStat.objects                \
-                .get(                                           \
-                    veke="{0:%Y-%W}".format(sist_oppdatering),  \
-                    lokallag=overvak.lokallag                   \
-                ).interessante
-            medlemar_sist = json.loads(medlemar_sist)
+            sist_statistikk = LokallagStat.objects.get(
+                                veke="{0:%Y-%W}".format(sist_oppdatering),
+                                lokallag=overvak.lokallag)
         except LokallagStat.DoesNotExist:
-            stderr(u"LokallagStat for {0}, {1:%Y-%W} fanst ikkje.".format(overvak.lokallag, sist_oppdatering))
-            vekkflytta_medlem = []
-        else:
+            sist_statistikk = LokallagStat.objects.filter(
+                                oppretta__gt=sist_oppdatering,
+                                lokallag=overvak.lokallag
+                ).order_by("-oppretta")[0]
+
+            stderr(u"LokallagStat for {0}, {1:%Y-%W} fanst ikkje. Brukar {2}" \
+                        .format(overvak.lokallag,
+                            sist_oppdatering,
+                            sist_statistikk))
+
+        if sist_statistikk:
+            medlemar_sist = json.loads(sist_statistikk.interessante)
             medlemar_no = overvak.lokallag.medlem_set.interessante().values_list('pk', flat=True)
             vekkflytta_medlem = Medlem.objects.filter(pk__in=set(medlemar_sist) - set(medlemar_no))
+        else:
+            vekkflytta_medlem = []
 
 
         tilflytta_medlem, utmeld_medlem, endra_medlem = [], [], []
