@@ -370,7 +370,7 @@ def send_epostar():
             vekkflytta_medlem = Medlem.objects.filter(pk__in=set(medlemar_sist) - set(medlemar_no))
 
 
-        flytta_medlem, utmeld_medlem, endra_medlem = [], [], []
+        tilflytta_medlem, utmeld_medlem, endra_medlem = [], [], []
         for m in medlem:
             try:
                 old = reversion.get_for_date(m, sist_oppdatering)
@@ -383,7 +383,7 @@ def send_epostar():
             m.changed = [ (k, old.field_dict[k], new.field_dict[k]) for k in changed_keys ]
 
             if 'lokallag' in changed_keys:
-                flytta_medlem.append(m)
+                tilflytta_medlem.append(m)
             elif 'utmeldt_dato' in changed_keys and new['utmeldt_dato']:
                 utmeld_medlem.append(m)
             elif 'status' in changed_keys and old['status'] == 'I':
@@ -392,7 +392,7 @@ def send_epostar():
                 endra_medlem.append(m)
 
         if not (len(nye_medlem) + len(nye_infofolk)      \
-                + len(flytta_medlem) + len(endra_medlem) \
+                + len(tilflytta_medlem) + len(endra_medlem) \
                 + len(utmeld_medlem) + len(vekkflytta_medlem)):
             # Ikkje send noko dersom det er ingenting å melda
             continue
@@ -407,9 +407,9 @@ def send_epostar():
                     'dagar' : dagar,
                'nye_medlem' : nye_medlem,
              'nye_infofolk' : nye_infofolk,
-            'flytta_medlem' : flytta_medlem,
              'endra_medlem' : endra_medlem,
             'utmeld_medlem' : utmeld_medlem,
+         'tilflytta_medlem' : tilflytta_medlem,
         'vekkflytta_medlem' : vekkflytta_medlem,
              })
 

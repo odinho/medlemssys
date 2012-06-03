@@ -15,7 +15,7 @@
     {% endblocktrans %}
 
     {% for m in nye_medlem %}
-        <p>{{ m }}, {{ m.alder|default:"me veit ikkje heilt kor mange" }} år. {{ m.pronomen|capfirst }} {{ m.har_betalt|yesno:"ar allereide betalt medlemspengar!,har ikkje registrert innbetalte medlemspengar enno." }} Kanhenda {% if m.epost %}ein velkomstepost til <a href="mailto:{{m.epost}}">{{m.epost}}</a>, eller {% endif %}{% if m.mobnr %}ein velkomst-SMS til <a href="sms:{{ m.mobnr }}">{{ m.mobnr }}</a>, eller {% endif %} noko personleg kontakt med {{ m.pronomen }} hadde gjort seg?
+        <p><strong>{{ m }}</strong>, {{ m.alder|default:"me veit ikkje heilt kor mange" }} år. {{ m.pronomen|capfirst }} {{ m.har_betalt|yesno:"ar allereide betalt medlemspengar!,har ikkje registrert innbetalte medlemspengar enno." }} Kanhenda {% if m.epost %}ein velkomstepost til <a href="mailto:{{m.epost}}">{{m.epost}}</a>, eller {% endif %}{% if m.mobnr %}ein velkomst-SMS til <a href="sms:{{ m.mobnr }}">{{ m.mobnr }}</a>, eller {% endif %} noko personleg kontakt med {{ m.pronomen }} hadde gjort seg?
     {% endfor %}
 {% endif %}
 
@@ -29,13 +29,15 @@
 
     <ul>
     {% for m in nye_infofolk %}
-        <li>{{ m }}</li>
+        <li><strong>{{ m }}</strong>,
+            <a href="mailto:{{m.epost}}">{{m.epost}}</a>,
+            <a href="sms:{{ m.mobnr }}">{{ m.mobnr }}</a></li>
     {% endfor %}
     </ul>
 {% endif %}
 
-{% if flytta_medlem %}
-    {% blocktrans count counter=flytta_medlem|length with num=flytta_medlem|length|apnumber|capfirst intro_text="Ei lita folkevandring? :P,Laget tiltrekkjer visst folk.,Sjå her ja..."|split|random %}
+{% if tilflytta_medlem %}
+    {% blocktrans count counter=tilflytta_medlem|length with num=tilflytta_medlem|length|apnumber|capfirst intro_text="Ei lita folkevandring? :P,Laget tiltrekkjer visst folk.,Sjå her ja..."|split|random %}
     <h2>Ein tilflytta medlem!</h2>
     {% plural %}
     <h2>{{ intro_text }} {{ num }} nytilflytta medlemar :D</h2>
@@ -43,7 +45,7 @@
     <p>Nytilflytta medlemar er nett som nye medlemar. Dei treng å få h&oslash;yra frå det nye laget sitt! Kanhenda dei er kome til ny plass og gjerne ynskjer folk å hengja med? Det er jo eit perfekt utgangspunkt :D</p>
 
     <ul>
-    {% for m in flytta_medlem %}
+    {% for m in tilflytta_medlem %}
         <li>{{ m }}</li>
     {% endfor %}
     </ul>
