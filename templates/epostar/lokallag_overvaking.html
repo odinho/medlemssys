@@ -102,5 +102,11 @@
     </ul>
 {% endif %}
 
+{% if ukjend_endring %}
+  <h2>Småendringar</h2>
+  <p>Oppdatert utan at nokre endringar var registrerte. Truleg noko småpirk:
+    {% for m in ukjend_endring %}{{m}}{% if not forloop.last %}, {% endif %}{% endfor %}.
+{% endif %}
+
 <p><small>{{ overvaking }}<br>
 Norsk Målungdom sitt medlemsregister</small></p>

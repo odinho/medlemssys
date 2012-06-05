@@ -378,7 +378,7 @@ def send_epostar():
             vekkflytta_medlem = []
 
 
-        tilflytta_medlem, utmeld_medlem, endra_medlem = [], [], []
+        tilflytta_medlem, utmeld_medlem, endra_medlem, ukjend_endring = [], [], [], []
         for m in medlem:
             try:
                 old = reversion.get_for_date(m, sist_oppdatering)
@@ -388,7 +388,11 @@ def send_epostar():
             new = reversion.get_for_object(m)[0]
 
             changed_keys = filter(lambda k: old.field_dict[k] != new.field_dict[k], new.field_dict.keys())
-            m.changed = [ (k, old.field_dict[k], new.field_dict[k]) for k in changed_keys ]
+            m.changed = [ (k, old.field_dict[k], new.field_dict[k])
+                          for k in changed_keys
+                          if k not in ["_siste_medlemspengar",
+                                       "oppdatert",
+                                       "oppretta" ] ]
 
             if 'lokallag' in changed_keys:
                 tilflytta_medlem.append(m)
@@ -396,8 +400,10 @@ def send_epostar():
                 utmeld_medlem.append(m)
             elif 'status' in changed_keys and old['status'] == 'I':
                 nye_medlem.append(m)
-            else:
+            elif m.changed:
                 endra_medlem.append(m)
+            else:
+                ukjend_endring.append(m)
 
         if not (len(nye_medlem) + len(nye_infofolk)         \
                 + len(tilflytta_medlem) + len(endra_medlem) \
@@ -417,6 +423,7 @@ def send_epostar():
              'nye_infofolk' : nye_infofolk,
              'endra_medlem' : endra_medlem,
             'utmeld_medlem' : utmeld_medlem,
+           'ukjend_endring' : ukjend_endring,
          'tilflytta_medlem' : tilflytta_medlem,
         'vekkflytta_medlem' : vekkflytta_medlem,
              })
