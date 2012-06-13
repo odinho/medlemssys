@@ -432,7 +432,6 @@ def send_epostar():
         html_content = loader.get_template('epostar/lokallag_overvaking.html').render(context)
 
         emne = loader.get_template('epostar/lokallag_overvaking_emnefelt.txt').render(context)
-        stderr(emne)
 
         msg = EmailMultiAlternatives(" ".join(emne.split())[:-1], text_content, "skriv@nynorsk.no", [epost])
         msg.attach_alternative(html_content, "text/html")
