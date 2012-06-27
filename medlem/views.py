@@ -1,5 +1,5 @@
 # vim: ts=4 sw=4 expandtab ai
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
 
@@ -26,3 +26,39 @@ def ringjelister(request):
     return render_to_response('medlem/ringjeliste.html', {
         'lokallag': lokallag,
     })
+
+@login_required
+def search(request):
+    return render_to_response('medlem/search.html', {})
+
+import json
+from django.db.models import Q
+
+def get_members(request):
+    term = request.GET.get('term', '')
+    search = None
+    for q in term.split():
+        search_part = Q(fornamn__icontains=q)   \
+        | Q(mellomnamn__icontains=q)            \
+        | Q(etternamn__icontains=q)             \
+        | Q(fodt__icontains=q)                  \
+        | Q(lokallag__namn__icontains=q)
+
+        if not search:
+            search = search_part
+        else:
+            search = search & search_part
+
+    members = Medlem.objects.select_related('giroar').filter(search)[:20]
+    results = []
+    for member in members:
+        member_json = {}
+        member_json['id'] = member.pk
+        member_json['namn'] = str(member)
+        member_json['lokallag'] = str(member.lokallag)
+        bet = member.giroar.filter(innbetalt__isnull=False).values_list("oppretta", flat=True)
+        member_json['bet'] = [x.year for x in bet]
+        results.append(member_json)
+    data = json.dumps(results)
+    mimetype = 'application/json'
+    return HttpResponse(data, mimetype)
