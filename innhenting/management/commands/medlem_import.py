@@ -396,9 +396,9 @@ def send_epostar():
 
             if 'lokallag' in changed_keys:
                 tilflytta_medlem.append(m)
-            elif 'utmeldt_dato' in changed_keys and new['utmeldt_dato']:
+            elif 'utmeldt_dato' in changed_keys and new.field_dict['utmeldt_dato']:
                 utmeld_medlem.append(m)
-            elif 'status' in changed_keys and old['status'] == 'I':
+            elif 'status' in changed_keys and old.field_dict['status'] == 'I':
                 nye_medlem.append(m)
             elif m.changed:
                 endra_medlem.append(m)
