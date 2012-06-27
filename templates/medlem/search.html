@@ -1,0 +1,67 @@
+<!doctype html>
+<meta charset=utf-8>
+<title>Medlemsreg søk</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<style type=text/css>
+    body { font: normal 0.8em sans-serif;}
+    thead { background-color: #333; color: #eee; }
+    th, td { padding: 4px; }
+    tr:nth-child(even) { background-color: #eee; }
+    table { width: 100%; }
+</style>
+
+<div class="ui-widget">
+  <label for="members">Søk etter medlem: </label>
+  <input id="members">
+</div>
+
+<table>
+<thead>
+  <tr><th>pk <th>Namn <th>Betaling <th>Lag</tr>
+</thead>
+<tbody>
+  <tr><td>- <td>gjer eit søk <td><td></tr>
+</tbody>
+</table>
+
+<script>
+var member_input = document.querySelector("#members");
+var table = document.querySelector("table");
+var xhr = new XMLHttpRequest();
+var info = {};
+var change_grace;
+
+member_input.addEventListener('input', change)
+
+function change(e) {
+    clearTimeout(change_grace);
+    if (member_input.value.length < 3)
+        return;
+
+    change_grace = setTimeout(do_xhr, 500);
+}
+
+function do_xhr() {
+    console.log("Doing XHR for " + member_input.value);
+    xhr.open('GET', '/api/get_members?term=' + encodeURIComponent(member_input.value));
+    xhr.onload = function(e) {
+        info = JSON.parse(xhr.response);
+	build_table(info);
+    }
+    xhr.send();
+}
+
+function build_table(members) {
+    var tableinfo = "";
+    members.forEach(function(l) {
+        tableinfo += "<tr><td>" + l.id
+        	     + "<td>" + l.namn
+        	     + "<td>" + l.bet
+        	     + "<td>" + l.lokallag;
+    });
+    table.tBodies[0].innerHTML = tableinfo;
+}
+</script>
+
+{#% endblock content %#}

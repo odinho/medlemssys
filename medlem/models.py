@@ -151,9 +151,10 @@ class MedlemManager(models.Manager):
         """Medlem som har betalt i år eller i fjor."""
         return self.ikkje_utmelde(year) \
             .filter(
-                giroar__oppretta__gte=date(year-1, 1, 1),
-                giroar__oppretta__lt=date(year+1, 1, 1),
-                giroar__innbetalt__isnull=False
+                Q(innmeldt_dato__year=year) |
+                Q(giroar__oppretta__gte=date(year-1, 1, 1),
+                  giroar__oppretta__lt=date(year+1, 1, 1),
+                  giroar__innbetalt__isnull=False)
             ).distinct()
 
     def get_query_set(self):
