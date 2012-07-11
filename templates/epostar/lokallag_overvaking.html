@@ -8,103 +8,138 @@
 
 {% if nye_medlem %}
 
-    {% blocktrans count counter=nye_medlem|length with num=nye_medlem|length|apnumber|capfirst intro_text="Wohoo!,Yay!,Kult!,Mogleg verving?,Jippi!,Hoho :D, Godt jobba ;-),Populært lag?"|split|random %}
-    <h2>Yay, ein ny medlem!</h2>
-    {% plural %}
-    <h2>{{ intro_text }} {{ num }} nye medlemar!</h2>
-    {% endblocktrans %}
+    {% if nye_medlem|length == 1 %}
+        {% with nye_medlem.0 as m  %}
+        <h2>{{ m }} har meldt seg inn!</h2>
+        <p>
+            {% if m.fodt %}{{ m.fornamn }} er fødd {{ m.fodt }}, rundt {{ m.alder }} år med andre ord. {% else %}Me veit ikkje kva årstal {{ m.fornamn }} er fødd. Dersom du veit, sei frå til <a href="mailto:skriv@nynorsk.no">skrivarstova</a>.{% endif %}
+            Elles har {{ m.pronomen }} {{ m.har_betalt|yesno:"allereie betalt medlemspengar for i år – so ingen stress der.,framleis ikkje betalt medlemspengar for i år (det er iallfall ikkje registrert enno)." }}
+            Kanhenda du kunne {% if m.epost %}senda ein epost (<a href="mailto:{{m.epost}}">{{m.epost}}</a>),{% endif %} {% if m.mobnr %}skriva ein liten SMS (<a href="sms:{{ m.mobnr }}">{{ m.mobnr }}</a>),{% endif %}{% if m.epost or m.mobnr %} eller {% endif %}ta personleg kontakt med {{ m.pronomen }} og ynskja velkomen? Folk ventar ofte litt kontakt når dei nettopp har meldt seg inn og er enkle å få med på ting. Ha noko lågterskel lagaktivitet klar og invitér {{ m.pronomen }}!</p>
+        {% endwith %}
+    {% else %}
+        <h2>{{ "Wohoo!,Yay!,Kult!,Mogleg verving?,Jippi!,Hoho :D, Godt jobba ;-),Populært lag?"|split|random }}
+            {{ nye_medlem|length|apnumber|capfirst }} nye medlemar!</h2>
+        <p>Nyinnmelde medlemar kan ofte vera gira på å få vita kva som skjer, og blir ofte med på ting. Ta kontakt på t.d. SMS eller epost allereide no og få dei aktive!</p>
 
-    {% for m in nye_medlem %}
-        <p><strong>{{ m }}</strong>, {{ m.alder|default:"me veit ikkje heilt kor mange" }} år. {{ m.pronomen|capfirst }} {{ m.har_betalt|yesno:"ar allereide betalt medlemspengar!,har ikkje registrert innbetalte medlemspengar enno." }} Kanhenda {% if m.epost %}ein velkomstepost til <a href="mailto:{{m.epost}}">{{m.epost}}</a>, eller {% endif %}{% if m.mobnr %}ein velkomst-SMS til <a href="sms:{{ m.mobnr }}">{{ m.mobnr }}</a>, eller {% endif %} noko personleg kontakt med {{ m.pronomen }} hadde gjort seg?
-    {% endfor %}
+        <table width="100%"><tr><th>Namn <th>Født <th>Betalt <th>Epost <th>Mobil</tr>
+        {% for m in nye_medlem %}
+            <tr><td>{{ m }} <td>{{ m.fodt }} <td>{{ m.har_betalt|yesno:"Ja,Nei" }} <td>{{ m.epost }} <td>{{ m.mobnr }}</tr>
+        {% endfor %}
+        </table>
+    {% endif %}
+
 {% endif %}
 
 {% if nye_infofolk %}
-    {% blocktrans count counter=nye_infofolk|length with num=nye_infofolk|length|apnumber|capfirst intro_text="J&oslosh;sses.,Hmmm.,Målferd?"|split|random %}
-    <h2>Ein ny infoperson</h2>
-    {% plural %}
-    <h2>{{ intro_text }} {{ counter|apnumber|capfirst }} nye infofolk</h2>
-    {% endblocktrans %}
-    <p>Infofolk har ikkje heilt bestemt seg for å melda seg inn. Kanhenda dei treng å h&oslash;yra frå nokon lokale folk? Eventuelt har dei berre skrive seg på informasjonsliste etter ei målferd... Men sjekk etter potensielle bra folk, ta kontakt med dei!</p>
 
-    <ul>
-    {% for m in nye_infofolk %}
-        <li><strong>{{ m }}</strong>,
-            <a href="mailto:{{m.epost}}">{{m.epost}}</a>,
-            <a href="sms:{{ m.mobnr }}">{{ m.mobnr }}</a></li>
-    {% endfor %}
-    </ul>
+    {% if nye_infofolk|length == 1 %}
+        {% with nye_infofolk.0 as m  %}
+        <h2>{{ m.fornamn }} har bede om informasjon</h2>
+        <p> {{ m }} (fødd {{ m.fodt|default:"??" }}) lurer på å melda seg inn. Kanhenda {{ m.pronomen }} treng høyra frå lokallaget utover det me sentralt gjer? Dette kan vera ein enkel ny aktiv medlem i laget dykkar :-)</p>
+        {% if m.epost or m.mobnr %}
+        <ul>
+            {% if m.epost %}<li>Epost: <a href="mailto:{{m.epost}}">{{m.epost}}</a></li>{% endif %}
+            {% if m.mobnr %}<li>Mobil: <a href="sms:{{m.mobnr}}">{{m.mobnr}}</a></li>{% endif %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+    {% else %}
+        <h2>{{ "Jøsses.,Hmmm.,Målferd?"|split|random }} {{ nye_infofolk|length|apnumber|capfirst }} nye infofolk</h2>
+        <p>Infofolk har ikkje heilt bestemt seg for å melda seg inn. Kanhenda dei treng å h&oslash;yra frå nokon lokale folk? Eventuelt har dei berre skrive seg på informasjonsliste etter ei målferd... Men sjekk etter potensielt bra folk, ta kontakt med dei!</p>
+
+        <table width="100%"><tr><th>Namn <th>Født <th>Epost <th>Mobil</tr>
+        {% for m in nye_infofolk %}
+            <tr><td>{{ m }} <td>{{ m.fodt }} <td>{{ m.epost }} <td>{{ m.mobnr }}</tr>
+        {% endfor %}
+        </table>
+    {% endif %}
+
 {% endif %}
 
 {% if tilflytta_medlem %}
-    {% blocktrans count counter=tilflytta_medlem|length with num=tilflytta_medlem|length|apnumber|capfirst intro_text="Ei lita folkevandring? :P,Laget tiltrekkjer visst folk.,Sjå her ja..."|split|random %}
-    <h2>Ein tilflytta medlem!</h2>
-    {% plural %}
-    <h2>{{ intro_text }} {{ num }} nytilflytta medlemar :D</h2>
-    {% endblocktrans %}
-    <p>Nytilflytta medlemar er nett som nye medlemar. Dei treng å få h&oslash;yra frå det nye laget sitt! Kanhenda dei er kome til ny plass og gjerne ynskjer folk å hengja med? Det er jo eit perfekt utgangspunkt :D</p>
+    {% if tilflytta_medlem|length == 1 %}
+        {% with tilflytta_medlem.0 as m  %}
+        <h2>{{ m.fornamn }} har flytta til dykk</h2>
+        <p> {{ m }} (fødd {{ m.fodt|default:"??" }}) er praktisk talt ein ny medlem for laget dykkar sjølv om {{ m.pronomen }} allereie er innmeld i {{ m.innmeldt_dato.year }}. Det kan godt tenkanst at {{ m.pronomen }} ynskjer å høyra frå det nye laget sitt. Kvifor ikkje ynskja velkomen til laget dykkar med å invitera til eitt eller anna?</p>
+        <p>{{ m.har_betalt|yesno:"Har betalt medlemspengar for i år.,Har ikkje registrert medlemspengar for i år." }}</p>
+        {% if m.epost or m.mobnr %}
+        <ul>
+            {% if m.epost %}<li>Epost: <a href="mailto:{{m.epost}}">{{m.epost}}</a></li>{% endif %}
+            {% if m.mobnr %}<li>Mobil: <a href="sms:{{m.mobnr}}">{{m.mobnr}}</a></li>{% endif %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+    {% else %}
+        <h2>{{ "Ei lita folkevandring? :P,Laget tiltrekkjer visst folk.,Sjå her ja..."|split|random }} {{ tilflytta_medlem|length|apnumber|capfirst }} nytilflytta medlemar :D</h2>
+        <p>Nytilflytta medlemar er nett som nye medlemar. Dei treng å få h&oslash;yra frå det nye laget sitt! Kanhenda dei er kome til ny plass og gjerne ynskjer folk å hengja med? Det er jo eit perfekt utgangspunkt :D</p>
 
-    <ul>
-    {% for m in tilflytta_medlem %}
-        <li>{{ m }}</li>
-    {% endfor %}
-    </ul>
+        <table width="100%"><tr><th>Namn <th>Født <th>Betalt <th>Epost <th>Mobil</tr>
+        {% for m in tilflytta_medlem %}
+            <tr><td>{{ m }} <td>{{ m.fodt }} <td>{{ m.har_betalt|yesno:"Ja,Nei" }} <td>{{ m.epost }} <td>{{ m.mobnr }}</tr>
+        {% endfor %}
+        </table>
+    {% endif %}
+
 {% endif %}
 
 {% if endra_medlem %}
-    {% blocktrans count counter=endra_medlem|length with num=endra_medlem|length|apnumber|capfirst %}
-    <h2>Ein endra medlem</h2>
-    {% plural %}
-    <h2>{{ num }} medlemar med endringar</h2>
-    {% endblocktrans %}
-
-    <ul>
-    {% for m in endra_medlem %}
-        <li>{{ m }}<br>
-        <table>
-        <thead><tr><th>Kva <th>Frå <th>Til</tr></thead>
-        <tbody>
-        {% for change in m.changed %}
+    {% if endra_medlem|length == 1 %}
+        {% with endra_medlem.0 as m %}
+        <h2>{{ m }} har endra på noko informasjon</h2>
+        <table width="100%"><tr><th>Kva <th>Frå <th>Til</tr>{% for change in m.changed %}
             <tr><th>{{ change.0 }} <td>{{ change.1 }} <td>{{ change.2 }}</tr>
-        {% endfor %}
-        </tbody>
-        </table>
-        </li>
-    {% endfor %}
-    </ul>
+        {% endfor %} </table>
+        {% endwith %}
+    {% else %}
+        <h2>{{ num|apnumber|capfirst }} medlemar med endringar</h2>
+        <ul>{% for m in endra_medlem %}
+            <li><strong>{{ m }}</strong><br>
+            <table width="100%"><tr><th>Kva <th>Frå <th>Til</tr>{% for change in m.changed %}
+                <tr><th>{{ change.0 }} <td>{{ change.1 }} <td>{{ change.2 }}</tr>
+            {% endfor %} </table>
+            </li> {% endfor %} </ul>
+    {% endif %}
+
 {% endif %}
 
 {% if utmeld_medlem %}
-    {% blocktrans count counter=utmeld_medlem|length with num=utmeld_medlem|length|apnumber|capfirst intro_text="Bah :/,Blæ.,Argh!,Hrmf...,Æsj.,S&oslash;ren òg."|split|random  %}
-    <h2>Ein medlem har meld seg ut :/</h2>
-    {% plural %}
-    <h2>{{ intro_text }} {{ num }} utmelde medlemar :|</h2>
-    {% endblocktrans %}
+    {% if utmeld_medlem|length == 1 %}
+        {% with utmeld_medlem.0 as m %}
+        <h2>{{ m }} har meldt seg ut :/</h2>
+        <p>Ikkje stort å segja. Slikt skjer. Får verva nokre nye for å vega opp. ;-)</p>
+        <p>Født {{ m.fodt }}, {% if m.epost %}<a href="mailto:{{m.epost}}">{{m.epost}}</a>, {% endif %}{% if m.mobnr %}<a href="sms:{{m.mobnr}}">{{m.mobnr}}</a>, {% endif %}{{ m.har_betalt|yesno:"hadde betalt medlemspengar (kunne ikkje venta til årsslutt!? :-(( ),hadde ikkje betalt medlemspengar" }}.
+        {% endwith %}
+    {% else %}
+        <h2>{{ "Bah :/,Blæ.,Argh!,Hrmf...,Æsj.,S&oslash;ren òg."|split|random  }} {{ utmeld_medlem|length|apnumber|capfirst }} utmelde medlemar :|</h2>
+        <table width="100%"><tr><th>Namn <th>Født <th>Betalt <th>Epost <th>Mobil</tr>
+        {% for m in tilflytta_medlem %}
+            <tr><td>{{ m }} <td>{{ m.fodt }} <td>{{ m.har_betalt|yesno:"Ja (irriterande nok :-( ),Nei" }} <td>{{ m.epost }} <td>{{ m.mobnr }}</tr>
+        {% endfor %}
+        </table>
+    {% endif %}
 
-    <ul>
-    {% for m in utmeld_medlem %}
-        <li>{{ m }}</li>
-    {% endfor %}
-    </ul>
 {% endif %}
 
 {% if vekkflytta_medlem %}
-    {% blocktrans count counter=vekkflytta_medlem|length with num=vekkflytta_medlem|length|apnumber|capfirst intro_text="Folkevandring feil veg?,Er graset gr&oslash;nare i andre lag?,Gjorde me noko feil?,Slikt skjer."|split|random medlemsnamn=vekkflytta_medlem.0.fornamn %}
-    <h2>{{ medlemsnamn }} har byta beite :-/</h2>
-    {% plural %}
-    <h2>{{ intro_text }} {{ num }} fråflytta medlemar :-/</h2>
-    {% endblocktrans %}
-
-    <ul>
-    {% for m in vekkflytta_medlem %}
-        <li>{{ m }} er i {{ m.lokallag }} no.</li>
-    {% endfor %}
-    </ul>
+    {% if vekkflytta_medlem|length == 1 %}
+        {% with vekkflytta_medlem.0 as m %}
+        <h2>{{ m }} har byta beite :/</h2>
+        <p>Som om {{ m.lokallag }} liksom skal vera eit betre lag? Jaja...</p>
+        <p>Født {{ m.fodt }}, {% if m.epost %}<a href="mailto:{{m.epost}}">{{m.epost}}</a>, {% endif %}{% if m.mobnr %}<a href="sms:{{m.mobnr}}">{{m.mobnr}}</a>, {% endif %}{{ m.har_betalt|yesno:"har innbetalte medlemspengar,har ikkje betalt medlemspengar i år" }}.
+        {% endwith %}
+    {% else %}
+        <h2>{{ "Folkevandring feil veg?,Er graset grønare i andre lag?,Gjorde me noko feil?,Slikt skjer."|split|random }} {{ vekkflytta_medlem|length|apnumber|capfirst }} fråflytta medlemar :/</h2>
+        <table width="100%"><tr><th>Namn <th>Født <th>Betalt <th>Epost <th>Mobil <th>Flytta til</tr>
+        {% for m in vekkflytta_medlem %}
+            <tr><td>{{ m }} <td>{{ m.fodt }} <td>{{ m.har_betalt|yesno:"Ja,Nei" }} <td>{{ m.epost }} <td>{{ m.mobnr }} <td>{{ m.lokallag }}</tr>
+        {% endfor %}
+        </table>
+    {% endif %}
 {% endif %}
 
 {% if ukjend_endring %}
   <h2>Småendringar</h2>
-  <p>Oppdatert utan at nokre endringar var registrerte. Truleg noko småpirk:
+  <p>Oppdatert utan at noko særleg vart registrert. Truleg noko småpirk:
     {% for m in ukjend_endring %}{{m}}{% if not forloop.last %}, {% endif %}{% endfor %}.
 {% endif %}
 
