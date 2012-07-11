@@ -89,4 +89,4 @@ if __name__ == '__main__':
     info = parse_ocr(open(sys.argv[1]))
 
     for f in info:
-        print "{dato} {belop} {transaksjon}".format(**f)
+        print "{dato} {belop:6} {transaksjon:30} {kid}".format(**f)

@@ -45,7 +45,7 @@ def add_kid_controlbit(kid):
 
 if __name__ == '__main__':
     kid = str(234567)
-    for i in range(10000):
+    for i in range(10):
         nkid = add_kid_controlbit(kid)
         correct = check_number(nkid)
 
