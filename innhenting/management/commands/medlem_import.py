@@ -373,7 +373,9 @@ def send_epostar():
         if sist_statistikk:
             medlemar_sist = json.loads(sist_statistikk.interessante)
             medlemar_no = overvak.lokallag.medlem_set.interessante().values_list('pk', flat=True)
-            vekkflytta_medlem = Medlem.objects.filter(pk__in=set(medlemar_sist) - set(medlemar_no))
+            vekkflytta_medlem = Medlem.objects.filter(
+                                    pk__in=set(medlemar_sist) - set(medlemar_no),
+                                    utmeldt_dato__isnull=True)
         else:
             vekkflytta_medlem = []
 
@@ -394,11 +396,11 @@ def send_epostar():
                                        "oppdatert",
                                        "oppretta" ] ]
 
-            if 'lokallag' in changed_keys:
-                tilflytta_medlem.append(m)
-            elif 'utmeldt_dato' in changed_keys and new['utmeldt_dato']:
+            if 'utmeldt_dato' in changed_keys and new.field_dict['utmeldt_dato']:
                 utmeld_medlem.append(m)
-            elif 'status' in changed_keys and old['status'] == 'I':
+            elif 'lokallag' in changed_keys:
+                tilflytta_medlem.append(m)
+            elif 'status' in changed_keys and old.field_dict['status'] == 'I':
                 nye_medlem.append(m)
             elif m.changed:
                 endra_medlem.append(m)
@@ -442,6 +444,7 @@ def send_epostar():
             # TODO Do logging
             pass
 
+        continue
         overvak.save()
 
     return "Ferdig"
