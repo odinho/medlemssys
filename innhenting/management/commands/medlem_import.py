@@ -365,10 +365,10 @@ def send_epostar():
                                 lokallag=overvak.lokallag
                 ).order_by("-oppretta")[0]
 
-            stderr(u"LokallagStat for {0}, {1:%Y-%W} fanst ikkje. Brukar {2}" \
-                        .format(overvak.lokallag,
-                            sist_oppdatering,
-                            sist_statistikk))
+            #stderr(u"LokallagStat for {0}, {1:%Y-%W} fanst ikkje. Brukar {2}" \
+            #            .format(overvak.lokallag,
+            #                sist_oppdatering,
+            #                sist_statistikk))
 
         if sist_statistikk:
             medlemar_sist = json.loads(sist_statistikk.interessante)
@@ -434,7 +434,6 @@ def send_epostar():
         html_content = loader.get_template('epostar/lokallag_overvaking.html').render(context)
 
         emne = loader.get_template('epostar/lokallag_overvaking_emnefelt.txt').render(context)
-        stderr(emne)
 
         msg = EmailMultiAlternatives(" ".join(emne.split())[:-1], text_content, "skriv@nynorsk.no", [epost])
         msg.attach_alternative(html_content, "text/html")
