@@ -4,6 +4,7 @@ from __future__ import print_function
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
+from django.db import transaction
 import os
 
 from medlemssys.medlem.models import Giro
@@ -16,6 +17,7 @@ class Command(BaseCommand):
     args = '[ ocr_fil.txt ]'
     help = 'Registrerer OCR-innbetalingar'
 
+    @transaction.commit_on_success
     def handle(self, *args, **options):
         if len(args):
             fn = args[0]
@@ -46,10 +48,18 @@ class Command(BaseCommand):
                 giro.innbetalt = f['dato']
             else:
                 giro.innbetalt = f['dato']
-                self.err("{belop:3n}kr ({giro.pk}) {giro} ".format(giro=giro, belop=f['belop']))
+                #self.err("{belop:3n}kr ({giro.pk}) {giro} ".format(giro=giro, belop=f['belop']))
 
             giro.innbetalt_belop = f['belop']
             giro.save()
+
+            if giro.medlem.status == 'I' and giro.innbetalt_belop >= giro.belop:
+                self.err("{medlem} var infoperson, flyttar til medlem etter betaling".format(medlem=giro.medlem))
+                giro.medlem.status = 'M'
+                giro.medlem.save()
+
+        update_denormalized_fields()
+
 
     def err(self, msg):
         self.stderr.write((unicode(msg) + "\n").encode('utf-8'))
