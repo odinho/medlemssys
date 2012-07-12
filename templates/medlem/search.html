@@ -12,16 +12,18 @@
 </style>
 
 <div class="ui-widget">
+  <form>
   <label for="members">Søk etter medlem: </label>
   <input id="members">
+  </form>
 </div>
 
 <table>
 <thead>
-  <tr><th>pk <th>Namn <th>Betaling <th>Lag</tr>
+  <tr><th>Namn</th> <th>Betaling</th> <th>Lag</th></tr>
 </thead>
 <tbody>
-  <tr><td>- <td>gjer eit søk <td><td></tr>
+  <tr><td>gjer eit søk</td> <td></td><td></td></tr>
 </tbody>
 </table>
 
@@ -33,6 +35,8 @@ var info = {};
 var change_grace;
 
 member_input.addEventListener('input', change)
+//member_input.addEventListener('blur', change)
+//member_input.addEventListener('change', change)
 
 function change(e) {
     clearTimeout(change_grace);
@@ -46,8 +50,9 @@ function do_xhr() {
     console.log("Doing XHR for " + member_input.value);
     xhr.open('GET', '/api/get_members?term=' + encodeURIComponent(member_input.value));
     xhr.onload = function(e) {
-        info = JSON.parse(xhr.response);
-	build_table(info);
+        console.log("Got resp: " + xhr.responseText);
+        info = JSON.parse(xhr.responseText);
+        build_table(info);
     }
     xhr.send();
 }
@@ -55,13 +60,14 @@ function do_xhr() {
 function build_table(members) {
     var tableinfo = "";
     members.forEach(function(l) {
-        tableinfo += "<tr><td>" + l.id
-        	     + "<td>" + l.namn
-        	     + "<td>" + l.bet
-        	     + "<td>" + l.lokallag;
+        tableinfo += "<tr>"
+                 + "<td><a href='/admin/medlem/medlem/" + l.id + "/'>"
+                 + l.namn + "</a> (" + l.alder + ")</td>"
+                 + "<td>" + (''+l.bet).replace(/,/g, ', ') + "</td>"
+                 + "<td>" + l.lokallag + "</td></tr>";
     });
     table.tBodies[0].innerHTML = tableinfo;
 }
 </script>
-
+<div id=log></div>
 {#% endblock content %#}

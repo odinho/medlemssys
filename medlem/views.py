@@ -55,6 +55,7 @@ def get_members(request):
         member_json = {}
         member_json['id'] = member.pk
         member_json['namn'] = str(member)
+        member_json['alder'] = member.alder()
         member_json['lokallag'] = str(member.lokallag)
         bet = member.giroar.filter(innbetalt__isnull=False).values_list("oppretta", flat=True)
         member_json['bet'] = [x.year for x in bet]
