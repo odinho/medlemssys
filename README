@@ -11,6 +11,7 @@ cd medlemssys
 pip install -r pip.req
 ./manage.py syncdb
 ./manage.py collectstatic
+./manage.py loaddata fixtures/start_data.json
 ./manage.py runserver
 
 

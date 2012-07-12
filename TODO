@@ -1,3 +1,10 @@
 Lag enkeltliste for å skriva ut direkte frå medlemsreg (som ringjeliste)
 Lag motmæletingarliste
  - tingar
+Automatisk sending av faktura for medlemspengar
+Batch-sending av faktura for medlemspengar
+
+
+## URL-ar
+http://agiliq.com/books/djangodesignpatterns/models.html
+https://docs.djangoproject.com/en/dev/internals/contributing/writing-code/coding-style/
