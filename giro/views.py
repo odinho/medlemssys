@@ -3,8 +3,27 @@
 
 from django.template import Context, Template
 from django.core.mail import EmailMultiAlternatives
+from django.db import transaction
+import smtplib
 
+from medlemssys.medlem.models import Giro
 from models import GiroTemplate
+
+@transaction.commit_on_success
+def send_ventande_rekningar():
+    ventar = Giro.objects.filter(status='V').select_related('medlem')
+    for v in ventar:
+        if not v.medlem.epost or len(v.medlem.epost) > 6:
+            continue
+
+        try:
+            send_rekning(v)
+        except smtplib.SMTPRecipientsRefused:
+            # TODO Do logging
+            continue
+
+        v.status = "1"
+        v.save()
 
 def send_rekning(giro):
     subject, text_content, html_content = generate_text("medlemspengar",

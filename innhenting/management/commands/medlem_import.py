@@ -7,6 +7,7 @@ from optparse import make_option
 import os
 
 from medlemssys.statistikk.views import update_lokallagstat
+from medlemssys.giro.views import send_ventande_rekningar
 
 obj = ""
 
@@ -44,7 +45,8 @@ class Command(BaseCommand):
         fiks_tilskipingar()
         update_denormalized_fields()
         update_lokallagstat()
-        send_epostar()
+        send_overvakingar()
+        send_ventande_rekningar()
 
     def get_filename(self, args, num, setting, fallback):
         if len(args) > num:
@@ -266,7 +268,7 @@ def import_bet(bet_csv_fil):
         if not obj.force_update and Giro.objects.filter(pk=rad[7]).exists():
             continue
 
-        g = Giro(pk=rad[7], hensikt='P')
+        g = Giro(pk=rad[7], hensikt='P', status='F')
 
         # Finn andsvarleg medlem
         try:
@@ -334,7 +336,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template import Context, loader
 import smtplib, json
 
-def send_epostar():
+def send_overvakingar():
     for overvak in LokallagOvervaking.objects.filter( Q(deaktivert__isnull=True) | Q(deaktivert__gt=datetime.datetime.now()) ):
         epost = overvak.epost
         if overvak.medlem:
@@ -441,9 +443,7 @@ def send_epostar():
             msg.send()
         except smtplib.SMTPRecipientsRefused:
             # TODO Do logging
-            pass
-
-        continue
+            continue
         overvak.save()
 
     return "Ferdig"
