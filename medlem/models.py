@@ -361,6 +361,11 @@ HENSIKTER = (
     ('T', "Tilskiping"),
     ('A', "Anna"),
 )
+GIRO_STATUSAR = (
+    ('V', "Ventar på sending"),
+    ('1', "Fyrste sendt"),
+    ('F', "Ferdig"),
+)
 
 class Giro(models.Model):
     medlem = models.ForeignKey(Medlem, related_name='giroar')
@@ -371,11 +376,13 @@ class Giro(models.Model):
     kid = models.CharField(_("KID-nummer"), max_length=255, blank=True, unique=True)
 
     oppretta = models.DateTimeField(_("Giro lagd"), blank=True, default=datetime.now)
+    oppdatert = models.DateTimeField(_("Giro oppatert"), auto_now=True)
     innbetalt = models.DateField(_("Dato betalt"), blank=True, null=True)
     konto = models.CharField(_("Konto"), max_length=1, choices=KONTI, default="M")
-    hensikt = models.CharField(_("Hensikt"), max_length=1, choices=HENSIKTER,
-            default="P")
+    hensikt = models.CharField(_("Hensikt"), max_length=1, choices=HENSIKTER, default="P")
     desc = models.TextField(_("Forklaring"), blank=True, default="")
+
+    status = models.CharField(_("Status"), max_length=1, choices=GIRO_STATUSAR, default="V")
 
     class Meta:
         verbose_name_plural = "giroar"
