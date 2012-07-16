@@ -441,9 +441,8 @@ def send_epostar():
             msg.send()
         except smtplib.SMTPRecipientsRefused:
             # TODO Do logging
-            pass
+            continue
 
-        continue
         overvak.save()
 
     return "Ferdig"
