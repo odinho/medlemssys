@@ -77,7 +77,8 @@ def stderr(msg):
 
 RE_MEDLNR = re.compile(r'\[(\d+)\]')
 
-# REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA,FØDEÅR,Epost_B
+# REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,FØDEÅR,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,Epost_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA
+# (gamal) REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA,FØDEÅR,Epost_B
 nmu_csv_map = {
         'MEDLNR': 'id',
         'FORNAMN': 'fornamn',
@@ -101,11 +102,11 @@ nmu_csv_map = {
     }
 
 VAL = (
-        (40, 0, 'Ikkje epost'), # EPOST_B = 40
-        (28, 0, 'Ikkje ring'), # RING_B = 28
-        (29, 0, 'Ikkje post'), # POST_B = 29
-        (30, 0, 'Ikkje Motmæle'), # MM_B = 30
-        (31, 0, 'Ikkje Norsk Tidend'), # MNM_B = 31
+        (29, 0, 'Ikkje ring'), # RING_B = 28 (old id)
+        (30, 0, 'Ikkje post'), # POST_B = 29
+        (31, 0, 'Ikkje epost'), # EPOST_B = 40
+        (32, 0, 'Ikkje Motmæle'), # MM_B = 30
+        (33, 0, 'Ikkje Norsk Tidend'), # MNM_B = 31
 )
 
 
@@ -121,6 +122,8 @@ def import_medlem(medlem_csv_fil):
         for num, rad in enumerate(liste):
             tmp = {}
             for typ in nmu_csv_map.values():
+                if typ not in mapping:
+                    stderr(unicode(typ) + u" " + unicode(rad))
                 tmp[typ] = rad[mapping[typ]] \
                             .decode("utf-8") \
                             .replace(r"\n", "\n")
@@ -192,7 +195,7 @@ def import_medlem(medlem_csv_fil):
             m.save()
 
             for v in VAL:
-                if int(rad[v[0]]) == int(v[1]):
+                if rad[v[0]] != "" and int(rad[v[0]]) == int(v[1]):
                     m.set_val(v[2])
 
             # Print first 200 names
