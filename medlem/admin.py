@@ -156,6 +156,7 @@ admin.site.register(Giro, GiroAdmin)
 
 admin.site.register(LokallagOvervaking)
 admin.site.register(Rolletype)
+admin.site.register(PostNummer)
 
 # Ta med lokallag ekstra (XXX: Usikkert om eg treng rolletype og giro)
 #reversion.register(Medlem, follow=["rolle_set", "giroar", "lokallag"])

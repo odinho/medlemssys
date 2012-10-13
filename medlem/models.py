@@ -461,14 +461,20 @@ class LokallagOvervaking(models.Model):
 
 class PostNummer(models.Model):
     postnr = models.CharField(max_length=6)
-    poststad = models.CharField(max_length=25)
-    bruksomrade = models.CharField(max_length=25)
+    poststad = models.CharField(max_length=50)
+    bruksomrade = models.CharField(max_length=50)
     folketal = models.SmallIntegerField(null=True, blank=True)
-    bydel = models.CharField(max_length=25)
-    kommnr = models.CharField(max_length=25)
-    kommune = models.CharField(max_length=25)
-    fylke = models.CharField(max_length=25)
+    bydel = models.CharField(max_length=50)
+    kommnr = models.CharField(max_length=50)
+    kommune = models.CharField(max_length=50)
+    fylke = models.CharField(max_length=50)
     lat = models.FloatField()
     lon = models.FloatField()
     datakvalitet = models.SmallIntegerField()
     sist_oppdatert = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "postnummer"
+
+    def __unicode__(self):
+        return u"{0} {1}".format(self.postnr, self.poststad)

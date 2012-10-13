@@ -9,21 +9,29 @@ from django.template.response import TemplateResponse
 import csv
 
 def simple_member_list(self, request, queryset):
+    from medlemssys.medlem.models import PostNummer
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
     response['Content-Disposition'] = 'filename=medlemer.csv'
 
-    dc = csv.writer(response)
+    dc = csv.writer(response, quoting=csv.QUOTE_NONNUMERIC)
     dc.writerow(["Namn",
                  "Adresse",
                  "Postnr",
+                 "Stad",
                  "Mobiltelefon",
                  u"Født".encode("utf-8"),
                  "Lokallag",
                  "Betalt?"])
     for m in queryset:
+        try:
+            stad = PostNummer.objects.get(postnr=m.postnr).poststad
+        except PostNummer.DoesNotExist:
+            stad = "?"
+
         a = [m,
              m.postadr,
              m.postnr,
+             stad,
              m.mobnr,
              m.fodt,
              m.lokallag_display(),
