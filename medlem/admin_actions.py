@@ -28,8 +28,12 @@ def simple_member_list(self, request, queryset):
         except PostNummer.DoesNotExist:
             stad = "?"
 
+        postadr = m.postadr
+        if m.ekstraadr:
+            postadr += u"\n{0}".format(m.ekstraadr)
+
         a = [m,
-             m.postadr,
+             postadr,
              m.postnr,
              stad,
              m.mobnr,
