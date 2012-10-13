@@ -401,6 +401,7 @@ def send_epostar():
             m.changed = [ (k, old.field_dict[k], new.field_dict[k])
                           for k in changed_keys
                           if k not in ["_siste_medlemspengar",
+                                       "innmeldingstype",
                                        "oppdatert",
                                        "oppretta" ] ]
 
