@@ -297,6 +297,12 @@ class Medlem(models.Model):
         else:
             self.val.remove(Val.objects.get(tittel=tittel))
 
+    def lokallag_display(self):
+        if not self.lokallag_id:
+            return u"(ingen)"
+        return unicode(self.lokallag)
+
+
 @transaction.commit_on_success
 def update_denormalized_fields():
     for date in Giro.objects.values('oppretta').distinct():

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# vim: ts=4 sw=4 sts=4 expandtab ai
 from django.contrib.admin import helpers
 from django.http import HttpResponse
 from django.forms.models import model_to_dict
@@ -6,8 +8,33 @@ from django.utils.translation import ugettext as _
 from django.template.response import TemplateResponse
 import csv
 
+def simple_member_list(self, request, queryset):
+    response = HttpResponse(mimetype="text/csv; charset=utf-8")
+    response['Content-Disposition'] = 'filename=medlemer.csv'
+
+    dc = csv.writer(response)
+    dc.writerow(["Namn",
+                 "Adresse",
+                 "Postnr",
+                 "Mobiltelefon",
+                 u"Født".encode("utf-8"),
+                 "Lokallag",
+                 "Betalt?"])
+    for m in queryset:
+        a = [m,
+             m.postadr,
+             m.postnr,
+             m.mobnr,
+             m.fodt,
+             m.lokallag_display(),
+             m.har_betalt()]
+
+        dc.writerow([unicode(s).encode("utf-8") for s in a])
+
+    return response
 def csv_member_list(self, request, queryset):
-    response = HttpResponse(mimetype="text/plain; charset=utf-8")
+    response = HttpResponse(mimetype="text/csv; charset=utf-8")
+    response['Content-Disposition'] = 'filename=medlemer.csv'
 
     dc = csv.writer(response)
     dc.writerow(model_to_dict(queryset[0]).keys())

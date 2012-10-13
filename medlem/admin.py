@@ -5,7 +5,7 @@ from reversion.admin import VersionAdmin
 from medlemssys.settings import STATIC_URL
 from filters import AdditiveSubtractiveFilter, TimeSinceFilter, FodtFilter, SporjingFilter
 
-from admin_actions import csv_member_list, pdf_member_list
+import admin_actions
 from models import *
 
 class GiroInline(admin.TabularInline):
@@ -65,7 +65,7 @@ class MedlemAdmin(VersionAdmin):
             )
         }),
     )
-    actions = [csv_member_list, pdf_member_list,]
+    actions = [admin_actions.simple_member_list, admin_actions.csv_member_list, admin_actions.pdf_member_list,]
 
     class Media:
         css = {
