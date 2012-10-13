@@ -50,7 +50,7 @@ class Command(BaseCommand):
 
     def get_filename(self, args, num, setting, fallback):
         if len(args) > num:
-            fn = args[0]
+            fn = args[num]
         else:
             fn = getattr(settings, setting, fallback)
         if not os.path.isfile(fn):
@@ -79,7 +79,8 @@ def stderr(msg):
 
 RE_MEDLNR = re.compile(r'\[(\d+)\]')
 
-# REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA,FØDEÅR,Epost_B
+# REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,FØDEÅR,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,Epost_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA
+# (gamal) REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA,FØDEÅR,Epost_B
 nmu_csv_map = {
         'MEDLNR': 'id',
         'FORNAMN': 'fornamn',
@@ -103,11 +104,11 @@ nmu_csv_map = {
     }
 
 VAL = (
-        (40, 0, 'Ikkje epost'), # EPOST_B = 40
-        (28, 0, 'Ikkje ring'), # RING_B = 28
-        (29, 0, 'Ikkje post'), # POST_B = 29
-        (30, 0, 'Ikkje Motmæle'), # MM_B = 30
-        (31, 0, 'Ikkje Norsk Tidend'), # MNM_B = 31
+        (29, 0, 'Ikkje ring'), # RING_B = 28 (old id)
+        (30, 0, 'Ikkje post'), # POST_B = 29
+        (31, 0, 'Ikkje epost'), # EPOST_B = 40
+        (32, 0, 'Ikkje Motmæle'), # MM_B = 30
+        (33, 0, 'Ikkje Norsk Tidend'), # MNM_B = 31
 )
 
 
@@ -123,6 +124,8 @@ def import_medlem(medlem_csv_fil):
         for num, rad in enumerate(liste):
             tmp = {}
             for typ in nmu_csv_map.values():
+                if typ not in mapping:
+                    stderr(unicode(typ) + u" " + unicode(rad))
                 tmp[typ] = rad[mapping[typ]] \
                             .decode("utf-8") \
                             .replace(r"\n", "\n")
@@ -194,7 +197,7 @@ def import_medlem(medlem_csv_fil):
             m.save()
 
             for v in VAL:
-                if int(rad[v[0]]) == int(v[1]):
+                if rad[v[0]] != "" and int(rad[v[0]]) == int(v[1]):
                     m.set_val(v[2])
 
             # Print first 200 names
@@ -234,10 +237,18 @@ def import_lag(lag_csv_fil):
                 .replace('Nmu', 'NMU')      \
                 .replace(' Mu', ' MU')
 
-        lag = Lokallag(pk=rad[3],
-                namn=namn,
-                fylkeslag=rad[1].decode('utf-8'), distrikt=rad[0].decode('utf-8'),
-                andsvar=rad[4].decode('utf-8'))
+        lag = Lokallag.objects.filter(pk=rad[3])
+        if len(lag):
+            lag = lag[0]
+            lag.namn = namn
+            lag.fylkeslag = rad[1].decode('utf-8')
+            lag.distrikt = rad[0].decode('utf-8')
+            lag.andsvar = rad[4].decode('utf-8')
+        else:
+            lag = Lokallag(pk=rad[3],
+                    namn=namn,
+                    fylkeslag=rad[1].decode('utf-8'), distrikt=rad[0].decode('utf-8'),
+                    andsvar=rad[4].decode('utf-8'))
         lag.save()
 
         alle_lag[rad[3]] = lag
@@ -395,6 +406,7 @@ def send_overvakingar():
             m.changed = [ (k, old.field_dict[k], new.field_dict[k])
                           for k in changed_keys
                           if k not in ["_siste_medlemspengar",
+                                       "innmeldingstype",
                                        "oppdatert",
                                        "oppretta" ] ]
 
@@ -444,6 +456,7 @@ def send_overvakingar():
         except smtplib.SMTPRecipientsRefused:
             # TODO Do logging
             continue
+
         overvak.save()
 
     return "Ferdig"

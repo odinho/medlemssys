@@ -32,7 +32,7 @@ make_diff()
 ############################################################
 
 
-import
+#import
 
 make_diff medl
 make_diff lag

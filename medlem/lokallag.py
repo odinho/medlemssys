@@ -33,7 +33,7 @@ def lokallag_home(request, slug):
         if not medlem_prof.lokallagsrolle.filter(slug=slug).exists():
             return render_to_response("error.html", { 'message': "Du har inga rolle i dette lokallaget." })
 
-    medlem = Medlem.objects.filter(lokallag=lokallag)
+    medlem = Medlem.objects.interessante().filter(lokallag=lokallag)
     betalt_count = Medlem.objects.betalande().filter(lokallag=lokallag).count()
     teljande_count = Medlem.objects.teljande().filter(lokallag=lokallag).count()
 

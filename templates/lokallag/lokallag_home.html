@@ -19,6 +19,7 @@
                 <th>Namn</th>
                 <th>Født</th>
                 <th>mob/tlf</th>
+                <th>Postnr</th>
                 <th>Postadr</th>
                 <th>Epost</th>
                 <th>bet</th>
@@ -31,6 +32,7 @@
             <td>{{ m }}</td>
             <td>{{ m.fodt_farga|safe }}</td>
 	    <td>{{ m.mobnr }}{% if m.heimenr %}, {{ m.heimenr }}{% endif %}</td>
+            <td>{{ m.postnr }}</td>
             <td>{{ m.postadr }}</td>
             <td>{{ m.epost }}</td>
             <td>{{ m.har_betalt|yesno:"b,ub,?" }}</td>
