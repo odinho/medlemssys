@@ -232,10 +232,18 @@ def import_lag(lag_csv_fil):
                 .replace('Nmu', 'NMU')      \
                 .replace(' Mu', ' MU')
 
-        lag = Lokallag(pk=rad[3],
-                namn=namn,
-                fylkeslag=rad[1].decode('utf-8'), distrikt=rad[0].decode('utf-8'),
-                andsvar=rad[4].decode('utf-8'))
+        lag = Lokallag.objects.filter(pk=rad[3])
+        if len(lag):
+            lag = lag[0]
+            lag.namn = namn
+            lag.fylkeslag = rad[1].decode('utf-8')
+            lag.distrikt = rad[0].decode('utf-8')
+            lag.andsvar = rad[4].decode('utf-8')
+        else:
+            lag = Lokallag(pk=rad[3],
+                    namn=namn,
+                    fylkeslag=rad[1].decode('utf-8'), distrikt=rad[0].decode('utf-8'),
+                    andsvar=rad[4].decode('utf-8'))
         lag.save()
 
         alle_lag[rad[3]] = lag
