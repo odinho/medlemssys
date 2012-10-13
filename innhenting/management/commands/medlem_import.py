@@ -48,7 +48,7 @@ class Command(BaseCommand):
 
     def get_filename(self, args, num, setting, fallback):
         if len(args) > num:
-            fn = args[0]
+            fn = args[num]
         else:
             fn = getattr(settings, setting, fallback)
         if not os.path.isfile(fn):
