@@ -69,7 +69,6 @@ class TimeSinceFilter(DateFieldListFilter):
         super(TimeSinceFilter, self).__init__(field, request, params,
                 model, model_admin, field_path)
 
-
         this_year = date(date.today().year, 1, 1)
         last_year = date(date.today().year - 1, 1, 1)
 
@@ -100,21 +99,14 @@ class TimeSinceFilter(DateFieldListFilter):
             }),
         )
 
-    def used_params(self):
-        return [self.lookup_kwarg_past_time, self.lookup_kwarg_isnull]
-
 
 class AdditiveSubtractiveFilter(RelatedFieldListFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):
-        super(AdditiveSubtractiveFilter, self).__init__(
-            field, request, params, model, model_admin, field_path)
-
         self.using_params = []
         self.paramstart = "adv_" + field.get_attname()
-        # Setting this here, earlier it was done from within Django
-        # it's now into several different variables
-        if not hasattr(self, "params"):
-            self.params = params
+
+        super(AdditiveSubtractiveFilter, self).__init__(
+            field, request, params, model, model_admin, field_path)
 
     def has_output(self):
         return len(self.lookup_choices) > 0
@@ -122,31 +114,40 @@ class AdditiveSubtractiveFilter(RelatedFieldListFilter):
     def _make_param(self, field_id):
         return self.paramstart + str(field_id)
 
-    def used_params(self):
+    def expected_parameters(self):
         for lookup, title in self.lookup_choices:
             self.using_params.append(self._make_param(lookup))
         return self.using_params
 
     def queryset(self, request, queryset):
-        for key, value in self.params.items():
-            if value == 'e':
+        for key, value in self.used_parameters.items():
+            if value == 'exc':
                 queryset = queryset.exclude(val__id=key.replace(self.paramstart, ''))
-            elif value == 'i':
+            elif value == 'inc':
                 queryset = queryset.filter(val__id=key.replace(self.paramstart, ''))
         return queryset
 
     def choices(self, cl):
         yield {
-            'selected': len(set(self.params).intersection(self.using_params)) == 0,
+            'selected': len(set(self.used_parameters).intersection(self.using_params)) == 0,
             'query_string': cl.get_query_string({}, self.using_params),
             'display': _('All'),
         }
-        for p in (('i', _('Vis')), ('e', _('Skjul'))):
+        for p in (('inc', _('Vis')), ('exc', _('Skjul'))):
             for lookup, title in self.lookup_choices:
-                yield {
-                    'selected': p[0] == self.params.get(self._make_param(lookup)),
-                    'query_string': cl.get_query_string({
-                        self._make_param(lookup): p[0],
-                    }, []),
-                    'display': "%s '%s'" % (p[1], title),
-                }
+                # If the link is selected
+                if p[0] == self.used_parameters.get(self._make_param(lookup)):
+                    yield {
+                        'selected': True,
+                        'query_string': cl.get_query_string({},
+                            [ self._make_param(lookup) ]),
+                        'display': "%s '%s'" % (p[1], title),
+                    }
+                else:
+                    yield {
+                        'selected': False,
+                        'query_string': cl.get_query_string({
+                            self._make_param(lookup): p[0],
+                        }, []),
+                        'display': "%s '%s'" % (p[1], title),
+                    }
