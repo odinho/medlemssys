@@ -86,16 +86,18 @@
     {% if endra_medlem|length == 1 %}
         {% with endra_medlem.0 as m %}
         <h2>{{ m }} har endra på noko informasjon</h2>
-        <table width="100%"><tr><th>Kva <th>Frå <th>Til</tr>{% for change in m.changed %}
-            <tr><th>{{ change.0 }} <td>{{ change.1 }} <td>{{ change.2 }}</tr>
+        <table width="100%"><colgroup width="20%"><colgroup width="40%"><colgroup width="40%">
+            <tr style="background-color: #ddd; color: #000;"><th>Kva <th>Frå <th>Til</tr>{% for change in m.changed %}
+            <tr><th style="text-align: left; background-color: #ddd; color: #000;">{{ change.0 }} <td>{{ change.1 }} <td>{{ change.2 }}</tr>
         {% endfor %} </table>
         {% endwith %}
     {% else %}
-        <h2>{{ num|apnumber|capfirst }} medlemar med endringar</h2>
+        <h2>{{ endra_medlem|length|apnumber|capfirst }} medlemar med endringar</h2>
         <ul>{% for m in endra_medlem %}
             <li><strong>{{ m }}</strong><br>
-            <table width="100%"><tr><th>Kva <th>Frå <th>Til</tr>{% for change in m.changed %}
-                <tr><th>{{ change.0 }} <td>{{ change.1 }} <td>{{ change.2 }}</tr>
+            <table width="100%"><colgroup width="20%"><colgroup width="40%"><colgroup width="40%">
+            <tr style="background-color: #ddd; color: #000;"><th>Kva <th>Frå <th>Til</tr>{% for change in m.changed %}
+            <tr><th style="text-align: left; background-color: #ddd; color: #000;">{{ change.0 }} <td>{{ change.1 }} <td>{{ change.2 }}</tr>
             {% endfor %} </table>
             </li> {% endfor %} </ul>
     {% endif %}
