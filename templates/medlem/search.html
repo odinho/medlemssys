@@ -48,7 +48,7 @@ function change(e) {
 
 function do_xhr() {
     console.log("Doing XHR for " + member_input.value);
-    xhr.open('GET', '/api/get_members?term=' + encodeURIComponent(member_input.value));
+    xhr.open('GET', '/api/get_members.json?term=' + encodeURIComponent(member_input.value));
     xhr.onload = function(e) {
         console.log("Got resp: " + xhr.responseText);
         info = JSON.parse(xhr.responseText);

@@ -34,10 +34,9 @@ def search(request):
 import json
 from django.db.models import Q
 
-def get_members(request):
-    term = request.GET.get('term', '')
+def get_members(terms, limit=20):
     search = None
-    for q in term.split():
+    for q in terms:
         search_part = Q(fornamn__icontains=q)   \
         | Q(mellomnamn__icontains=q)            \
         | Q(etternamn__icontains=q)             \
@@ -49,9 +48,15 @@ def get_members(request):
         else:
             search = search & search_part
 
-    members = Medlem.objects.select_related('giroar').filter(search)[:20]
+    if search:
+        return Medlem.objects.select_related('giroar').filter(search)[:limit]
+
+    return Medlem.objects.select_related('giroar')[:limit]
+
+def get_members_json(request):
+    term = request.GET.get('term', '')
     results = []
-    for member in members:
+    for member in get_members(term.split()):
         member_json = {}
         member_json['id'] = member.pk
         member_json['namn'] = str(member)

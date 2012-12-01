@@ -23,7 +23,7 @@ urlpatterns = patterns('',
     (r'^stats/vervometer/', 'medlemssys.statistikk.views.vervometer'),
 #    url(r'^newsletters/', include('emencia.django.newsletter.urls')),
     (r'^admin/', include(admin.site.urls)),
-    url(r'^api/get_members/', 'medlemssys.medlem.views.get_members', name='get_members'),
+    url(r'^api/get_members.json', 'medlemssys.medlem.views.get_members_json', name='get_members_json'),
     url(r'^member/search/', 'medlemssys.medlem.views.search', name='search'),
 )
 

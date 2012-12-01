@@ -1,10 +1,108 @@
 {% extends "admin/base.html" %}
 {% load i18n %}
+{% load url from future %}
 {% block title %}{{ title }} | {% trans 'Medlemssys' %}{% endblock %}
 
 {% block branding %}
-<h1 id="site-name">{% trans 'Medlemssys' %}</h1>
-{% endblock %}
+<h1 id="site-name" style="display: inline-block">{% trans 'Medlemssys' %}</h1>
+    {% if user.is_authenticated %}
+    <div id=nav_complete>
+        <style>
+        #nav_complete { display: inline-block; width: 400px; margin: 0 4px; }
+        #nav_complete label { color: white; }
+        #nav_input { width: 270px; font-size: 16px; margin-top: -2px; }
+        #nav_table { width: 400px; background-color: white; color: black; position: absolute; z-index: 100; border: 2px solid white; outline: 1px solid #ccc; }
+        #nav_table a:link, #nav_table a, #nav_table a:visited { color: black; }
+        </style>
+        <input type=search name=term id=nav_input placeholder="Skriv for finna medlem">
+        <table id=nav_table hidden>
+            <thead><tr><th>Namn</th> <th>Betaling</th> <th>Lag</th></tr></thead>
+            <tbody><tr><td>gjer eit søk</td> <td></td><td></td></tr></tbody>
+        </table>
+
+        <script>
+(function(input, table)
+{
+var xhr = new XMLHttpRequest();
+var info = {};
+var change_grace;
+var pending_navigation = false;
+
+input.addEventListener('input', change)
+input.addEventListener('blur', function() {
+    if (!input.value.length)
+        table.hidden = true;
+});
+input.addEventListener('keypress', function(e) {
+    var code = e.keyCode || e.charCode || 0;
+    if (code == 13) {
+        var first_row = table.tBodies[0].children[0];
+        if (first_row && first_row.dataset['id'] !== undefined) {
+            var e = document.createEvent("Event");
+            e.initEvent("click", true, true);
+            first_row.dispatchEvent(e);
+            //table.tBodies[0].children[0].onclick({target: table.tBodies[0].children[0]});
+        }
+        pending_navigation = true;
+    }
+});
+//input.addEventListener('change', change)
+
+function change(e) {
+    clearTimeout(change_grace);
+    if (input.value.length < 2)
+    {
+        table.hidden = true;
+        return;
+    }
+
+    change_grace = setTimeout(do_xhr, 5);
+}
+
+function do_xhr() {
+    console.log("Doing XHR for " + input.value);
+    xhr.open('GET', '/api/get_members.json?term=' + encodeURIComponent(input.value));
+    xhr.onload = function(e) {
+        console.log("Got resp: " + xhr.responseText);
+        info = JSON.parse(xhr.responseText);
+        build_table(info);
+    }
+    xhr.send();
+}
+
+function build_table(members) {
+    var tableinfo = "";
+    if (!members.length) {
+        table.hidden = true;
+        pending_navigation = false;
+        return;
+    }
+    table.tBodies[0].innerHTML = "";
+    members.forEach(function(l) {
+        if (pending_navigation)
+        window.location = "/admin/medlem/medlem/" + l.id + "/";
+        var tr = document.createElement("tr");
+        tr.dataset['id'] = l.id;
+        tr.innerHTML = "<td><a href='/admin/medlem/medlem/" + l.id + "/'>"
+                 + l.namn + "</a> (" + l.alder + ")</td>"
+                 + "<td>" + (''+l.bet).replace(/,/g, ', ') + "</td>"
+                 + "<td>" + l.lokallag + "</td></tr>";
+
+    tr.addEventListener('click', function() {
+        window.location = "/admin/medlem/medlem/" + l.id + "/";
+        return false;
+    });
+        table.tBodies[0].appendChild(tr);
+    });
+    table.hidden = false;
+}
+})(document.querySelector("#nav_input"),
+   document.querySelector("#nav_table"));
+
+        </script>
+    </div>{# nav_complete #}
+    {% endif %}
+{% endblock branding %}
 
 {#
 {% block nav-global %}{% endblock %}
