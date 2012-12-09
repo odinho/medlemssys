@@ -8,13 +8,16 @@
     {% if user.is_authenticated %}
     <div id=nav_complete>
         <style>
-        #nav_complete { display: inline-block; width: 400px; margin: 0 4px; }
+        #nav_complete { display: inline-block; margin: 0 4px; }
         #nav_complete label { color: white; }
+        .selected { background: #EDF3FE; }
+        /* .selected { background: url("http://medlem.nynorsk.no/static/admin/img/default-bg.gif") repeat-x #7CA0C7; color: white; }
+        #nav_table .selected a:link, #nav_table .selected a:visited, #nav_table .selected a { color: white; } */
         #nav_input { width: 270px; font-size: 16px; margin-top: -2px; }
-        #nav_table { width: 400px; background-color: white; color: black; position: absolute; z-index: 100; border: 2px solid white; outline: 1px solid #ccc; }
+        #nav_table { width: 600px; background-color: white; color: black; position: absolute; z-index: 100; border: 2px solid white; outline: 1px solid #ccc; }
         #nav_table a:link, #nav_table a, #nav_table a:visited { color: black; }
         </style>
-        <input type=search name=term id=nav_input placeholder="Skriv for finna medlem">
+        <input type=search name=term id=nav_input placeholder="Skriv for finna medlem" autofocus>
         <table id=nav_table hidden>
             <thead><tr><th>Namn</th> <th>Betaling</th> <th>Lag</th></tr></thead>
             <tbody><tr><td>gjer eit søk</td> <td></td><td></td></tr></tbody>
@@ -27,23 +30,32 @@ var xhr = new XMLHttpRequest();
 var info = {};
 var change_grace;
 var pending_navigation = false;
+var selected_row = null;
 
 input.addEventListener('input', change)
 input.addEventListener('blur', function() {
     if (!input.value.length)
         table.hidden = true;
 });
-input.addEventListener('keypress', function(e) {
-    var code = e.keyCode || e.charCode || 0;
-    if (code == 13) {
-        var first_row = table.tBodies[0].children[0];
-        if (first_row && first_row.dataset['id'] !== undefined) {
-            var e = document.createEvent("Event");
-            e.initEvent("click", true, true);
-            first_row.dispatchEvent(e);
-            //table.tBodies[0].children[0].onclick({target: table.tBodies[0].children[0]});
+input.addEventListener('keydown', function(e) {
+    //console.log("key", e.key, "charCode", e.charCode, "keyCode", e.keyCode, "which", e.which)
+    if (e.key == "Enter" || e.keyCode == 13) {
+        if (selected_row && selected_row.dataset['id'] !== undefined) {
+            var evt = document.createEvent("Event");
+            evt.initEvent("click", true, true);
+            selected_row.dispatchEvent(evt);
         }
         pending_navigation = true;
+    }
+    else if ((e.key == "Down" || e.keyCode == 40) && selected_row && selected_row.nextElementSibling) {
+        selected_row.classList.remove("selected");
+        selected_row = selected_row.nextElementSibling;
+        selected_row.classList.add("selected");
+    }
+    else if ((e.key == "Up" || e.keyCode == 38) && selected_row && selected_row.previousElementSibling) {
+        selected_row.classList.remove("selected");
+        selected_row = selected_row.previousElementSibling;
+        selected_row.classList.add("selected");
     }
 });
 //input.addEventListener('change', change)
@@ -53,6 +65,7 @@ function change(e) {
     if (input.value.length < 2)
     {
         table.hidden = true;
+        selected_row = null;
         return;
     }
 
@@ -60,10 +73,8 @@ function change(e) {
 }
 
 function do_xhr() {
-    console.log("Doing XHR for " + input.value);
     xhr.open('GET', '/api/get_members.json?term=' + encodeURIComponent(input.value));
     xhr.onload = function(e) {
-        console.log("Got resp: " + xhr.responseText);
         info = JSON.parse(xhr.responseText);
         build_table(info);
     }
@@ -75,12 +86,18 @@ function build_table(members) {
     if (!members.length) {
         table.hidden = true;
         pending_navigation = false;
+        selected_row = null;
         return;
     }
     table.tBodies[0].innerHTML = "";
     members.forEach(function(l) {
+        console.log("adding to list: " + l.namn);
         if (pending_navigation)
-        window.location = "/admin/medlem/medlem/" + l.id + "/";
+        {
+            console.log("pending_nav, going to " + l.namn);
+            window.location = "/admin/medlem/medlem/" + l.id + "/";
+            pending_navigation = false;
+        }
         var tr = document.createElement("tr");
         tr.dataset['id'] = l.id;
         tr.innerHTML = "<td><a href='/admin/medlem/medlem/" + l.id + "/'>"
@@ -88,12 +105,14 @@ function build_table(members) {
                  + "<td>" + (''+l.bet).replace(/,/g, ', ') + "</td>"
                  + "<td>" + l.lokallag + "</td></tr>";
 
-    tr.addEventListener('click', function() {
-        window.location = "/admin/medlem/medlem/" + l.id + "/";
-        return false;
-    });
+        tr.addEventListener('click', function() {
+            window.location = "/admin/medlem/medlem/" + l.id + "/";
+            return false;
+        });
         table.tBodies[0].appendChild(tr);
     });
+    selected_row = table.querySelector("tbody tr");
+    selected_row.classList.add("selected");
     table.hidden = false;
 }
 })(document.querySelector("#nav_input"),
