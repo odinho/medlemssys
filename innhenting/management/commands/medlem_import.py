@@ -12,7 +12,7 @@ from medlemssys.giro.views import send_ventande_rekningar
 obj = ""
 
 class Command(BaseCommand):
-    args = '[ lokallag.csv [ medlem.csv [ betaling.csv ] ] ]'
+    args = '[ medlem.csv [ lokallag.csv [ betaling.csv ] ] ]'
     help = 'Importerer medlemane inn i databasen'
     force_update = False
     option_list = BaseCommand.option_list + (
@@ -29,8 +29,8 @@ class Command(BaseCommand):
         if options['force_update']:
             self.force_update = True
 
-        lag_csv = self.get_filename(args, 0, 'LAG_CSV', 'nmu-lag.csv')
-        medlem_csv = self.get_filename(args, 1, 'MEDLEM_CSV', 'nmu-medl.csv')
+        medlem_csv = self.get_filename(args, 0, 'MEDLEM_CSV', 'nmu-medl.csv')
+        lag_csv = self.get_filename(args, 1, 'LAG_CSV', 'nmu-lag.csv')
         bet_csv = self.get_filename(args, 2, 'GIRO_CSV', 'nmu-bet.csv')
 
         for i in import_lag(lag_csv).values():
@@ -111,12 +111,16 @@ VAL = (
         (33, 0, 'Ikkje Norsk Tidend'), # MNM_B = 31
 )
 
+import sys
 
 #@reversion.create_revision() XXX There's a bug here somewhere
 @transaction.commit_on_success
 def import_medlem(medlem_csv_fil):
     liste = csv.reader(open(medlem_csv_fil))
     mapping = nmu_mapping(headers=liste.next())
+    if not mapping:
+        stderr(u"%s: ser ikkje ut som ein medlems-csv fil (manglar header?)" % medlem_csv_fil)
+        sys.exit()
 
     with reversion.create_revision():
         reversion.set_comment("Import frå Access")
@@ -125,10 +129,14 @@ def import_medlem(medlem_csv_fil):
             tmp = {}
             for typ in nmu_csv_map.values():
                 if typ not in mapping:
-                    stderr(unicode(typ) + u" " + unicode(rad))
+                    stderr(u"Type '" + unicode(typ) + u"' not in mapping. row = " + unicode(rad))
                 tmp[typ] = rad[mapping[typ]] \
                             .decode("utf-8") \
                             .replace(r"\n", "\n")
+
+            if not tmp['id'].isdigit():
+                stderr(u"%s(%s) ugyldig medlemsnummer! Ignorerer medlemen." % (tmp['id'], tmp['fornamn']))
+                continue
 
             try:
                 tmp['lokallag_id'] = int(tmp['lokallag'])
@@ -145,6 +153,7 @@ def import_medlem(medlem_csv_fil):
             try:
                 tmp['postnr'] = format(int(tmp['postnr']), "04d")
             except ValueError:
+                stderr(u"%s(%s) forstår ikkje postnr: %s" % (tmp['id'], tmp['fornamn'], tmp['postnr']))
                 tmp['postnr'] = "9999"
 
             if len(tmp.get('status', '')) > 1:
@@ -214,6 +223,8 @@ def nmu_mapping(headers):
     for h in nmu_csv_map.keys():
         if h in headers:
             mapping[nmu_csv_map[h]] = headers.index(h)
+        else:
+            return None
 
     return mapping
 
