@@ -37,11 +37,12 @@ from django.db.models import Q
 def get_members(terms, limit=20):
     search = None
     for q in terms:
-        search_part = Q(fornamn__icontains=q)   \
-        | Q(mellomnamn__icontains=q)            \
-        | Q(etternamn__icontains=q)             \
-        | Q(fodt__icontains=q)                  \
-        | Q(lokallag__namn__icontains=q)
+        search_part = Q(fornamn__istartswith=q)   \
+        | Q(mellomnamn__istartswith=q)            \
+        | Q(etternamn__istartswith=q)             \
+        | Q(fodt__icontains=q)                    \
+        | Q(lokallag__namn__icontains=q)          \
+        | Q(lokallag__slug__istartswith=q)
 
         if not search:
             search = search_part
@@ -49,7 +50,7 @@ def get_members(terms, limit=20):
             search = search & search_part
 
     if search:
-        return Medlem.objects.select_related('giroar').filter(search)[:limit]
+        return Medlem.objects.select_related('giroar').filter(search).order_by("-_siste_medlemspengar", "-fodt")[:limit]
 
     return Medlem.objects.select_related('giroar')[:limit]
 
@@ -61,7 +62,10 @@ def get_members_json(request):
         member_json['id'] = member.pk
         member_json['namn'] = str(member)
         member_json['alder'] = member.alder()
-        member_json['lokallag'] = str(member.lokallag)
+        if member.lokallag_id:
+            member_json['lokallag'] = str(member.lokallag)
+        else:
+            member_json['lokallag'] = "(ingen)"
         bet = member.giroar.filter(innbetalt__isnull=False).values_list("oppretta", flat=True)
         member_json['bet'] = [x.year for x in bet]
         results.append(member_json)
