@@ -32,8 +32,8 @@ class SporjingFilter(SimpleListFilter):
 
 
 class FodtFilter(SimpleListFilter):
-    parameter_name = "alder"
     title = _(u"alder i år")
+    parameter_name = "alder"
 
     def lookups(self, request, model_admin):
         return (

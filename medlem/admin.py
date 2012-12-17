@@ -12,7 +12,7 @@ class GiroInline(admin.TabularInline):
     model = Giro
     extra = 1
     classes = ['left']
-    fields = ['belop', 'innbetalt_belop', 'kid', 'oppretta', 'innbetalt', 'konto', 'desc']
+    fields = ['belop', 'innbetalt_belop', 'kid', 'gjeldande_aar', 'innbetalt', 'konto', 'desc']
 class RolleInline(admin.TabularInline):
     model = Rolle
     extra = 1
@@ -31,9 +31,11 @@ class MedlemAdmin(VersionAdmin):
     list_filter = (
             SporjingFilter,
             ('val', AdditiveSubtractiveFilter),
-            ('_siste_medlemspengar', TimeSinceFilter),
+            #('_siste_medlemspengar', TimeSinceFilter),
+            '_siste_medlemspengar',
             FodtFilter,
             'innmeldt_dato',
+            'utmeldt_dato',
             'status',
             'lokallag',
         )
@@ -65,7 +67,7 @@ class MedlemAdmin(VersionAdmin):
             )
         }),
     )
-    actions = [admin_actions.simple_member_list, admin_actions.csv_member_list, admin_actions.pdf_member_list,]
+    actions = [ admin_actions.simple_member_list, admin_actions.csv_member_list, admin_actions.pdf_giro, ]
 
     class Media:
         css = {
@@ -125,8 +127,17 @@ class ValAdmin(admin.ModelAdmin):
 class GiroAdmin(admin.ModelAdmin):
     model = Giro
     raw_id_fields = ['medlem']
-    list_display = ('pk', 'medlem', 'kid', 'belop', 'innbetalt_belop', 'oppretta', 'innbetalt', 'konto')
-    list_editable = ('innbetalt', 'innbetalt_belop' )
+    list_display = ('pk', 'medlem', 'kid', 'belop', 'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto')
+    list_editable = ('innbetalt', 'innbetalt_belop', 'gjeldande_aar' )
+    date_hierarchy = 'oppretta'
+    list_filter = (
+        'gjeldande_aar',
+        'innbetalt',
+        'hensikt',
+        'konto',
+        'belop',
+    )
+    readonly_fields = ('oppretta',)
     fieldsets = (
         (None, {
             'fields': (
@@ -135,7 +146,7 @@ class GiroAdmin(admin.ModelAdmin):
                 ('konto', 'hensikt'),
                 'innbetalt',
                 'kid',
-                'oppretta',
+                ('gjeldande_aar', 'oppretta',),
                 'desc',
             )
         }),

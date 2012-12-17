@@ -1,25 +1,9 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
-
-Replace this with more appropriate tests for your application.
-"""
-
 from django.test import TestCase
-from sets import Set
 import datetime
 
 from medlemssys.medlem.models import Medlem, Giro
-
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
-
 
 class MedlemTest(TestCase):
     medlemar = {}
@@ -75,6 +59,7 @@ class MedlemTest(TestCase):
         Giro(medlem=m,
              belop=80,
              innbetalt_belop=80,
+             gjeldande_aar=self.year - 1,
              oppretta=datetime.date(self.year - 1, 1, 1),
              innbetalt=datetime.date(self.year - 1, 1, 1)).save()
         m.save()
@@ -84,6 +69,7 @@ class MedlemTest(TestCase):
         Giro(medlem=m,
              belop=80,
              innbetalt_belop=80,
+             gjeldande_aar=self.year - 2,
              oppretta=datetime.date(self.year - 2, 1, 1),
              innbetalt=datetime.date(self.year - 2, 1, 1)).save()
         m.save()
@@ -93,6 +79,7 @@ class MedlemTest(TestCase):
         Giro(medlem=m,
              belop=80,
              innbetalt_belop=0,
+             gjeldande_aar=self.year - 1,
              oppretta=datetime.date(self.year - 1, 1, 1)).save()
         m.save()
 
@@ -101,59 +88,59 @@ class MedlemTest(TestCase):
         Sjekk at me faktisk fær alle når me spyrr om det
         """
         alle = Medlem.objects.alle().values_list('pk', flat=True)
-        self.assertEqual(Set([x.pk for x in self.medlemar.values()]), Set(alle))
+        self.assertEqual(set([x.pk for x in self.medlemar.values()]), set(alle))
 
     def test_ikkje_utmelde(self):
         ikkje_utmelde = Medlem.objects.ikkje_utmelde().values_list('fornamn', flat=True)
-        self.assertEqual(Set([
+        self.assertEqual(set([
                 "12", "12-betalt",
                 "25", "25-betalt",
                 "26", "26-betalt",
                 "23-betaltifjor", "23-innmeldtifjor", "23-betaltiforfjor",
-            ]), Set(ikkje_utmelde))
+            ]), set(ikkje_utmelde))
 
     def test_betalande(self):
         betalande = Medlem.objects.betalande().values_list('fornamn', flat=True)
-        self.assertEqual(Set([
+        self.assertEqual(set([
                 "12-betalt",
                 "25-betalt",
                 "26-betalt",
-            ]), Set(betalande))
+            ]), set(betalande))
 
     def test_unge(self):
         unge = Medlem.objects.unge().values_list('fornamn', flat=True)
-        self.assertEqual(Set([
+        self.assertEqual(set([
                 "12", "12-betalt",
                 "25", "25-betalt",
                 "23-betaltifjor", "23-innmeldtifjor", "23-betaltiforfjor",
-            ]), Set(unge))
+            ]), set(unge))
 
     #def test_potensielt_teljande(self):
     #    potensielt_teljande = Medlem.objects.potensielt_teljande().values_list('fornamn', flat=True)
-    #    self.assertEqual(Set([
+    #    self.assertEqual(set([
     #            "12",
     #            "25",
-    #        ]), Set(potensielt_teljande))
+    #        ]), set(potensielt_teljande))
 
 
     def test_teljande(self):
         teljande = Medlem.objects.teljande().values_list('fornamn', flat=True)
-        self.assertEqual(Set([
+        self.assertEqual(set([
                 "12-betalt",
                 "25-betalt",
-            ]), Set(teljande))
+            ]), set(teljande))
 
     def test_interessante(self):
         interessante = Medlem.objects.interessante().values_list('fornamn', flat=True)
-        self.assertEqual(Set([
+        self.assertEqual(set([
                 "12-betalt", "12",
                 "25-betalt", "25",
                 "26-betalt", "26",
                 "23-betaltifjor",
-            ]), Set(interessante))
+            ]), set(interessante))
 
     def test_interessante_ifjor(self):
         ifjor = Medlem.objects.interessante(self.year-1).values_list('fornamn', flat=True)
-        self.assertEqual(Set([
+        self.assertEqual(set([
                 "23-betaltifjor", "23-innmeldtifjor", "23-betaltiforfjor",
-            ]), Set(ifjor))
+            ]), set(ifjor))

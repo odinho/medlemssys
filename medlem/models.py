@@ -121,12 +121,17 @@ class MedlemManager(models.Manager):
             Q(utmeldt_dato__isnull=True) | Q(utmeldt_dato__gt=date(year+1, 1, 1))
         )
 
+    def utmelde(self, year=date.today().year):
+        """Medlem som er utmelde"""
+        return self.alle().filter(
+            utmeldt_dato__isnull=False, utmeldt_dato__gt=date(year+1, 1, 1)
+        )
+
     def betalande(self, year=date.today().year):
         """Medlem med ein medlemspengeinnbetaling inneverande år"""
         return self.ikkje_utmelde(year) \
             .filter(
-                giroar__oppretta__gte=date(year, 1, 1),
-                giroar__oppretta__lt=date(year+1, 1, 1),
+                giroar__gjeldande_aar=year,
                 giroar__innbetalt__isnull=False
             ).distinct()
 
@@ -139,8 +144,7 @@ class MedlemManager(models.Manager):
 
     def potensielt_teljande(self, year=date.today().year):
         return self.unge(year).filter(postnr__gt="0000", postnr__lt="9999") \
-            .exclude(giroar__oppretta__gte=date(year, 1, 1),
-                giroar__oppretta__lt=date(year+1, 1, 1),
+            .exclude(giroar__gjeldande_aar=year,
                 giroar__innbetalt__isnull=False)
 
     def teljande(self, year=date.today().year):
@@ -152,8 +156,9 @@ class MedlemManager(models.Manager):
         return self.ikkje_utmelde(year) \
             .filter(
                 Q(innmeldt_dato__year=year) |
-                Q(giroar__oppretta__gte=date(year-1, 1, 1),
-                  giroar__oppretta__lt=date(year+1, 1, 1),
+                Q(giroar__gjeldande_aar=year,
+                  giroar__innbetalt__isnull=False) |
+                Q(giroar__gjeldande_aar=year-1,
                   giroar__innbetalt__isnull=False)
             ).distinct()
 
@@ -191,7 +196,7 @@ class Medlem(models.Model):
     merknad = models.TextField(_("merknad"), blank=True, default="")
 
     # Spesialfelt, denormalisert felt frå Giro
-    _siste_medlemspengar = models.DateField(blank=True, null=True,
+    _siste_medlemspengar = models.PositiveIntegerField(blank=True, null=True,
             editable=False, default=None)
 
     # Medlemsskapet
@@ -277,7 +282,7 @@ class Medlem(models.Model):
     fodt_farga.admin_order_field = 'fodt'
 
     def har_betalt(self):
-        if (self.giroar.filter(oppretta__gte=date(date.today().year, 1, 1),
+        if (self.giroar.filter(gjeldande_aar=date.today().year,
                                  innbetalt__isnull=False)).exists():
             return True
         else:
@@ -305,10 +310,9 @@ class Medlem(models.Model):
 
 @transaction.commit_on_success
 def update_denormalized_fields():
-    for date in Giro.objects.values('oppretta').distinct():
-        Medlem.objects.filter(giroar__innbetalt__gt=date['oppretta']) \
-                .exclude(giroar__oppretta__gt=date['oppretta']) \
-                .update(_siste_medlemspengar=date['oppretta'])
+    for date in Giro.objects.values('gjeldande_aar').distinct().order_by('gjeldande_aar'):
+        Medlem.objects.filter(giroar__gjeldande_aar=date['gjeldande_aar'], giroar__innbetalt__isnull=False) \
+                .update(_siste_medlemspengar=date['gjeldande_aar'])
 
     Medlem.objects.filter(giroar__isnull=True).update(_siste_medlemspengar=None)
 
@@ -381,14 +385,15 @@ class Giro(models.Model):
     # XXX This is not really unique, but unique per oppretta_year and oppretta_year - 1
     kid = models.CharField(_("KID-nummer"), max_length=255, blank=True, unique=True)
 
-    oppretta = models.DateTimeField(_("Giro lagd"), blank=True, default=datetime.now)
-    oppdatert = models.DateTimeField(_("Giro oppatert"), auto_now=True)
+    oppretta = models.DateTimeField(_("oppretta"), auto_now_add=True)
+    oppdatert = models.DateTimeField(_("oppatert"), auto_now=True)
     innbetalt = models.DateField(_("Dato betalt"), blank=True, null=True)
     konto = models.CharField(_("Konto"), max_length=1, choices=KONTI, default="M")
     hensikt = models.CharField(_("Hensikt"), max_length=1, choices=HENSIKTER, default="P")
     desc = models.TextField(_("Forklaring"), blank=True, default="")
 
     status = models.CharField(_("Status"), max_length=1, choices=GIRO_STATUSAR, default="V")
+    gjeldande_aar = models.PositiveIntegerField(_(u"Gjeldande år"), default=lambda: date.today().year)
 
     class Meta:
         verbose_name_plural = "giroar"
@@ -400,7 +405,7 @@ class Giro(models.Model):
         else:
             betalt = "IKKJE BETALT"
 
-        return u"%s, %s (%s)" % (self.medlem, self.oppretta.year, betalt)
+        return u"%s, %s (%s)" % (self.medlem, self.gjeldande_aar, betalt)
 
     def save(self, *args, **kwargs):
         if len(self.kid) < 1:
@@ -413,8 +418,8 @@ class Giro(models.Model):
         if self.hensikt == 'P' \
                 and self.innbetalt is not None \
                 and (self.medlem._siste_medlemspengar is None \
-                    or self.medlem._siste_medlemspengar < self.oppretta.date()):
-            self.medlem._siste_medlemspengar = self.oppretta
+                    or self.medlem._siste_medlemspengar < self.gjeldande_aar):
+            self.medlem._siste_medlemspengar = self.gjeldande_aar
             self.medlem.save()
 
         super(Giro, self).save(*args, **kwargs)

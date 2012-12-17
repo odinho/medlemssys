@@ -53,3 +53,10 @@ Legg OCR-fila i mappa di, eller gje ho som argument.
 
     # Usage: manage.py ocr_import [options] [ ocr_fil.txt ]
     ./manage.py ocr_import
+
+
+KØYR TESTANE
+############
+Det er alt for få testar, men eit par. Skriv gjerne fleire, og køyr dei ved kodeendring.
+
+    ./manage test medlem

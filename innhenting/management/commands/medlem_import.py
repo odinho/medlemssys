@@ -336,6 +336,8 @@ def import_bet(bet_csv_fil):
             stderr(u"Gjettar oppretta==innbetalt: {0}, {1}".format(g.medlem, rad))
             g.oppretta = g.innbetalt
 
+        g.gjeldande_aar = g.oppretta.year
+
         if rad[3] != "MEDLEMSKONTO":
             g.desc = rad[3]
 

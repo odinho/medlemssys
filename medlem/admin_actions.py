@@ -44,6 +44,7 @@ def simple_member_list(self, request, queryset):
         dc.writerow([unicode(s).encode("utf-8") for s in a])
 
     return response
+
 def csv_member_list(self, request, queryset):
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
     response['Content-Disposition'] = 'filename=medlemer.csv'
@@ -56,7 +57,7 @@ def csv_member_list(self, request, queryset):
 
     return response
 
-def pdf_member_list(self, request, queryset):
+def pdf_giro(self, request, queryset):
     # User has already written some text, make PDF
     if request.POST.get('post'):
         from cStringIO import StringIO
@@ -64,33 +65,35 @@ def pdf_member_list(self, request, queryset):
         from reportlab.lib.units import cm #, mm
 
         response = HttpResponse(mimetype="application/pdf")
-        response['Content-Disposition'] = 'filename=noko.pdf'
+        response['Content-Disposition'] = 'filename=girosending.pdf'
 
         buf = StringIO()
 
         # Create the PDF object, using the StringIO object as its "file."
         pdf = canvas.Canvas(buf)
 
+        if not request.POST.get("ink-utmeld"):
+            queryset = queryset.filter(utmeldt_dato__isnull=True)
+
         # Draw things on the PDF. Here's where the PDF generation happens.
         # See the ReportLab documentation for the full list of functionality.
         for m in queryset:
             pdf.setFontSize(16)
-            pdf.drawString(1.5*cm, 24*cm, "%s" % request.POST.get('title'))
+            pdf.drawString(1.5*cm, 24*cm, u"%s" % request.POST.get('title'))
 
             pdf.setFontSize(10)
             infotekst = pdf.beginText(1.5*cm, 22*cm)
-            infotekst.textOut("%s" % request.POST.get('text'))
+            infotekst.textOut(u"%s" % request.POST.get('text'))
             pdf.drawText(infotekst)
 
             pdf.setFontSize(10)
             tekst = pdf.beginText(1.5*cm, 6*cm)
-            tekst.textLine("%s %s" % (m.fornamn, m.etternamn) )
-            tekst.textLine("%s" % (m.postadr,) )
-            tekst.textLine("%s" % (m.postnr,) )
+            tekst.textLine(u"%s %s" % (m.fornamn, m.etternamn) )
+            tekst.textLine(u"%s" % (m.postadr,) )
+            tekst.textLine(u"%s" % (m.postnr,) )
             pdf.drawText(tekst)
 
             pdf.showPage()
-            print "%s %s" % (m.fornamn, request.POST.get('title'))
 
         # Close the PDF object cleanly.
         pdf.save()
@@ -99,27 +102,23 @@ def pdf_member_list(self, request, queryset):
         pdf = buf.getvalue()
         buf.close()
         response.write(pdf)
-        print "Returning response!!"
         return response
 
     opts = self.model._meta
     app_label = opts.app_label
-    if len(queryset) == 1:
-        objects_name = force_unicode(opts.verbose_name)
-    else:
-        objects_name = force_unicode(opts.verbose_name_plural)
+    n_utmelde = queryset.filter(utmeldt_dato__isnull=False).count()
 
-    title = _("PDF-info")
+    title = _("Lag giro-PDF-ar")
 
     context = {
         "title": title,
-        "objects_name": objects_name,
-        'queryset': queryset,
+        "queryset": queryset,
         "opts": opts,
         "app_label": app_label,
-        'action_checkbox_name': helpers.ACTION_CHECKBOX_NAME,
+        "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+        "n_utmelde": n_utmelde,
     }
 
-    return TemplateResponse(request, 'admin/pdf_info.html', context,
+    return TemplateResponse(request, "admin/pdf_giro.html", context,
             current_app=self.admin_site.name)
 
