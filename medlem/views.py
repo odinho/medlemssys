@@ -66,8 +66,8 @@ def get_members_json(request):
             member_json['lokallag'] = str(member.lokallag)
         else:
             member_json['lokallag'] = "(ingen)"
-        bet = member.giroar.filter(innbetalt__isnull=False).values_list("oppretta", flat=True)
-        member_json['bet'] = [x.year for x in bet]
+        bet = member.giroar.filter(innbetalt__isnull=False).order_by("-gjeldande_aar").values_list("gjeldande_aar", flat=True)
+        member_json['bet'] = [unicode(x) for x in bet]
         results.append(member_json)
     data = json.dumps(results)
     mimetype = 'application/json'
