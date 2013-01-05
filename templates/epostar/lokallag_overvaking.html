@@ -114,7 +114,7 @@
     {% else %}
         <h2>{{ "Bah :/,Blæ.,Argh!,Hrmf...,Æsj.,S&oslash;ren òg."|split|random  }} {{ utmeld_medlem|length|apnumber|capfirst }} utmelde medlemar :|</h2>
         <table width="100%"><tr><th>Namn <th>Født <th>Betalt <th>Epost <th>Mobil</tr>
-        {% for m in tilflytta_medlem %}
+        {% for m in utmeld_medlem %}
             <tr><td>{{ m }} <td>{{ m.fodt }} <td>{{ m.har_betalt|yesno:"Ja (irriterande nok :-( ),Nei" }} <td>{{ m.epost }} <td>{{ m.mobnr }}</tr>
         {% endfor %}
         </table>
