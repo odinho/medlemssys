@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 from django.contrib import admin
 from reversion.admin import VersionAdmin
@@ -43,7 +44,7 @@ class MedlemAdmin(VersionAdmin):
     readonly_fields = ('_siste_medlemspengar', 'oppretta', 'oppdatert')
     save_on_top = True
     inlines = [RolleInline, GiroInline, MedlemInline]
-    search_fields = ('fornamn', 'mellomnamn', 'etternamn', '=id',)
+    search_fields = ('fornamn', 'mellomnamn', 'etternamn', '=id', '^mobnr',)
     filter_horizontal = ('val', 'tilskiping', 'nemnd')
     fieldsets = (
         (None, {

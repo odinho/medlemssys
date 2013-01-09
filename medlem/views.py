@@ -1,4 +1,5 @@
-# vim: ts=4 sw=4 expandtab ai
+# -*- coding: utf-8 -*-
+# vim: ts=4 sts=4 expandtab ai
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required
@@ -36,6 +37,14 @@ from django.db.models import Q
 
 def get_members(terms, limit=20):
     search = None
+
+    # Søk etter mobil nummer eller medlemsnummer
+    if "".join(terms).isdigit():
+        q = "".join(terms)
+        search = Q(mobnr__startswith=q) | Q(id__startswith=q)
+        terms = []
+
+    # Vanleg søk
     for q in terms:
         search_part = Q(fornamn__istartswith=q)   \
         | Q(mellomnamn__istartswith=q)            \
