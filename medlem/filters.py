@@ -50,13 +50,13 @@ class FodtFilter(SimpleListFilter):
         year = date.today().year
 
         if self.value() == 'under-26':
-            return queryset.filter(fodt__lt=(year - 26))
+            return queryset.filter(fodt__gt=(year - 26))
         elif self.value() == 'over-25':
-            return queryset.filter(fodt__gt=(year - 25))
+            return queryset.filter(fodt__lt=(year - 25))
         if self.value() == 'under-30':
-            return queryset.filter(fodt__lt=(year - 30))
+            return queryset.filter(fodt__gt=(year - 30))
         elif self.value() == 'over-29':
-            return queryset.filter(fodt__gt=(year - 29))
+            return queryset.filter(fodt__lt=(year - 29))
         elif self.value() == '25':
             return queryset.filter(fodt=(year - 25))
         elif self.value() == '26':
