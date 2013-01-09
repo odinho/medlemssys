@@ -14,21 +14,29 @@ class SporjingFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-                ('teljande',    u"Teljande"),
-                ('interessante',u"Interessante"),
-                ('betalande',   u"Betalande"),
-                ('potensielle', u"Potensielt teljande"),
+                ('teljande',      u"Teljande"),
+                ('interessante',  u"Interessante"),
+                ('betalande',     u"Betalande"),
+                ('potensielle',   u"Potensielt teljande"),
+                ('teljandeifjor', u"Teljande (i fjor)"),
+                ('betalandeifjor',u"Betalande (i fjor)"),
             )
 
     def queryset(self, request, queryset):
+        year = date.today().year
+
         if self.value() == 'teljande':
-            return queryset.model.objects.teljande()
+            return queryset.teljande()
         elif self.value() == 'interessante':
-            return queryset.model.objects.interessante()
+            return queryset.interessante()
         elif self.value() == 'betalande':
-            return queryset.model.objects.betalande()
+            return queryset.betalande()
         elif self.value() == 'potensielle':
-            return queryset.model.objects.potensielt_teljande()
+            return queryset.potensielt_teljande()
+        elif self.value() == 'teljandeifjor':
+            return queryset.teljande(year - 1)
+        elif self.value() == 'betalandeifjor':
+            return queryset.betalande(year - 1)
 
 
 class FodtFilter(SimpleListFilter):
