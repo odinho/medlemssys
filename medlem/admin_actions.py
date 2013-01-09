@@ -13,7 +13,7 @@ def simple_member_list(self, request, queryset):
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
     response['Content-Disposition'] = 'filename=medlemer.csv'
 
-    dc = csv.writer(response, quoting=csv.QUOTE_NONNUMERIC)
+    dc = csv.writer(response, quoting=csv.QUOTE_ALL)
     dc.writerow(["Namn",
                  "Adresse",
                  "Postnr",
