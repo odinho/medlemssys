@@ -19,6 +19,7 @@ def simple_member_list(self, request, queryset):
                  "Postnr",
                  "Stad",
                  "Mobiltelefon",
+                 "Epost",
                  u"Født".encode("utf-8"),
                  "Lokallag",
                  "Betalt?"])
@@ -37,6 +38,7 @@ def simple_member_list(self, request, queryset):
              m.postnr,
              stad,
              m.mobnr,
+             m.epost,
              m.fodt,
              m.lokallag_display(),
              m.har_betalt()]
