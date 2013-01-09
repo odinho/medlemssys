@@ -83,12 +83,24 @@ class MedlemTest(TestCase):
              oppretta=datetime.date(self.year - 1, 1, 1)).save()
         m.save()
 
+    # innmeldt og utmeldt i fjor
+    # innmeldt i fjor, men utmeldt no
+    # utmeldt til neste år
+
     def test_alle(self):
         """
         Sjekk at me faktisk fær alle når me spyrr om det
         """
         alle = Medlem.objects.alle().values_list('pk', flat=True)
         self.assertEqual(set([x.pk for x in self.medlemar.values()]), set(alle))
+
+    def test_utmelde(self):
+        utmelde = Medlem.objects.utmelde().values_list('fornamn', flat=True)
+        self.assertEqual(set([
+                "12-utmeld", "12-betalt-utmeld",
+                "25-utmeld", "25-betalt-utmeld",
+                "26-utmeld", "26-betalt-utmeld",
+            ]), set(utmelde))
 
     def test_ikkje_utmelde(self):
         ikkje_utmelde = Medlem.objects.ikkje_utmelde().values_list('fornamn', flat=True)

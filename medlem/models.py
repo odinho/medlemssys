@@ -3,6 +3,7 @@
 from datetime import date, datetime
 from django.db import models, transaction
 from django.db.models import Q
+from django.db.models.query import QuerySet
 from django.forms import ModelForm
 from django.utils.translation import ugettext_lazy as _
 #from emencia.django.newsletter.mailer import mailing_started
@@ -105,15 +106,13 @@ INNMELDINGSTYPAR = (
     ("U", "--"),
 )
 
-class MedlemManager(models.Manager):
+class MedlemQuerySet(QuerySet):
     def alle(self):
         """Alle oppføringar i registeret"""
         if getattr(self, 'core_filters', None):
-            qs = super(MedlemManager, self).get_query_set().filter(**self.core_filters)
-        else:
-            qs = super(MedlemManager, self).get_query_set()
+            return self.filter(**self.core_filters)
 
-        return qs
+        return self
 
     def ikkje_utmelde(self, year=date.today().year):
         """Medlem som ikkje er eksplisitt utmelde"""
@@ -124,7 +123,7 @@ class MedlemManager(models.Manager):
     def utmelde(self, year=date.today().year):
         """Medlem som er utmelde"""
         return self.alle().filter(
-            utmeldt_dato__isnull=False, utmeldt_dato__gt=date(year+1, 1, 1)
+            utmeldt_dato__isnull=False, utmeldt_dato__lte=date(year+1, 1, 1)
         )
 
     def betalande(self, year=date.today().year):
@@ -162,8 +161,15 @@ class MedlemManager(models.Manager):
                   giroar__innbetalt__isnull=False)
             ).distinct()
 
+
+class MedlemManager(models.Manager):
     def get_query_set(self):
-        return self.alle()
+        return MedlemQuerySet(self.model)
+
+    def __getattr__(self, attr, *args):
+        if attr.startswith("_"):
+            raise AttributeError
+        return getattr(self.get_query_set(), attr, *args)
 
 
 class Medlem(models.Model):
