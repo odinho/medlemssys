@@ -52,7 +52,7 @@ class MedlemAdmin(VersionAdmin):
             'fields': (
                 ('fornamn', 'mellomnamn', 'etternamn', 'fodt', 'kjon'),
                 ('postadr', 'postnr', 'ekstraadr'),
-                ('epost', 'mobnr'),
+                ('mobnr', 'epost'),
                 ('lokallag', 'status', 'innmeldt_dato'),
             )
             }),
