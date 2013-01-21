@@ -230,6 +230,13 @@ class Medlem(models.Model):
     oppretta = models.DateTimeField(_("oppretta"), auto_now_add=True)
     oppdatert = models.DateTimeField(_("oppdatert"), auto_now=True)
 
+    @property
+    def stad(self):
+        try:
+            return PostNummer.objects.get(postnr=self.postnr).poststad
+        except PostNummer.DoesNotExist:
+            return "?"
+
     # Managers
     objects = MedlemManager()
 

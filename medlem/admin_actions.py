@@ -10,7 +10,6 @@ from django.utils.translation import ugettext as _
 from django.template.response import TemplateResponse
 
 def simple_member_list(self, request, queryset):
-    from medlemssys.medlem.models import PostNummer
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
     response['Content-Disposition'] = 'filename=medlemer.csv'
 
@@ -25,11 +24,6 @@ def simple_member_list(self, request, queryset):
                  "Lokallag",
                  "Betalt?"])
     for m in queryset:
-        try:
-            stad = PostNummer.objects.get(postnr=m.postnr).poststad
-        except PostNummer.DoesNotExist:
-            stad = "?"
-
         postadr = m.postadr
         if m.ekstraadr:
             postadr += u"\n{0}".format(m.ekstraadr)
@@ -37,7 +31,7 @@ def simple_member_list(self, request, queryset):
         a = [m,
              postadr,
              m.postnr,
-             stad,
+             m.stad,
              m.mobnr,
              m.epost,
              m.fodt,
@@ -102,7 +96,7 @@ def pdf_giro(self, request, queryset):
             tekst = pdf.beginText(1.2*cm, 5.5*cm)
             tekst.textLine(u"%s %s" % (m.fornamn, m.etternamn) )
             tekst.textLine(u"%s" % (m.postadr,) )
-            tekst.textLine(u"%s" % (m.postnr,) )
+            tekst.textLine(u"%s %s" % (m.postnr, m.stad) )
             pdf.drawText(tekst)
 
             pdf.drawString(13*cm, 12.8*cm, u"%s" % giro.belop)
@@ -112,13 +106,12 @@ def pdf_giro(self, request, queryset):
 
             pdf.drawString(17.1*cm, 9.3*cm, u"%s" % request.POST.get('frist'))
 
-            pdf.drawString(5.0*cm,  1.55*cm, u"%s" % giro.kid)
-            pdf.drawString(8.5*cm,  1.55*cm, u"%s" % giro.belop)
-            pdf.drawString(10.6*cm, 1.55*cm, u"%s" % '00')
-            pdf.drawString(11.9*cm,
-                           1.55*cm,
+            pdf.drawString(5.0*cm,  1.58*cm, u"%s" % giro.kid)
+            pdf.drawString(8.5*cm,  1.58*cm, u"%s" % giro.belop)
+            pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
+            pdf.drawString(11.9*cm, 1.58*cm,
                            u"%s" % mod10(unicode(giro.belop) + '00'))
-            pdf.drawString(13.2*cm, 1.55*cm, u"%s" % '3450 65 48618')
+            pdf.drawString(13.2*cm, 1.58*cm, u"%s" % '3450 65 48618')
 
             pdf.showPage()
 
