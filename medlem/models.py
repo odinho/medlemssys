@@ -313,6 +313,12 @@ class Medlem(models.Model):
             return u"(ingen)"
         return unicode(self.lokallag)
 
+    def gjeldande_giro(self, year=date.today().year):
+        try:
+            return self.giroar.filter(gjeldande_aar=year)[0]
+        except Giro.DoesNotExist:
+            return None
+
 
 @transaction.commit_on_success
 def update_denormalized_fields():
