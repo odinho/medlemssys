@@ -43,16 +43,15 @@
           <div class=field-box>
             <input type=checkbox name=ink-utmeld> <label for=ink-utmeld>Inkluder utmelde</label>
             <p>Det er <strong>{{ n_utmelde }} utmelde medlem</strong> i lista di.
-            <p class=help>Du bør eigentleg aldri sjå dette, for å senda giroar til utmelde medlem er ikkje særleg bra.
+            <p class=help>Du bør eigentleg aldri sjå dette, for å laga giroar til utmelde medlem er ikkje særleg vits.
           </div>
         </div>
         {% endif %}
       </fieldset>
     {% endif %}
 
-    {% for obj in queryset %}
-    <input type=hidden name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}">
-    {% endfor %}
+    {% for obj in queryset %}<input type=hidden name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}">{% endfor %}
+
     <input type=hidden name=action value=lag_giroar>
     <input type=hidden name=post value=yes>
     <div class=submit-row>

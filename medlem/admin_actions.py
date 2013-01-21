@@ -71,6 +71,8 @@ def pdf_giro(self, request, queryset):
         from reportlab.pdfbase import pdfmetrics
         from reportlab.pdfbase.ttfonts import TTFont
 
+        from medlemssys.mod10 import mod10
+
         pdfmetrics.registerFont(TTFont('OCRB', 'giro/OCRB.ttf'))
         response = HttpResponse(mimetype="application/pdf")
         response['Content-Disposition'] = 'filename=girosending.pdf'
@@ -110,11 +112,13 @@ def pdf_giro(self, request, queryset):
 
             pdf.drawString(17.1*cm, 9.3*cm, u"%s" % request.POST.get('frist'))
 
-            pdf.drawString(5.0*cm,  1.6*cm, u"%s" % giro.kid)
-            pdf.drawString(8.5*cm,  1.6*cm, u"%s" % giro.belop)
-            pdf.drawString(10.6*cm, 1.6*cm, u"%s" % '00')
-            pdf.drawString(11.9*cm, 1.6*cm, u"%s" % '8')
-            pdf.drawString(13.2*cm, 1.6*cm, u"%s" % '3450 65 48618')
+            pdf.drawString(5.0*cm,  1.55*cm, u"%s" % giro.kid)
+            pdf.drawString(8.5*cm,  1.55*cm, u"%s" % giro.belop)
+            pdf.drawString(10.6*cm, 1.55*cm, u"%s" % '00')
+            pdf.drawString(11.9*cm,
+                           1.55*cm,
+                           u"%s" % mod10(unicode(giro.belop) + '00'))
+            pdf.drawString(13.2*cm, 1.55*cm, u"%s" % '3450 65 48618')
 
             pdf.showPage()
 

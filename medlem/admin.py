@@ -131,10 +131,11 @@ class ValAdmin(admin.ModelAdmin):
 class GiroAdmin(admin.ModelAdmin):
     model = Giro
     raw_id_fields = ['medlem']
-    list_display = ('pk', 'medlem', 'kid', 'belop', 'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto')
-    list_editable = ('innbetalt', 'innbetalt_belop', 'gjeldande_aar' )
+    list_display = ('pk', 'medlem', 'kid', 'belop', 'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto', 'status')
+    list_editable = ('innbetalt', 'innbetalt_belop', 'gjeldande_aar', 'status', )
     date_hierarchy = 'oppretta'
     list_filter = (
+        'status',
         'gjeldande_aar',
         'innbetalt',
         'hensikt',
@@ -150,7 +151,7 @@ class GiroAdmin(admin.ModelAdmin):
                 ('konto', 'hensikt'),
                 'innbetalt',
                 'kid',
-                ('gjeldande_aar', 'oppretta',),
+                ('gjeldande_aar', 'oppretta', 'status'),
                 'desc',
             )
         }),
