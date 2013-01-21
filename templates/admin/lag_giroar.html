@@ -7,7 +7,7 @@
      <a href="../../">{% trans "Home" %}</a> &rsaquo;
      <a href="../">{{ app_label|capfirst }}</a> &rsaquo;
      <a href="./">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
-     {% trans "PDF-giro" %}
+     {% trans "Giroar" %}
 </div>
 {% endblock %}
 
@@ -17,23 +17,28 @@
     <fieldset class="module aligned">
     <div class=form-row>
       <div class=field-box>
-        <label for=title class=required>Tittel:</label> <input type=text name=title class=vTextField value="Medlemspengar for Norsk Målungdom">
+        <label for=belop class=required>Beløp:</label> <input type=text name=belop class=vTextField value="70">
       </div>
     </div>
     <div class=form-row>
       <div>
-        <label for=text class=required>Tekst</label> <textarea name=text class=vLargeTextField>Ver snill og betal medlemspengar. Norsk Målungdom treng det.</textarea>
-      </div>
-    </div>
-    <div class=form-row>
-      <div class=field-box>
-        <label for=frist class=required>Betalingsfrist</label> <input type=text name=frist class=vTextField value="{{g_frist.isoformat}}">
+        <label for=text>Forklaring:</label> <textarea name=text class=vLargeTextField></textarea>
+        <p class=help>Forklaring på korleis desse giroane vart oppretta. T.d. «vanleg medlem 2013».
       </div>
     </div>
     </fieldset>
 
-    {% if n_utmelde %}
+    {% if n_allereie_giro or n_utmelde %}
       <fieldset class="module aligned">
+        {% if n_allereie_giro %}
+        <div class=form-row>
+          <div class=field-box>
+            <p>Det er <strong>{{ n_allereie_giro }} medlem</strong> som allereie har giro for {% now "Y" %}.
+            <p class=help>Desse vert det ikkje laga ein giro for.
+          </div>
+        </div>
+        {% endif %}
+        {% if n_utmelde %}
         <div class=form-row>
           <div class=field-box>
             <input type=checkbox name=ink-utmeld> <label for=ink-utmeld>Inkluder utmelde</label>
@@ -41,16 +46,17 @@
             <p class=help>Du bør eigentleg aldri sjå dette, for å senda giroar til utmelde medlem er ikkje særleg bra.
           </div>
         </div>
+        {% endif %}
       </fieldset>
     {% endif %}
 
     {% for obj in queryset %}
     <input type=hidden name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}">
     {% endfor %}
-    <input type=hidden name=action value=pdf_giro>
+    <input type=hidden name=action value=lag_giroar>
     <input type=hidden name=post value=yes>
     <div class=submit-row>
-      <input type=submit value="Lag PDF-giroar" class=default>
+      <input type=submit value="Opprett giroar" class=default>
     </div>
     </form>
 {% endblock %}

@@ -316,7 +316,7 @@ class Medlem(models.Model):
     def gjeldande_giro(self, year=date.today().year):
         try:
             return self.giroar.filter(gjeldande_aar=year)[0]
-        except Giro.DoesNotExist:
+        except IndexError:
             return None
 
 

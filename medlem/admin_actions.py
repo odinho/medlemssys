@@ -47,6 +47,7 @@ def simple_member_list(self, request, queryset):
         dc.writerow([unicode(s).encode("utf-8") for s in a])
 
     return response
+simple_member_list.short_description = "Enkel medlemsliste"
 
 def csv_member_list(self, request, queryset):
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
@@ -59,6 +60,7 @@ def csv_member_list(self, request, queryset):
         dc.writerow([unicode(s).encode("utf-8") for s in a])
 
     return response
+csv_member_list.short_description = "Full medlemsliste"
 
 def pdf_giro(self, request, queryset):
     # User has already written some text, make PDF
@@ -144,4 +146,41 @@ def pdf_giro(self, request, queryset):
 
     return TemplateResponse(request, "admin/pdf_giro.html", context,
             current_app=self.admin_site.name)
+pdf_giro.short_description = "Lag giro-PDF"
+
+
+def lag_giroar(self, request, queryset):
+    from medlemssys.medlem.models import Giro
+
+    year = datetime.date.today().year
+    if not request.POST.get('post'):
+        opts = self.model._meta
+        app_label = opts.app_label
+        n_utmelde = queryset.filter(utmeldt_dato__isnull=False).count()
+        n_allereie_giro = queryset.filter(giroar__gjeldande_aar=year).count()
+
+        title = _("Lag giroar")
+
+        context = {
+            "title": title,
+            "queryset": queryset,
+            "opts": opts,
+            "app_label": app_label,
+            "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+            "n_utmelde": n_utmelde,
+            "n_allereie_giro": n_allereie_giro,
+        }
+
+        return TemplateResponse(request, "admin/lag_giroar.html", context,
+                current_app=self.admin_site.name)
+
+    if not request.POST.get("ink-utmeld"):
+        queryset = queryset.filter(utmeldt_dato__isnull=True)
+
+    queryset = queryset.exclude(giroar__gjeldande_aar=year)
+
+    for m in queryset:
+        g = Giro(belop=request.POST.get('belop'), medlem=m)
+        g.save()
+lag_giroar.short_description = "Opprett giroar"
 

@@ -68,7 +68,10 @@ class MedlemAdmin(VersionAdmin):
             )
         }),
     )
-    actions = [ admin_actions.simple_member_list, admin_actions.csv_member_list, admin_actions.pdf_giro, ]
+    actions = [ admin_actions.simple_member_list,
+                admin_actions.csv_member_list,
+                admin_actions.pdf_giro,
+                admin_actions.lag_giroar, ]
 
     class Media:
         css = {
