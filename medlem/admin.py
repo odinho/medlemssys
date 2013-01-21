@@ -13,7 +13,8 @@ class GiroInline(admin.TabularInline):
     model = Giro
     extra = 1
     classes = ['left']
-    fields = ['belop', 'innbetalt_belop', 'kid', 'gjeldande_aar', 'innbetalt', 'konto', 'desc']
+    fields = ['belop', 'innbetalt_belop', 'kid', 'gjeldande_aar', 'innbetalt', 'konto', 'desc', 'status']
+    readonly_fields = ('status',)
 class RolleInline(admin.TabularInline):
     model = Rolle
     extra = 1
@@ -22,7 +23,8 @@ class MedlemInline(admin.TabularInline):
     model = Medlem
     extra = 0
     classes = ['left']
-    fields = ['innmeldingstype', 'innmeldingsdetalj', 'lokallag', 'fodt']
+    fields = ['innmeldingstype', 'innmeldingsdetalj', 'lokallag', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt']
+    readonly_fields = ('innmeldingstype', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt')
 
 class MedlemAdmin(VersionAdmin):
     list_display = ('id', '__unicode__', 'lokallag', 'er_innmeldt',
