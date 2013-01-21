@@ -39,6 +39,7 @@ class MedlemAdmin(VersionAdmin):
             'utmeldt_dato',
             'status',
             'lokallag',
+            'giroar__status',
         )
     raw_id_fields = ['verva_av']
     readonly_fields = ('_siste_medlemspengar', 'oppretta', 'oppdatert')
