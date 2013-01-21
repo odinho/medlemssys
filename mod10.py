@@ -18,11 +18,9 @@ def check_number(digits):
         alt = not alt
     return (_sum % 10) == 0
 
-def add_kid_controlbit(kid):
+def mod10(kid):
     _sum = 0
     alt = True
-    kid_len = len(kid)
-    #print kid
     for s in reversed(str(kid)):
         d = int(s)
         assert 0 <= d <= 9
@@ -32,21 +30,23 @@ def add_kid_controlbit(kid):
                 d -= 9
         _sum += d
         alt = not alt
-        #print s, d, _sum
 
     controlbit = 10 - (_sum % 10)
     if controlbit == 10:
         controlbit = 0
 
-    new_kid = str((int(kid) * 10) + controlbit)
-    new_kid = new_kid.zfill(kid_len+1)
+    return controlbit
+
+def kid_add_controlbit(kid):
+    new_kid = str((int(kid) * 10) + mod10(kid))
+    new_kid = new_kid.zfill(len(kid)+1)
     return new_kid
 
 
 if __name__ == '__main__':
     kid = str(234567)
     for i in range(10):
-        nkid = add_kid_controlbit(kid)
+        nkid = kid_add_controlbit(kid)
         correct = check_number(nkid)
 
         print "%s\t%s\t(fra %s, nr %3d)" % (nkid, correct, kid, i)

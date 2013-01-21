@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 
+import smtplib
+
 from django.template import Context, Template
 from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
-import smtplib
+from django.db.models import F
 
 from medlemssys.medlem.models import Giro
 from models import GiroTemplate
@@ -12,8 +14,11 @@ from models import GiroTemplate
 @transaction.commit_on_success
 def send_ventande_rekningar():
     ventar = Giro.objects.filter(status='V').select_related('medlem')
+    ventar.exclude(innbetalt_belop__gte=F('belop'))
     for v in ventar:
         if not v.medlem.epost or len(v.medlem.epost) > 6:
+            v.status = 'E'
+            v.save()
             continue
 
         try:

@@ -384,8 +384,10 @@ HENSIKTER = (
     ('A', "Anna"),
 )
 GIRO_STATUSAR = (
-    ('V', "Ventar på sending"),
-    ('1', "Fyrste sendt"),
+    ('V', "Ventar"),
+    ('1', "Epost sendt"),
+    ('E', "(E) Sendingsfeil"),
+    ('M', "Manuelt postlagt"),
     ('F', "Ferdig"),
 )
 
@@ -423,7 +425,7 @@ class Giro(models.Model):
         if len(self.kid) < 1:
             super(Giro, self).save(*args, **kwargs)
             self.kid = str(int(self.pk) % 100000).zfill(5)
-            self.kid = mod10.add_kid_controlbit(self.kid)
+            self.kid = mod10.kid_add_controlbit(self.kid)
 
         # Fiks det denormaliserte feltet til medlemen, som fortel um siste
         # medlemspengebetaling.
