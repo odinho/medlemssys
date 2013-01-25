@@ -38,7 +38,7 @@ from django.db.models import Q
 def get_members(terms, limit=20):
     search = None
 
-    # Søk etter mobil nummer eller medlemsnummer
+    # Søk etter mobil- eller medlemsnummer
     if "".join(terms).isdigit():
         q = "".join(terms)
         search = Q(mobnr__startswith=q) | Q(id__startswith=q)
@@ -63,6 +63,7 @@ def get_members(terms, limit=20):
 
     return Medlem.objects.select_related('giroar')[:limit]
 
+@login_required
 def get_members_json(request):
     term = request.GET.get('term', '')
     results = []
