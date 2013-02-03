@@ -14,20 +14,18 @@ from models import GiroTemplate
 @transaction.commit_on_success
 def send_ventande_rekningar():
     ventar = Giro.objects.filter(status='V').select_related('medlem')
-    ventar.exclude(innbetalt_belop__gte=F('belop'))
     for v in ventar:
-        if not v.medlem.epost or len(v.medlem.epost) > 6:
+        if v.betalt():
+            v.status = 'F'
+        elif not v.medlem.epost or len(v.medlem.epost) < 6:
             v.status = 'E'
-            v.save()
-            continue
-
-        try:
-            send_rekning(v)
-        except smtplib.SMTPRecipientsRefused:
-            # TODO Do logging
-            continue
-
-        v.status = "1"
+        else:
+            try:
+                send_rekning(v)
+                v.status = "1"
+            except smtplib.SMTPRecipientsRefused:
+                # TODO Do logging
+                continue
         v.save()
 
 def send_rekning(giro):

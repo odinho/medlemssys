@@ -291,8 +291,8 @@ class Medlem(models.Model):
         "framleis teljande (%d år)'>%s</span>" % (self.alder(), self.fodt)
         return "<span title='%d år'>%d</span>" % (self.alder(), self.fodt)
     fodt_farga.short_description = _(u"Født")
-    fodt_farga.allow_tags = True
     fodt_farga.admin_order_field = 'fodt'
+    fodt_farga.allow_tags = True
 
     def har_betalt(self):
         if (self.giroar.filter(gjeldande_aar=date.today().year,
@@ -306,8 +306,8 @@ class Medlem(models.Model):
     def status_html(self):
         return "<abbr title='%s'>%s</abbr>" % (self.get_status_display(), self.status)
     status_html.short_description = _("Status")
-    status_html.allow_tags = True
     status_html.admin_order_field = 'status'
+    status_html.allow_tags = True
 
     def set_val(self, tittel, add=True):
         if add:
@@ -421,12 +421,15 @@ class Giro(models.Model):
         ordering = ('-oppretta',)
 
     def __unicode__(self):
-        if self.innbetalt:
+        betalt = "IKKJE BETALT"
+        if self.betalt():
             betalt = "betalt"
-        else:
-            betalt = "IKKJE BETALT"
-
         return u"%s, %s (%s)" % (self.medlem, self.gjeldande_aar, betalt)
+
+    def betalt(self):
+        if self.innbetalt and self.innbetalt_belop >= self.belop:
+            return True
+        return False
 
     def save(self, *args, **kwargs):
         if len(self.kid) < 1:
