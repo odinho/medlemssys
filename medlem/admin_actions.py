@@ -59,6 +59,7 @@ csv_member_list.short_description = "Full medlemsliste"
 def pdf_giro(self, request, queryset):
     # User has already written some text, make PDF
     if request.POST.get('post'):
+        import os
         from cStringIO import StringIO
         from reportlab.pdfgen import canvas
         from reportlab.lib.units import cm #, mm
@@ -67,7 +68,7 @@ def pdf_giro(self, request, queryset):
 
         from medlemssys.mod10 import mod10
 
-        pdfmetrics.registerFont(TTFont('OCRB', 'giro/OCRB.ttf'))
+        pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB.ttf'))
         response = HttpResponse(mimetype="application/pdf")
         response['Content-Disposition'] = 'filename=girosending.pdf'
 
@@ -83,6 +84,8 @@ def pdf_giro(self, request, queryset):
         # See the ReportLab documentation for the full list of functionality.
         for m in queryset:
             giro = m.gjeldande_giro()
+            if not giro:
+                continue
 
             pdf.setFont('Helvetica', 16)
             pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
