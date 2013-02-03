@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 from django.contrib import admin
+from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
 from reversion.admin import VersionAdmin
 
 from medlemssys.settings import STATIC_URL
-from filters import AdditiveSubtractiveFilter, TimeSinceFilter, FodtFilter, SporjingFilter
+from filters import AdditiveSubtractiveFilter, FodtFilter, SporjingFilter #, Filter, TimeSince
 
 import admin_actions
 from models import *
@@ -134,7 +136,7 @@ class ValAdmin(admin.ModelAdmin):
 class GiroAdmin(admin.ModelAdmin):
     model = Giro
     raw_id_fields = ['medlem']
-    list_display = ('pk', 'medlem', 'kid', 'belop', 'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto', 'status')
+    list_display = ('pk', 'medlem_admin_change', 'kid', 'belop', 'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto', 'status')
     list_editable = ('innbetalt', 'innbetalt_belop', 'gjeldande_aar', 'status', )
     date_hierarchy = 'oppretta'
     list_filter = (
@@ -150,7 +152,7 @@ class GiroAdmin(admin.ModelAdmin):
         (None, {
             'fields': (
                 'medlem',
-                'belop',
+                ('belop', 'innbetalt_belop'),
                 ('konto', 'hensikt'),
                 'innbetalt',
                 'kid',
@@ -159,6 +161,14 @@ class GiroAdmin(admin.ModelAdmin):
             )
         }),
     )
+
+    def medlem_admin_change(self, obj):
+        url = reverse('admin:medlem_medlem_change', args=(obj.medlem_id,))
+        return u'<a href="{0}">{1}</a>'.format(url, obj.medlem)
+    medlem_admin_change.short_description = _("Medlem")
+    medlem_admin_change.admin_order_field = 'medlem'
+    medlem_admin_change.allow_tags = True
+
 
 # XXX: Dette fungerer i Django 1.2
 #class NemndmedlemskapInline(MedlemInline):
