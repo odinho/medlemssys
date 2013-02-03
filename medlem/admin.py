@@ -21,8 +21,11 @@ class RolleInline(admin.TabularInline):
     model = Rolle
     extra = 1
     classes = ['left']
-class MedlemInline(admin.TabularInline):
+class VervaMedlemInline(admin.TabularInline):
     model = Medlem
+    fk_name = 'verva_av'
+    verbose_name = _("verving")
+    verbose_name_plural = _("vervingar")
     extra = 0
     classes = ['left']
     fields = ['innmeldingstype', 'innmeldingsdetalj', 'lokallag', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt']
@@ -45,12 +48,12 @@ class MedlemAdmin(VersionAdmin):
             'lokallag',
             'giroar__status',
         )
-    raw_id_fields = ['verva_av']
+    raw_id_fields = ['verva_av', 'betalt_av']
     readonly_fields = ('_siste_medlemspengar', 'oppretta', 'oppdatert')
     save_on_top = True
-    inlines = [RolleInline, GiroInline, MedlemInline]
+    inlines = [RolleInline, GiroInline, VervaMedlemInline]
     search_fields = ('fornamn', 'mellomnamn', 'etternamn', '=id', '^mobnr',)
-    filter_horizontal = ('val', 'tilskiping', 'nemnd')
+    filter_horizontal = ('val', 'tilskiping')
     fieldsets = (
         (None, {
             'classes': ('left',),
@@ -68,7 +71,8 @@ class MedlemAdmin(VersionAdmin):
                 ('heimenr', 'gjer'),
                 ('innmeldingstype', 'innmeldingsdetalj', 'verva_av'),
                 'merknad',
-                ('val', 'nemnd', 'tilskiping'),
+                ('borteadr', 'bortepostnr', 'betalt_av'),
+                ('val', 'tilskiping', 'nemnd'),
                 ('oppretta', 'oppdatert'),
             )
         }),
