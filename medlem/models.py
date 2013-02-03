@@ -194,6 +194,11 @@ class Medlem(models.Model):
     heimenr = models.CharField(_("heimetelefon"), max_length=50,
             blank=True, null=True)
 
+    bortepostnr = models.CharField(
+            _("borte-postnr"), max_length=4, blank=True, null=True)
+    borteadr = models.CharField(_("borte-adresse"), max_length=255,
+            blank=True, null=True)
+
     # Om medlemen
     gjer = models.CharField(_("gjer"), max_length=255,
         blank=True, null=True)
@@ -234,6 +239,13 @@ class Medlem(models.Model):
     def stad(self):
         try:
             return PostNummer.objects.get(postnr=self.postnr).poststad
+        except PostNummer.DoesNotExist:
+            return "?"
+
+    @property
+    def bortestad(self):
+        try:
+            return PostNummer.objects.get(postnr=self.bortepostnr).poststad
         except PostNummer.DoesNotExist:
             return "?"
 
