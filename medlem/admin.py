@@ -32,7 +32,7 @@ class VervaMedlemInline(admin.TabularInline):
     readonly_fields = ('innmeldingstype', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt')
 
 class MedlemAdmin(VersionAdmin):
-    list_display = ('id', '__unicode__', 'lokallag', 'er_innmeldt',
+    list_display = ('id', '__unicode__', 'lokallag_changelist', 'er_innmeldt',
                     'har_betalt', 'fodt_farga', 'status_html')
     list_display_links = ('id', '__unicode__')
     date_hierarchy = 'innmeldt_dato'
@@ -89,6 +89,8 @@ class MedlemAdmin(VersionAdmin):
         }
 
     def queryset(self, request):
+        self._get_params = request.GET
+
         # use our manager, rather than the default one
         qs = self.model.objects.alle()
 
@@ -97,6 +99,17 @@ class MedlemAdmin(VersionAdmin):
         if ordering:
             qs = qs.order_by(*ordering)
         return qs
+
+    def lokallag_changelist(self, obj):
+        url = reverse('admin:medlem_medlem_changelist')
+        querystring = self._get_params.copy()
+        querystring['lokallag__id__exact'] = obj.lokallag.pk
+        return u'<a href="{0}?{1}">{2}</a>'.format(url,
+                                                   querystring.urlencode(),
+                                                   obj.lokallag)
+    lokallag_changelist.short_description = _("Lokallag")
+    lokallag_changelist.admin_order_field = 'lokallag__name'
+    lokallag_changelist.allow_tags = True
 
 
 class MedlemInline(admin.TabularInline):
