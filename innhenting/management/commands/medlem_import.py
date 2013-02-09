@@ -327,6 +327,7 @@ def import_bet(bet_csv_fil):
 
         if len(rad[4]) > 3:
             g.innbetalt = parse(rad[4])
+            g.innbetalt_belop = g.belop
         else:
             stderr(u"Ikkje innbetalt! {0}, {1}".format(g.medlem, rad))
 
