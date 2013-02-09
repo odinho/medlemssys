@@ -178,6 +178,7 @@ class GiroAdmin(admin.ModelAdmin):
             )
         }),
     )
+    actions = [ admin_actions.giro_status_ferdig, ]
 
     def medlem_admin_change(self, obj):
         url = reverse('admin:medlem_medlem_change', args=(obj.medlem_id,))

@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from django.utils.translation import ugettext as _
 from django.template.response import TemplateResponse
 
-def simple_member_list(self, request, queryset):
+def simple_member_list(modeladmin, request, queryset):
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
     response['Content-Disposition'] = 'filename=medlemer.csv'
 
@@ -43,7 +43,7 @@ def simple_member_list(self, request, queryset):
     return response
 simple_member_list.short_description = "Enkel medlemsliste"
 
-def csv_member_list(self, request, queryset):
+def csv_member_list(modeladmin, request, queryset):
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
     response['Content-Disposition'] = 'filename=medlemer.csv'
 
@@ -56,7 +56,7 @@ def csv_member_list(self, request, queryset):
     return response
 csv_member_list.short_description = "Full medlemsliste"
 
-def pdf_giro(self, request, queryset):
+def pdf_giro(modeladmin, request, queryset):
     # User has already written some text, make PDF
     if request.POST.get('post'):
         import os
@@ -127,7 +127,7 @@ def pdf_giro(self, request, queryset):
         response.write(pdf)
         return response
 
-    opts = self.model._meta
+    opts = modeladmin.model._meta
     app_label = opts.app_label
     n_utmelde = queryset.filter(utmeldt_dato__isnull=False).count()
     g_frist = datetime.date.today() + datetime.timedelta(30)
@@ -145,16 +145,16 @@ def pdf_giro(self, request, queryset):
     }
 
     return TemplateResponse(request, "admin/pdf_giro.html", context,
-            current_app=self.admin_site.name)
+            current_app=modeladmin.admin_site.name)
 pdf_giro.short_description = "Lag giro-PDF"
 
 
-def lag_giroar(self, request, queryset):
+def lag_giroar(modeladmin, request, queryset):
     from medlemssys.medlem.models import Giro
 
     year = datetime.date.today().year
     if not request.POST.get('post'):
-        opts = self.model._meta
+        opts = modeladmin.model._meta
         app_label = opts.app_label
         n_utmelde = queryset.filter(utmeldt_dato__isnull=False).count()
         n_allereie_giro = queryset.filter(giroar__gjeldande_aar=year).count()
@@ -172,7 +172,7 @@ def lag_giroar(self, request, queryset):
         }
 
         return TemplateResponse(request, "admin/lag_giroar.html", context,
-                current_app=self.admin_site.name)
+                current_app=modeladmin.admin_site.name)
 
     if not request.POST.get("ink-utmeld"):
         queryset = queryset.filter(utmeldt_dato__isnull=True)
@@ -184,3 +184,6 @@ def lag_giroar(self, request, queryset):
         g.save()
 lag_giroar.short_description = "Opprett giroar"
 
+def giro_status_ferdig(modeladmin, request, queryset):
+    queryset.update(status='F')
+giro_status_ferdig.short_description = "Sett girostatus 'Ferdig'"
