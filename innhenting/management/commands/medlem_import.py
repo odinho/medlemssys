@@ -16,14 +16,18 @@ obj = ""
 
 class Command(BaseCommand):
     args = '[ medlem.csv [ lokallag.csv [ betaling.csv ] ] ]'
-    help = 'Importerer medlemane inn i databasen'
+    help = "Importerer medlemane inn i databasen"
     force_update = False
     option_list = BaseCommand.option_list + (
         make_option('-f', '--force-update',
             action='store_true',
             dest='force_update',
             default=False,
-            help='Tving gjennom oppdatering av giroar'),
+            help="tving gjennom oppdatering av giroar"),
+        make_option('--importer',
+            dest='importer',
+            default='nmu_access',
+            help="importeringssystem (nmu_access eller mamut)"),
         )
 
     def handle(self, *args, **options):
@@ -36,7 +40,12 @@ class Command(BaseCommand):
         lag_csv = self.get_filename(args, 1, 'LAG_CSV', 'nmu-lag.csv')
         bet_csv = self.get_filename(args, 2, 'GIRO_CSV', 'nmu-bet.csv')
 
-        imp = NMUImporter(medlem_csv, lag_csv, bet_csv)
+        if options['importer'] == 'nmu_access':
+            imp = NMUAccessImporter(medlem_csv, lag_csv, bet_csv)
+        elif options['importer'] == 'mamut':
+            imp = MamutImporter(medlem_csv, lag_csv, bet_csv)
+        else:
+            raise CommandError("Importeren finst ikkje ({0})".format(options['importer']).encode('utf8'))
 
         for i in imp.import_lag().values():
             self.stdout.write(u"Lag: {0}\n".format(unicode(i)).encode('utf8'))
@@ -84,10 +93,10 @@ def stderr(msg):
     else:
         print((unicode(msg)).encode('utf-8'))
 
-class NMUImporter(object):
+class NMUAccessImporter(object):
     # REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,FØDEÅR,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,Epost_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA
     # (gamal) REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA,FØDEÅR,Epost_B
-    NMU_CSV_MAP = {
+    CSV_MAP = {
             'MEDLNR': 'id',
             'FORNAMN': 'fornamn',
             'MELLOMNAMN': 'mellomnamn',
@@ -127,7 +136,7 @@ class NMUImporter(object):
     def import_medlem(self):
         re_medlnr = re.compile(r'\[(\d+)\]')
         liste = csv.reader(open(self.medlem_fil))
-        mapping = self.nmu_mapping(headers=liste.next())
+        mapping = self.create_mapping(headers=liste.next())
         if not mapping:
             stderr(u"%s: ser ikkje ut som ein medlems-csv fil (manglar header?)" % self.medlem_fil)
             sys.exit()
@@ -137,7 +146,7 @@ class NMUImporter(object):
 
             for num, rad in enumerate(liste):
                 tmp = {}
-                for typ in self.NMU_CSV_MAP.values():
+                for typ in self.CSV_MAP.values():
                     if typ not in mapping:
                         stderr(u"Type '" + unicode(typ) + u"' not in mapping. row = " + unicode(rad))
                     tmp[typ] = rad[mapping[typ]] \
@@ -228,11 +237,11 @@ class NMUImporter(object):
                     yield unicode(num)
 
 
-    def nmu_mapping(self, headers):
+    def create_mapping(self, headers):
         mapping = dict()
-        for h in self.NMU_CSV_MAP.keys():
+        for h in self.CSV_MAP.keys():
             if h in headers:
-                mapping[self.NMU_CSV_MAP[h]] = headers.index(h)
+                mapping[self.CSV_MAP[h]] = headers.index(h)
             else:
                 return None
         return mapping
@@ -355,6 +364,9 @@ class NMUImporter(object):
 
             if num < 99:
                 yield unicode(g)
+
+class MamutImporter(NMUAccessImporter):
+    pass
 
 
 def fiks_tilskipingar():
