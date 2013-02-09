@@ -134,7 +134,6 @@ class NMUAccessImporter(object):
     #@reversion.create_revision() XXX There's a bug here somewhere
     @transaction.commit_on_success
     def import_medlem(self):
-        re_medlnr = re.compile(r'\[(\d+)\]')
         liste = csv.reader(open(self.medlem_fil))
         mapping = self.create_mapping(headers=liste.next())
         if not mapping:
@@ -152,75 +151,8 @@ class NMUAccessImporter(object):
                     tmp[typ] = rad[mapping[typ]] \
                                 .decode("utf-8") \
                                 .replace(r"\n", "\n")
+                self.clean_medlem_dict(tmp, raw_data=rad)
 
-                if not tmp['id'].isdigit():
-                    stderr(u"%s(%s) ugyldig medlemsnummer! Ignorerer medlemen." % (tmp['id'], tmp['fornamn']))
-                    continue
-
-                try:
-                    tmp['lokallag_id'] = int(tmp['lokallag'])
-                except (KeyError, ValueError):
-                    pass
-                finally:
-                    del tmp['lokallag']
-
-                try:
-                    tmp['fodt'] = int(tmp['fodt'])
-                except ValueError:
-                    tmp['fodt'] = None
-
-                try:
-                    tmp['postnr'] = format(int(tmp['postnr']), "04d")
-                except ValueError:
-                    stderr(u"%s(%s) forstår ikkje postnr: %s" % (tmp['id'], tmp['fornamn'], tmp['postnr']))
-                    tmp['postnr'] = "9999"
-
-                if len(tmp.get('status', '')) > 1:
-                    stderr(u"%s(%s) status too long: %s" % (tmp['id'], tmp['fornamn'], tmp['status']))
-                    tmp['status'] = tmp['status'][0].upper()
-
-                if len(tmp.get('kjon', '')) > 1:
-                    stderr(u"%s(%s) kjon too long: %s" % (tmp['id'], tmp['fornamn'], tmp['kjon']))
-                    tmp['kjon'] = tmp['kjon'][0].upper()
-
-                tmp['oppretta'] = parse(tmp['innmeldt_dato'],
-                        default=datetime.datetime(1800, 1, 1, 0, 0))
-                tmp['innmeldt_dato'] = tmp['oppretta'].date()
-                tmp['oppdatert'] = datetime.datetime.now()
-
-                if len(tmp['utmeldt_dato']) > 2:
-                    a = tmp['utmeldt_dato']
-                    tmp['utmeldt_dato'] = parse(tmp['utmeldt_dato'], default=None)
-                    if hasattr(tmp['utmeldt_dato'], 'date'):
-                        tmp['utmeldt_dato'] = tmp['utmeldt_dato'].date()
-                    else:
-                        stderr(u"%s(%s) utmeldt er null: %s -- org: %s" % (tmp['id'], tmp['fornamn'], tmp['utmeldt_dato'], a))
-                else:
-                    tmp['utmeldt_dato'] = None
-
-                # Sjekk etter [<medlemsnummer>] frå verveinfo
-                if tmp['innmeldingsdetalj']:
-                    m = re_medlnr.search(tmp['innmeldingsdetalj'])
-                    if m:
-                        tmp['verva_av_id'] = m.group(1)
-                        tmp['innmeldingstype'] = 'D'
-                    elif any([x for x in ["Heimesida", "heimesida", "heimeside", "Heimeside", "heimesidene", "nettskjema"] if x in tmp['innmeldingsdetalj']]):
-                        tmp['innmeldingstype'] = 'H'
-                    elif any([x for x in [u"Målferd", u"målferd", "MF", u"målfer"] if x in tmp['innmeldingsdetalj']]):
-                        tmp['innmeldingstype'] = 'M'
-                    elif any([x for x in ["Flygeblad", "flygeblad", "flygis", "flogskrift", "Flogskrift", "Opprop", "opprop"] if x in tmp['innmeldingsdetalj']]):
-                        tmp['innmeldingstype'] = 'F'
-                    elif any([x for x in ["SMS", "sms"] if x in tmp['innmeldingsdetalj']]):
-                        tmp['innmeldingstype'] = 'S'
-                    elif any([x for x in ["Lagsskiping", "lagsskiping", u"årsmøte", u"Årsmøte"] if x in tmp['innmeldingsdetalj']]):
-                        tmp['innmeldingstype'] = 'L'
-                    elif any([x for x in ["Vitjing", "leir", "Leir"] if x in tmp['innmeldingsdetalj']]):
-                        tmp['innmeldingstype'] = 'O'
-                    elif any([x for x in ["Telefon", "telefon", "tlf"] if x in tmp['innmeldingsdetalj']]):
-                        tmp['innmeldingstype'] = 'A'
-
-                #print "%s(%s) utmdato:%s stat:%s" % (tmp['id'], tmp['fornamn'], tmp.get('utmeldt_dato',
-                #    'g0ne'), tmp.get('status', 'g0ne'))
                 m = Medlem(**tmp)
                 m.save()
 
@@ -235,6 +167,78 @@ class NMUAccessImporter(object):
                 elif num%200 == 0 and num != 0:
                     transaction.commit()
                     yield unicode(num)
+
+
+    re_medlnr = re.compile(r'\[(\d+)\]')
+    def clean_medlem_dict(self, medlem, raw_data=None):
+        if not medlem['id'].isdigit():
+            stderr(u"%s(%s) ugyldig medlemsnummer! Ignorerer medlemen." % (medlem['id'], medlem['fornamn']))
+            return
+
+        try:
+            medlem['lokallag_id'] = int(medlem['lokallag'])
+        except (KeyError, ValueError):
+            pass
+        finally:
+            del medlem['lokallag']
+
+        try:
+            medlem['fodt'] = int(medlem['fodt'])
+        except ValueError:
+            medlem['fodt'] = None
+
+        try:
+            medlem['postnr'] = format(int(medlem['postnr']), "04d")
+        except ValueError:
+            stderr(u"%s(%s) forstår ikkje postnr: %s" % (medlem['id'], medlem['fornamn'], medlem['postnr']))
+            medlem['postnr'] = "9999"
+
+        if len(medlem.get('status', '')) > 1:
+            stderr(u"%s(%s) status too long: %s" % (medlem['id'], medlem['fornamn'], medlem['status']))
+            medlem['status'] = medlem['status'][0].upper()
+
+        if len(medlem.get('kjon', '')) > 1:
+            stderr(u"%s(%s) kjon too long: %s" % (medlem['id'], medlem['fornamn'], medlem['kjon']))
+            medlem['kjon'] = medlem['kjon'][0].upper()
+
+        medlem['oppretta'] = parse(medlem['innmeldt_dato'],
+                default=datetime.datetime(1800, 1, 1, 0, 0))
+        medlem['innmeldt_dato'] = medlem['oppretta'].date()
+        medlem['oppdatert'] = datetime.datetime.now()
+
+        if len(medlem['utmeldt_dato']) > 2:
+            a = medlem['utmeldt_dato']
+            medlem['utmeldt_dato'] = parse(medlem['utmeldt_dato'], default=None)
+            if hasattr(medlem['utmeldt_dato'], 'date'):
+                medlem['utmeldt_dato'] = medlem['utmeldt_dato'].date()
+            else:
+                stderr(u"%s(%s) utmeldt er null: %s -- org: %s" % (medlem['id'], medlem['fornamn'], medlem['utmeldt_dato'], a))
+        else:
+            medlem['utmeldt_dato'] = None
+
+        # Sjekk etter [<medlemsnummer>] frå verveinfo
+        if medlem['innmeldingsdetalj']:
+            m = self.re_medlnr.search(medlem['innmeldingsdetalj'])
+            if m:
+                medlem['verva_av_id'] = m.group(1)
+                medlem['innmeldingstype'] = 'D'
+            elif any([x for x in ["Heimesida", "heimesida", "heimeside", "Heimeside", "heimesidene", "nettskjema"] if x in medlem['innmeldingsdetalj']]):
+                medlem['innmeldingstype'] = 'H'
+            elif any([x for x in [u"Målferd", u"målferd", "MF", u"målfer"] if x in medlem['innmeldingsdetalj']]):
+                medlem['innmeldingstype'] = 'M'
+            elif any([x for x in ["Flygeblad", "flygeblad", "flygis", "flogskrift", "Flogskrift", "Opprop", "opprop"] if x in medlem['innmeldingsdetalj']]):
+                medlem['innmeldingstype'] = 'F'
+            elif any([x for x in ["SMS", "sms"] if x in medlem['innmeldingsdetalj']]):
+                medlem['innmeldingstype'] = 'S'
+            elif any([x for x in ["Lagsskiping", "lagsskiping", u"årsmøte", u"Årsmøte"] if x in medlem['innmeldingsdetalj']]):
+                medlem['innmeldingstype'] = 'L'
+            elif any([x for x in ["Vitjing", "leir", "Leir"] if x in medlem['innmeldingsdetalj']]):
+                medlem['innmeldingstype'] = 'O'
+            elif any([x for x in ["Telefon", "telefon", "tlf"] if x in medlem['innmeldingsdetalj']]):
+                medlem['innmeldingstype'] = 'A'
+
+        # Reinska opp!
+
 
 
     def create_mapping(self, headers):
