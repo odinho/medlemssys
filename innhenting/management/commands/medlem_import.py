@@ -151,14 +151,15 @@ class NMUAccessImporter(object):
                     tmp[typ] = rad[mapping[typ]] \
                                 .decode("utf-8") \
                                 .replace(r"\n", "\n")
-                self.clean_medlem_dict(tmp, raw_data=rad)
-
+                if not self.clean_medlem_dict(tmp, raw_data=rad):
+                    continue
+                val = tmp['_val']
+                tmp = dict((k, tmp[k]) for k in tmp if not k.startswith('_'))
                 m = Medlem(**tmp)
                 m.save()
 
-                for v in self.VAL:
-                    if rad[v[0]] != "" and int(rad[v[0]]) == int(v[1]):
-                        m.set_val(v[2])
+                for v in val:
+                    m.set_val(v)
 
                 # Print first 200 names
                 if num < 199:
@@ -171,9 +172,11 @@ class NMUAccessImporter(object):
 
     re_medlnr = re.compile(r'\[(\d+)\]')
     def clean_medlem_dict(self, medlem, raw_data=None):
+        '''Cleans the member dict in-place. Returns False when unprocessed.'''
+
         if not medlem['id'].isdigit():
             stderr(u"%s(%s) ugyldig medlemsnummer! Ignorerer medlemen." % (medlem['id'], medlem['fornamn']))
-            return
+            return False
 
         try:
             medlem['lokallag_id'] = int(medlem['lokallag'])
@@ -237,7 +240,12 @@ class NMUAccessImporter(object):
             elif any([x for x in ["Telefon", "telefon", "tlf"] if x in medlem['innmeldingsdetalj']]):
                 medlem['innmeldingstype'] = 'A'
 
-        # Reinska opp!
+        medlem['_val'] = []
+        for v in self.VAL:
+            if raw_data[v[0]] != "" and int(raw_data[v[0]]) == int(v[1]):
+                medlem['_val'].append(v[2])
+
+        return True
 
 
 
@@ -247,7 +255,7 @@ class NMUAccessImporter(object):
             if h in headers:
                 mapping[self.CSV_MAP[h]] = headers.index(h)
             else:
-                return None
+                raise Exception("Fann ikkje {0} som header.".format(h))
         return mapping
 
     # csv: DIST,FLAG,LLAG,lid,ANDSVAR,LOKALSATS
@@ -370,7 +378,98 @@ class NMUAccessImporter(object):
                 yield unicode(g)
 
 class MamutImporter(NMUAccessImporter):
-    pass
+    CSV_MAP = {
+            'cont': '_is_customer',
+            'contid': 'id',
+            'name': 'fornamn',
+            'zipcode': 'postnr',
+            'street': 'postadr',
+            'city': 'ekstraadr',
+            'regdate': 'innmeldt_dato',
+            'editdate': 'oppdatert',
+            'active': '_active',
+            'email': 'epost',
+            'phone1': 'mobnr',
+            'gruppe': '_gruppe',
+        }
+
+    def clean_medlem_dict(self, medlem, raw_data=None):
+        if not medlem['id'].isdigit():
+            stderr(u"%s(%s) ugyldig medlemsnummer! Ignorerer medlemen." % (medlem['id'], medlem['fornamn']))
+            return False
+        if medlem['_is_customer'] != "SANN":
+            stderr(u"%s(%s) ikkje customer. Ignorerer medlemen." % (medlem['id'], medlem['fornamn']))
+            return False
+
+        namn = medlem['fornamn'].split()
+        if len(namn) > 1:
+            medlem['fornamn'] = " ".join(namn[:-1])
+            medlem['etternamn'] = namn[-1]
+        else:
+            medlem['etternamn'] = '-'
+
+        if (medlem['postnr'].isdigit() and
+                medlem['postnr'] > '0000' and
+                medlem['postnr'] < '9999'):
+            medlem['ekstraadr'] = ''
+        else:
+            medlem['ekstraadr'] = ' '.join((medlem['postnr'],
+                                            medlem['ekstraadr']))
+            medlem['postnr'] = '9999'
+
+        medlem['oppretta'] = parse(medlem['innmeldt_dato'],
+                default=datetime.datetime(1800, 1, 1, 0, 0))
+        medlem['innmeldt_dato'] = medlem['oppretta'].date()
+        medlem['oppdatert'] = parse(medlem['oppdatert'],
+                default=datetime.datetime(1800, 1, 1, 0, 0))
+
+
+        if not '@' in medlem['epost']:
+            medlem['merknad'] = medlem['epost']
+            medlem['epost'] = ''
+        elif ' ' in medlem['epost']:
+            raise Exception("Mellomrom i epost")
+
+        if medlem['mobnr']:
+            medlem['mobnr'] = ''.join(medlem['mobnr'].split())
+            if len(medlem['mobnr']) < 4:
+                del medlem['mobnr']
+
+        grupper = medlem['_gruppe'].splitlines()
+        if medlem['_active'] != "SANN":
+            medlem['utmeldt_dato'] = medlem['oppdatert'].date()
+        elif 'sagt opp' in medlem['_gruppe'].lower():
+            sagtopp = next((re.match('Sagt opp (\d+)', x)
+                           for x in grupper if 'Sagt opp' in x))
+            if not sagtopp:
+                raise Exception("wat! nutin: " + str(grupper))
+            medlem['utmeldt_dato'] = datetime.date(int(sagtopp.group(1)), 1, 1)
+            grupper.remove('Sagt opp ' + sagtopp.group(1))
+
+        if any(k in medlem['_gruppe'].lower()
+               for k in ('utmeldt', 'fjerna', 'sagt opp')):
+            if 'utmeldt_dato' not in medlem:
+                stderr(u"%s(%s) utmeldt, men aktiv. gruppe:%s." % (medlem['id'], medlem['fornamn'], medlem['_gruppe'][:-1]))
+        elif ('utmeldt_dato' in medlem and
+                any(k in medlem['_gruppe'].lower() for k in ('tingar'))):
+            stderr(u"%s(%s %s) FEILUTMELDING. gruppe:%s." % (medlem['id'], medlem['fornamn'], medlem['etternamn'], medlem['_gruppe'][:-1]))
+            #raise Exception("utmeldt utan å vera det.")
+
+        lokallag=None
+        for g in grupper:
+            if g.startswith('Tingar:') or g.startswith('Gruppetingarar:'):
+                lokallag = g
+                grupper.remove(lokallag)
+                break
+        # Gjer resterande til val
+        medlem['_val'] = grupper
+
+        if lokallag:
+            medlem['lokallag'] = Lokallag.objects.get_or_create(
+                namn=lokallag.strip(),
+                defaults={ 'fylkeslag': '', 'distrikt': '', 'andsvar': ''})[0]
+
+        return True
 
 
 def fiks_tilskipingar():
