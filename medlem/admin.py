@@ -88,6 +88,16 @@ class MedlemAdmin(VersionAdmin):
                 STATIC_URL + "css/forms.css",)
         }
 
+    def get_actions(self, request):
+        """Puts the delete action on the bottom"""
+        actions = super(MedlemAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            deleteaction = actions['delete_selected']
+            del actions['delete_selected']
+            actions['delete_selected'] = deleteaction
+        return actions
+
+
     def queryset(self, request):
         self._get_params = request.GET
 
