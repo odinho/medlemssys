@@ -62,11 +62,8 @@ def pdf_giro(modeladmin, request, queryset):
         import os
         from cStringIO import StringIO
         from reportlab.pdfgen import canvas
-        from reportlab.lib.units import cm #, mm
         from reportlab.pdfbase import pdfmetrics
         from reportlab.pdfbase.ttfonts import TTFont
-
-        from medlemssys.mod10 import mod10
 
         pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB.ttf'))
         response = HttpResponse(mimetype="application/pdf")
@@ -86,36 +83,10 @@ def pdf_giro(modeladmin, request, queryset):
             giro = m.gjeldande_giro()
             if not giro:
                 continue
-
-            pdf.setFont('Helvetica', 16)
-            pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
-
-            pdf.setFontSize(11)
-            infotekst = pdf.beginText(1.0*cm, 25*cm)
-            infotekst.textOut(u"%s" % request.POST.get('text'))
-            pdf.drawText(infotekst)
-
-            pdf.setFont('OCRB', 11)
-            tekst = pdf.beginText(1.2*cm, 5.5*cm)
-            tekst.textLine(u"%s %s" % (m.fornamn, m.etternamn) )
-            tekst.textLine(u"%s" % (m.postadr,) )
-            tekst.textLine(u"%s %s" % (m.postnr, m.stad) )
-            pdf.drawText(tekst)
-
-            pdf.drawString(13*cm, 12.8*cm, u"%s" % giro.belop)
-            pdf.drawString(15*cm, 12.8*cm, u"%s" % '00')
-            pdf.drawString(14*cm, 14.2*cm, u"%s" % m.pk)
-            pdf.drawString(18.3*cm, 14.2*cm, u"%s" % giro.gjeldande_aar)
-
-            pdf.drawString(17.1*cm, 9.3*cm, u"%s" % request.POST.get('frist'))
-
-            pdf.drawString(5.0*cm,  1.58*cm, u"%s" % giro.kid)
-            pdf.drawString(8.5*cm,  1.58*cm, u"%s" % giro.belop)
-            pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
-            pdf.drawString(11.9*cm, 1.58*cm,
-                           u"%s" % mod10(unicode(giro.belop) + '00'))
-            pdf.drawString(13.2*cm, 1.58*cm, u"%s" % '3450 65 48618')
-
+            if request.POST.get('pdf_type') == 'medlemskort':
+                pdf = _giro_medlemskort(pdf, request, m, giro)
+            else:
+                pdf = _giro_faktura(pdf, request, m, giro)
             pdf.showPage()
 
         # Close the PDF object cleanly.
@@ -147,6 +118,83 @@ def pdf_giro(modeladmin, request, queryset):
     return TemplateResponse(request, "admin/pdf_giro.html", context,
             current_app=modeladmin.admin_site.name)
 pdf_giro.short_description = "Lag giro-PDF"
+
+
+def _pdf_p(pdf, text, x, y, size_w=None, size_h=None):
+    from reportlab.lib.units import cm #, mm
+    from reportlab.platypus import Paragraph
+    from reportlab.lib.styles import getSampleStyleSheet
+
+    if not size_w:
+        size_w = 19
+    if not size_h:
+        size_h = size_w
+
+    style = getSampleStyleSheet()['BodyText']
+    p = Paragraph(text, style)
+    used_w, used_h = p.wrap(size_w*cm, size_h*cm)
+    p.wrapOn(pdf, size_w*cm, size_h*cm)
+    p.drawOn(pdf, x*cm, y*cm - used_h)
+
+def _giro_faktura(pdf, request, m, giro):
+    from reportlab.lib.units import cm #, mm
+
+    pdf.setFont('Helvetica', 16)
+    pdf.drawString(1.0*cm, 16*cm, u"%s" % request.POST.get('title'))
+
+    pdf.setFontSize(11)
+    _pdf_p(pdf, request.POST.get('text'), 1, 15.5, size_w=19, size_h=13)
+    _pdf_p(pdf, m.full_betalingsadresse().replace('\n', '<br/>\n'), 1, 26, size_w=8, size_h=6)
+    _pdf_p(pdf, u"""\
+        Kundenr: {m.pk}<br/>
+        Fakturanr: {g.pk}<br/>
+        Fakturadato: {now}<br/>
+        Betalingsfrist: {frist}<br/>
+        Til konto: <b>12345.12.1234</b><br/>
+        KID-nummer: <b>{g.kid}</b><br/>
+        Å betala: <b>{g.belop},00</b><br/>
+        """.format(m=m,
+                   g=giro,
+                   now=datetime.date.today(),
+                   frist=request.POST.get('frist')),
+        15, 26, size_w=4, size_h=6)
+
+    return pdf
+
+def _giro_medlemskort(pdf, request, m, giro):
+    from reportlab.lib.units import cm #, mm
+
+    from medlemssys.mod10 import mod10
+
+    pdf.setFont('Helvetica', 16)
+    pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
+
+    pdf.setFontSize(11)
+    infotekst = pdf.beginText(1.0*cm, 25*cm)
+    infotekst.textOut(u"%s" % request.POST.get('text'))
+    pdf.drawText(infotekst)
+
+    pdf.setFont('OCRB', 11)
+    tekst = pdf.beginText(1.2*cm, 5.5*cm)
+    for adrdel in m.full_betalingsadresse().split('\n'):
+        tekst.textLine(adrdel.strip())
+    pdf.drawText(tekst)
+
+    pdf.drawString(13*cm, 12.8*cm, u"%s" % giro.belop)
+    pdf.drawString(15*cm, 12.8*cm, u"%s" % '00')
+    pdf.drawString(14*cm, 14.2*cm, u"%s" % m.pk)
+    pdf.drawString(18.3*cm, 14.2*cm, u"%s" % giro.gjeldande_aar)
+
+    pdf.drawString(17.1*cm, 9.3*cm, u"%s" % request.POST.get('frist'))
+
+    pdf.drawString(5.0*cm,  1.58*cm, u"%s" % giro.kid)
+    pdf.drawString(8.5*cm,  1.58*cm, u"%s" % giro.belop)
+    pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
+    pdf.drawString(11.9*cm, 1.58*cm,
+                   u"%s" % mod10(unicode(giro.belop) + '00'))
+    pdf.drawString(13.2*cm, 1.58*cm, u"%s" % '3450 65 48618')
+
+    return pdf
 
 
 def lag_giroar(modeladmin, request, queryset):

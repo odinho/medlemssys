@@ -30,6 +30,15 @@
         <label for=frist class=required>Betalingsfrist</label> <input type=text name=frist class=vTextField value="{{g_frist.isoformat}}">
       </div>
     </div>
+    <div class=form-row>
+      <div class=field-box>
+        <label for=pdf_type class=required>Utskriftstype</label>
+          <select name=pdf_type class=vTextField>
+            <option value=medlemskort>Giro m/ medlemskort</option>
+            <option value=faktura>Faktura</option>
+          </select>
+      </div>
+    </div>
     </fieldset>
 
     {% if n_utmelde %}

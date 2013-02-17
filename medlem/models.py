@@ -322,6 +322,29 @@ class Medlem(models.Model):
     status_html.admin_order_field = 'status'
     status_html.allow_tags = True
 
+    def full_postadresse(self):
+        adr = [unicode(self),]
+        postnr, adresse, poststad, ekstra = self.postnr, self.postadr, self.stad, self.ekstraadr
+        if self.borteadr or self.bortepostnr:
+            postnr, adresse, poststad, ekstra = self.bortepostnr, self.borteadr, self.bortestad, ''
+        adr.append(adresse)
+        if "0005" < postnr < "9995":
+            if ekstra:
+                adr.append(ekstra)
+            adr.append(postnr + " " + poststad)
+        else:
+            # Jækelen er i utlandet
+            if ekstra:
+                adr.append(ekstra)
+            if len(postnr) > 4:
+                adr.append(postnr)
+        return u"\n".join(adr)
+
+    def full_betalingsadresse(self):
+        if self.betalt_av:
+            return self.betalt_av.full_betalingsadresse()
+        return self.full_postadresse()
+
     def set_val(self, tittel, add=True):
         if add:
             self.val.add(Val.objects.get_or_create(tittel=tittel)[0])
