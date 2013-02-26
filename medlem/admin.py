@@ -173,6 +173,7 @@ class GiroAdmin(admin.ModelAdmin):
         'hensikt',
         'konto',
         'belop',
+        'medlem__lokallag',
     )
     readonly_fields = ('oppretta',)
     fieldsets = (
