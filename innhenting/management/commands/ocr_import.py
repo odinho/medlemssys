@@ -51,6 +51,11 @@ class Command(BaseCommand):
                 #self.err("{belop:3n}kr ({giro.pk}) {giro} ".format(giro=giro, belop=f['belop']))
 
             giro.innbetalt_belop = f['belop']
+            giro.status = 'F'
+            if giro.desc:
+                giro.desc += '\nOCR'
+            else:
+                giro.desc = 'OCR'
             giro.save()
 
             if giro.medlem.status == 'I' and giro.innbetalt_belop >= giro.belop:
