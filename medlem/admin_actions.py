@@ -169,10 +169,8 @@ def _giro_medlemskort(pdf, request, m, giro):
     pdf.setFont('Helvetica', 16)
     pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
 
-    pdf.setFontSize(11)
-    infotekst = pdf.beginText(1.0*cm, 25*cm)
-    infotekst.textOut(u"%s" % request.POST.get('text'))
-    pdf.drawText(infotekst)
+    pdf.setFontSize(12)
+    _pdf_p(pdf, request.POST.get('text').replace("\n", "<br/>"), 1, 25, size_w=18, size_h=13)
 
     pdf.setFont('OCRB', 11)
     tekst = pdf.beginText(1.2*cm, 5.5*cm)
