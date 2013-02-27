@@ -170,7 +170,18 @@ def _giro_medlemskort(pdf, request, m, giro):
     pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
 
     pdf.setFontSize(12)
-    _pdf_p(pdf, request.POST.get('text').replace("\n", "<br/>"), 1, 25, size_w=18, size_h=13)
+    text = u"""<font size=11>{text}</font>
+
+
+    <font size=12><b>Registrert informasjon</b></font>
+    Epost: {m.epost}
+    Telefon: {m.mobnr}
+    Fødeår: {m.fodt}
+    <font size=8>
+    Kontakt oss på <i>skriv@nynorsk.no</i> for å oppdatera, melda flytting og so bortetter.</font>
+    """.format(text=request.POST.get('text'), m=m)
+
+    _pdf_p(pdf, text.replace("\n", "<br/>"), 1, 25, size_w=18, size_h=13)
 
     pdf.setFont('OCRB', 11)
     tekst = pdf.beginText(1.2*cm, 5.5*cm)
