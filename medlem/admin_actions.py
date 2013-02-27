@@ -65,6 +65,8 @@ def pdf_giro(modeladmin, request, queryset):
         from reportlab.pdfbase import pdfmetrics
         from reportlab.pdfbase.ttfonts import TTFont
 
+        from medlem.models import Medlem
+
         pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB.ttf'))
         response = HttpResponse(mimetype="application/pdf")
         response['Content-Disposition'] = 'filename=girosending.pdf'
@@ -76,6 +78,8 @@ def pdf_giro(modeladmin, request, queryset):
 
         if not request.POST.get("ink-utmeld"):
             queryset = queryset.filter(utmeldt_dato__isnull=True)
+        if not request.POST.get("ink-betalt"):
+            queryset = queryset.exclude(pk__in=Medlem.objects.betalande())
 
         # Draw things on the PDF. Here's where the PDF generation happens.
         # See the ReportLab documentation for the full list of functionality.
@@ -101,6 +105,7 @@ def pdf_giro(modeladmin, request, queryset):
     opts = modeladmin.model._meta
     app_label = opts.app_label
     n_utmelde = queryset.filter(utmeldt_dato__isnull=False).count()
+    n_betalte = queryset.betalande().count()
     g_frist = datetime.date.today() + datetime.timedelta(30)
 
     title = _("Lag giro-PDF-ar")
@@ -112,6 +117,7 @@ def pdf_giro(modeladmin, request, queryset):
         "app_label": app_label,
         "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
         "n_utmelde": n_utmelde,
+        "n_betalte": n_betalte,
         "g_frist": g_frist,
     }
 
@@ -244,3 +250,7 @@ lag_giroar.short_description = "Opprett giroar"
 def giro_status_ferdig(modeladmin, request, queryset):
     queryset.update(status='F')
 giro_status_ferdig.short_description = "Sett girostatus 'Ferdig'"
+
+def giro_status_postlagt(modeladmin, request, queryset):
+    queryset.update(status='M')
+giro_status_ferdig.short_description = "Sett girostatus 'Manuelt postlagt'"

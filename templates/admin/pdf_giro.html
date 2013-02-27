@@ -41,8 +41,9 @@
     </div>
     </fieldset>
 
-    {% if n_utmelde %}
+    {% if n_allereie_giro or n_utmelde %}
       <fieldset class="module aligned">
+        {% if n_utmelde %}
         <div class=form-row>
           <div class=field-box>
             <input type=checkbox name=ink-utmeld> <label for=ink-utmeld>Inkluder utmelde</label>
@@ -50,6 +51,15 @@
             <p class=help>Du bør eigentleg aldri sjå dette, for å senda giroar til utmelde medlem er ikkje særleg bra.
           </div>
         </div>
+        {% endif %}
+        {% if n_betalte %}
+        <div class=form-row>
+          <div class=field-box>
+            <input type=checkbox name=ink-betalt> <label for=ink-betalt>Inkluder allereie betalte</label>
+            <p>Det er <strong>{{ n_betalte }} medlem som allereie har betalt</strong> i lista di.
+          </div>
+        </div>
+        {% endif %}
       </fieldset>
     {% endif %}
 
