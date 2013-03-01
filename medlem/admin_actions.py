@@ -15,37 +15,36 @@ def simple_member_list(modeladmin, request, queryset):
 
     dc = csv.writer(response, quoting=csv.QUOTE_ALL)
     dc.writerow(["Namn",
-                 "Adresse",
-                 "Postnr",
-                 "Stad",
+                 u"Fødd".encode("utf-8"),
+                 "Heimeadresse",
+                 "Postadresse",
                  "Mobiltelefon",
                  "Epost",
-                 u"Født".encode("utf-8"),
                  "Lokallag",
-                 "Betalt?"])
+                 "Betalt"])
     for m in queryset:
-        postadr = m.postadr
-        if m.ekstraadr:
-            postadr += u"\n{0}".format(m.ekstraadr)
-
+        belop = m.gjeldande_giro()
+        if belop:
+            belop = belop.innbetalt_belop
+        if not belop:
+            belop = '-'
         a = [m,
-             postadr,
-             m.postnr,
-             m.stad,
+             m.fodt,
+             m.full_adresse(namn=False),
+             m.full_postadresse(namn=False),
              m.mobnr,
              m.epost,
-             m.fodt,
              m.lokallag_display(),
-             m.har_betalt()]
+             belop]
 
         dc.writerow([unicode(s).encode("utf-8") for s in a])
 
     return response
 simple_member_list.short_description = "Enkel medlemsliste"
 
-def csv_member_list(modeladmin, request, queryset):
+def csv_list(modeladmin, request, queryset):
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
-    response['Content-Disposition'] = 'filename=medlemer.csv'
+    response['Content-Disposition'] = 'filename=dataliste.csv'
 
     dc = csv.writer(response)
     dc.writerow(model_to_dict(queryset[0]).keys())
@@ -54,7 +53,38 @@ def csv_member_list(modeladmin, request, queryset):
         dc.writerow([unicode(s).encode("utf-8") for s in a])
 
     return response
-csv_member_list.short_description = "Full medlemsliste"
+csv_list.short_description = "Full dataliste"
+
+def giro_list(modeladmin, request, queryset):
+    response = HttpResponse(mimetype="text/csv; charset=utf-8")
+    response['Content-Disposition'] = 'filename=giroar.csv'
+
+    dc = csv.writer(response, quoting=csv.QUOTE_ALL)
+    dc.writerow(["Namn",
+                 "Adresse",
+                 "Betalt",
+                 "Dato",
+                 "Lokallag",
+                 u"Fødd".encode("utf-8"),
+                 u"For år".encode("utf-8"),
+                 "Korleis",
+                 "Giro-ID",
+                 ])
+    for g in queryset:
+
+        a = [g.medlem,
+             g.medlem.full_adresse(namn=False),
+             g.innbetalt_belop,
+             g.innbetalt,
+             g.medlem.lokallag_display(),
+             g.gjeldande_aar,
+             g.konto,
+             g.pk]
+
+        dc.writerow([unicode(s).encode("utf-8") for s in a])
+
+    return response
+giro_list.short_description = "Enkel revisorliste"
 
 def pdf_giro(modeladmin, request, queryset):
     # User has already written some text, make PDF
@@ -65,7 +95,7 @@ def pdf_giro(modeladmin, request, queryset):
         from reportlab.pdfbase import pdfmetrics
         from reportlab.pdfbase.ttfonts import TTFont
 
-        from medlem.models import Medlem
+        from .models import Medlem
 
         pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB.ttf'))
         response = HttpResponse(mimetype="application/pdf")
