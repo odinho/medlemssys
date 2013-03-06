@@ -474,6 +474,9 @@ class Giro(models.Model):
         return False
 
     def save(self, *args, **kwargs):
+        if not self.pk and self.betalt():
+            self.status = 'F'
+
         if len(self.kid) < 1:
             super(Giro, self).save(*args, **kwargs)
             self.kid = str(int(self.pk) % 100000).zfill(5)
