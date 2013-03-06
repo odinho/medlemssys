@@ -97,7 +97,7 @@ def pdf_giro(modeladmin, request, queryset):
 
         from .models import Medlem
 
-        pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB.ttf'))
+        pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB-hacked.ttf'))
         response = HttpResponse(mimetype="application/pdf")
         response['Content-Disposition'] = 'filename=girosending.pdf'
 
@@ -199,6 +199,7 @@ def _giro_faktura(pdf, request, m, giro):
 
 def _giro_medlemskort(pdf, request, m, giro):
     from reportlab.lib.units import cm #, mm
+    from django.template import Context, Template
 
     from medlemssys.mod10 import mod10
 
@@ -216,8 +217,9 @@ def _giro_medlemskort(pdf, request, m, giro):
     <font size=8>
     Kontakt oss på <i>skriv@nynorsk.no</i> for å oppdatera, melda flytting og so bortetter.</font>
     """.format(text=request.POST.get('text'), m=m)
+    text_content = Template(text).render(Context({'medlem': m, 'giro': giro})).replace('\n', '<br/>')
 
-    _pdf_p(pdf, text.replace("\n", "<br/>"), 1, 25, size_w=18, size_h=13)
+    _pdf_p(pdf, text_content, 1, 25.5, size_w=18, size_h=13)
 
     pdf.setFont('OCRB', 11)
     tekst = pdf.beginText(1.2*cm, 5.5*cm)
@@ -230,14 +232,22 @@ def _giro_medlemskort(pdf, request, m, giro):
     pdf.drawString(14*cm, 14.2*cm, u"%s" % m.pk)
     pdf.drawString(18.3*cm, 14.2*cm, u"%s" % giro.gjeldande_aar)
 
-    pdf.drawString(17.1*cm, 9.3*cm, u"%s" % request.POST.get('frist'))
+    if m.har_betalt():
+        pdf.drawString(18*cm, 12.8*cm, "BETALT")
+        pdf.setFillColorRGB(0, 0, 0)
+        pdf.rect(0,  5.3*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
+        pdf.rect(0, 4.85*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
+        pdf.rect(0,  1.9*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
+        pdf.rect(0, 1.45*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
+    else:
+        pdf.drawString(17.1*cm, 9.3*cm, u"%s" % request.POST.get('frist'))
 
-    pdf.drawString(5.0*cm,  1.58*cm, u"%s" % giro.kid)
-    pdf.drawString(8.5*cm,  1.58*cm, u"%s" % giro.belop)
-    pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
-    pdf.drawString(11.9*cm, 1.58*cm,
-                   u"%s" % mod10(unicode(giro.belop) + '00'))
-    pdf.drawString(13.2*cm, 1.58*cm, u"%s" % '3450 65 48618')
+        pdf.drawString(5.0*cm,  1.58*cm, u"%s" % giro.kid)
+        pdf.drawString(8.5*cm,  1.58*cm, u"%s" % giro.belop)
+        pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
+        pdf.drawString(11.9*cm, 1.58*cm,
+                       u"%s" % mod10(unicode(giro.belop) + '00'))
+        pdf.drawString(13.2*cm, 1.58*cm, u"%s" % '3450 65 48618')
 
     return pdf
 
