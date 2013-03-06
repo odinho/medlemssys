@@ -3,11 +3,16 @@
 import csv
 import datetime
 
+import reversion
+
 from django.contrib.admin import helpers
-from django.http import HttpResponse
+from django.db import transaction
 from django.forms.models import model_to_dict
-from django.utils.translation import ugettext as _
+from django.http import HttpResponse
 from django.template.response import TemplateResponse
+from django.utils.translation import ugettext as _
+
+import admin # reversion
 
 def simple_member_list(modeladmin, request, queryset):
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
@@ -252,6 +257,7 @@ def _giro_medlemskort(pdf, request, m, giro):
     return pdf
 
 
+@transaction.commit_on_success
 def lag_giroar(modeladmin, request, queryset):
     from medlemssys.medlem.models import Giro
 
@@ -282,15 +288,28 @@ def lag_giroar(modeladmin, request, queryset):
 
     queryset = queryset.exclude(giroar__gjeldande_aar=year)
 
-    for m in queryset:
-        g = Giro(belop=request.POST.get('belop'), medlem=m)
-        g.save()
+    with reversion.create_revision():
+        reversion.set_comment("Opprett giroar admin action")
+        reversion.set_user(request.user)
+        for m in queryset:
+            g = Giro(belop=request.POST.get('belop'), medlem=m)
+            g.save()
 lag_giroar.short_description = "Opprett giroar"
 
 def giro_status_ferdig(modeladmin, request, queryset):
-    queryset.update(status='F')
+    with reversion.create_revision():
+        reversion.set_comment("Giro status ferdig admin action")
+        reversion.set_user(request.user)
+        for g in queryset:
+            g.status='F'
+            g.save()
 giro_status_ferdig.short_description = "Sett girostatus 'Ferdig'"
 
 def giro_status_postlagt(modeladmin, request, queryset):
-    queryset.update(status='M')
-giro_status_ferdig.short_description = "Sett girostatus 'Manuelt postlagt'"
+    with reversion.create_revision():
+        for g in queryset:
+            g.status='M'
+            g.save()
+        reversion.set_comment("Giro status postlagt admin action")
+        reversion.set_user(request.user)
+giro_status_postlagt.short_description = "Sett girostatus 'Manuelt postlagt'"
