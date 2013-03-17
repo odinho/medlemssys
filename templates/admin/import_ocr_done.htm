@@ -1,0 +1,71 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+<style>
+table ul { padding: 0 0 0 1em; }
+.error { color: #990000; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+     <a href="../../">{% trans "Home" %}</a> &rsaquo;
+     <a href="/admin/medlem/giro/">Giro</a> &rsaquo;
+     {% trans "OCR-innhenting" %}
+</div>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post">{% csrf_token %}
+    <h1>Hent inn OCR-fil (registrer girobetalingar)</h1>
+
+    {% if processed %}
+    <table><tr><th>dato <th>KID <th>beløp <th>giro</tr>
+    {% for ocr in processed %}
+        <tr>
+            <td>{{ ocr.dato }}
+            <td>{{ ocr.kid }}
+            <td>{{ ocr.belop }}
+            <td>{{ ocr.giro.admin_change|safe }}
+            {% if ocr.msg %}
+              <tr class=error><td colspan=4><ul>
+                {% for e in ocr.msg %}
+                  <li>{{ e|safe }}
+                {% endfor %}
+              </ul></tr>
+            {% endif %}
+        </tr>
+    {% endfor %}
+    </table>
+    {% else %}
+    <div style='font-size:2em;color:#bbb;margin:2em 0 2em 3em'>&mdash; Ingenting gjort &mdash;</div>
+    {% endif %}
+
+    {% if not_processed %}
+    <h2>Ikkje prosesserte innbetalingar</h2>
+    <table><tr><th>dato <th>KID <th>beløp <th>feil</tr>
+    {% for ocr in not_processed %}
+        <tr>
+            <td>{{ ocr.dato }}
+            <td>{{ ocr.kid }}
+            <td>{{ ocr.belop }}
+            <td>
+            {% if ocr.msg %}
+                <ul>
+                {% for e in ocr.msg %}
+                  <li>{{ e|safe }}
+                {% endfor %}
+              </ul>
+            {% endif %}
+        </ul>
+    {% endfor %}
+    </table>
+    {% endif %}
+
+    <input type=hidden name=action value=import_ocr>
+    <input type=hidden name=post value=yes>
+    <div class=submit-row>
+      <input type=submit value="Les inn OCR-fil" class=default>
+    </div>
+    </form>
+{% endblock %}

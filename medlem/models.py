@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 from datetime import date, datetime
+from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.forms import ModelForm
+from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 #from emencia.django.newsletter.mailer import mailing_started
 
-from django.contrib.auth.models import User
-from django.template.defaultfilters import slugify
 from medlemssys import mod10
 
 
@@ -368,6 +369,13 @@ class Medlem(models.Model):
         except IndexError:
             return None
 
+    def admin_change(self):
+        url = reverse('admin:medlem_medlem_change', args=(self.pk,))
+        return u'<a href="{0}">{1}</a>'.format(url, self)
+    admin_change.short_description = _("Medlem")
+    admin_change.admin_order_field = 'medlem'
+    admin_change.allow_tags = True
+
 
 @transaction.commit_on_success
 def update_denormalized_fields():
@@ -472,6 +480,13 @@ class Giro(models.Model):
         if self.innbetalt and self.innbetalt_belop >= self.belop:
             return True
         return False
+
+    def admin_change(self):
+        url = reverse('admin:medlem_giro_change', args=(self.pk,))
+        return u'<a href="{0}">{1}</a>'.format(url, self)
+    admin_change.short_description = _("Giro")
+    admin_change.admin_order_field = 'giro'
+    admin_change.allow_tags = True
 
     def save(self, *args, **kwargs):
         if not self.pk and self.betalt():

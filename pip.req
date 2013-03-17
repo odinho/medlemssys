@@ -3,6 +3,7 @@ Django           == 1.4
 django-reversion >= 1.6
 python-dateutil  <  2.0 # 2+ is only for python 3
 django_extensions
+django-apptemplates
 
 
 # Optional (not in use)

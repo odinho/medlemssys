@@ -196,8 +196,7 @@ class GiroAdmin(admin.ModelAdmin):
                 admin_actions.csv_list,
             ]
     def medlem_admin_change(self, obj):
-        url = reverse('admin:medlem_medlem_change', args=(obj.medlem_id,))
-        return u'<a href="{0}">{1}</a>'.format(url, obj.medlem)
+        return obj.admin_change()
     medlem_admin_change.short_description = _("Medlem")
     medlem_admin_change.admin_order_field = 'medlem'
     medlem_admin_change.allow_tags = True
