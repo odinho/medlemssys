@@ -1,0 +1,37 @@
+{% extends "admin/giro/base.html" %}
+
+{% block content %}
+    <form action="" method="post">{% csrf_token %}
+    <h1>Send ventande giro-epostar</h1>
+
+    <fieldset class="module aligned">
+    <div class=form-row>
+      <div>
+      {% if ventar %}
+        <table>
+        <tr><th>Giro <th>Beløp <th>Innbetalt <th>KID <th>Forklaring <th>Medlem <th>Epost
+        {% for v in ventar %}
+          <tr>
+            <td>{{ v.admin_change|safe }}
+            <td>{{ v.belop }}
+            <td>{{ v.innbetalt_belop }}
+            <td>{{ v.kid }}
+            <td>{{ v.desc }}
+            <td>{{ v.medlem.admin_change|safe }} ({{ v.medlem.alder }})
+            <td>{{ v.medlem.epost }}
+        {% endfor %}
+        </table>
+      {% else %}
+        <div style='font-size:2em;color:#bbb;margin:2em 0 2em 3em'>&mdash; Ingen ventande giroar &mdash;</div>
+      {% endif %}
+      </div>
+    </div>
+    </fieldset>
+
+    <input type=hidden name=action value=send>
+    <input type=hidden name=post value=yes>
+    <div class=submit-row>
+      <input type=submit value="Send epostar" {% if not ventar %}disabled {% endif %}class=default>
+    </div>
+    </form>
+{% endblock %}

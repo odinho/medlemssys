@@ -27,6 +27,7 @@ def send_ventande_rekningar():
                 # TODO Do logging
                 continue
         v.save()
+    return ventar
 
 def send_rekning(giro):
     subject, text_content, html_content = generate_text("medlemspengar",

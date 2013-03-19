@@ -1,0 +1,36 @@
+{% extends "admin/giro/base.html" %}
+
+{% block content %}
+    <h1>Sende giro-epostar</h1>
+
+    {% if successful %}
+    <table><tr><th>Giro <th>Medlem <th>Epost <th>Status <th>Forklaring
+    {% for giro in successful %}
+        <tr>
+            <td>{{ giro.admin_change|safe }}
+            <td>{{ giro.medlem.admin_change|safe }} ({{ giro.medlem.alder }})
+            <td>{{ giro.medlem.epost }}
+            <td>{{ giro.get_status_display }}
+            <td>{{ giro.desc }}
+        </tr>
+    {% endfor %}
+    </table>
+    {% else %}
+    <div style='font-size:2em;color:#bbb;margin:2em 0 2em 3em'>&mdash; Ingenting gjort &mdash;</div>
+    {% endif %}
+
+    {% if unsuccessful %}
+    <h2>Problematiske giroar</h2>
+    <table><tr><th>Giro <th>Medlem <th>Epost <th>Status <th>Forklaring
+    {% for giro in unsuccessful %}
+        <tr>
+            <td>{{ giro.admin_change|safe }}
+            <td>{{ giro.medlem.admin_change|safe }} ({{ giro.medlem.alder }})
+            <td>{{ giro.medlem.epost }}
+            <td>{{ giro.get_status_display }}
+            <td>{{ giro.desc }}
+        </tr>
+    {% endfor %}
+    </table>
+    {% endif %}
+{% endblock %}
