@@ -5,10 +5,12 @@ import datetime
 
 import reversion
 
+from django.conf import settings
 from django.contrib.admin import helpers
 from django.db import transaction
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
+from django.template import Context, Template
 from django.template.response import TemplateResponse
 from django.utils.translation import ugettext as _
 
@@ -73,6 +75,8 @@ def giro_list(modeladmin, request, queryset):
                  u"Fødd".encode("utf-8"),
                  u"For år".encode("utf-8"),
                  "Korleis",
+                 "KID",
+                 "Beløp",
                  "Giro-ID",
                  ])
     for g in queryset:
@@ -82,8 +86,11 @@ def giro_list(modeladmin, request, queryset):
              g.innbetalt_belop,
              g.innbetalt,
              g.medlem.lokallag_display(),
+             g.medlem.fodt,
              g.gjeldande_aar,
              g.konto,
+             g.kid,
+             g.belop,
              g.pk]
 
         dc.writerow([unicode(s).encode("utf-8") for s in a])
@@ -184,18 +191,21 @@ def _giro_faktura(pdf, request, m, giro):
     pdf.drawString(1.0*cm, 16*cm, u"%s" % request.POST.get('title'))
 
     pdf.setFontSize(11)
-    _pdf_p(pdf, request.POST.get('text'), 1, 15.5, size_w=19, size_h=13)
+    text = request.POST.get('text')
+    text_content = Template(text).render(Context({'medlem': m, 'giro': giro})).replace('\n', '<br/>')
+    _pdf_p(pdf, text_content, 1, 15.5, size_w=19, size_h=13)
     _pdf_p(pdf, m.full_betalingsadresse().replace('\n', '<br/>\n'), 1, 26, size_w=8, size_h=6)
     _pdf_p(pdf, u"""\
         Kundenr: {m.pk}<br/>
         Fakturanr: {g.pk}<br/>
         Fakturadato: {now}<br/>
         Betalingsfrist: {frist}<br/>
-        Til konto: <b>12345.12.1234</b><br/>
+        Til konto: <b>{kontonr}</b><br/>
         KID-nummer: <b>{g.kid}</b><br/>
         Å betala: <b>{g.belop},00</b><br/>
         """.format(m=m,
                    g=giro,
+                   kontonr=settings.KONTONUMMER,
                    now=datetime.date.today(),
                    frist=request.POST.get('frist')),
         15, 26, size_w=4, size_h=6)
@@ -204,7 +214,6 @@ def _giro_faktura(pdf, request, m, giro):
 
 def _giro_medlemskort(pdf, request, m, giro):
     from reportlab.lib.units import cm #, mm
-    from django.template import Context, Template
 
     from medlemssys.mod10 import mod10
 
@@ -252,7 +261,7 @@ def _giro_medlemskort(pdf, request, m, giro):
         pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
         pdf.drawString(11.9*cm, 1.58*cm,
                        u"%s" % mod10(unicode(giro.belop) + '00'))
-        pdf.drawString(13.2*cm, 1.58*cm, u"%s" % '3450 65 48618')
+        pdf.drawString(13.2*cm, 1.58*cm, u"%s" % settings.KONTONUMMER)
 
     return pdf
 

@@ -22,7 +22,17 @@
     </div>
     <div class=form-row>
       <div>
-        <label for=text class=required>Tekst</label> <textarea name=text class=vLargeTextField>Gode {% templatetag openvariable %} medlem.fornamn {% templatetag closevariable %}. Ver snill og betal medlemspengar. Norsk Målungdom treng det.</textarea>
+        <label for=text class=required>Tekst</label> <textarea name=text class=vLargeTextField rows=15>&lt;font size=11>Gode {% templatetag openvariable %} medlem.fornamn {% templatetag closevariable %}. Ver snill og betal medlemspengar. Norsk Målungdom treng det.&lt;/font>
+
+
+
+&lt;font size=12>&lt;b>Registrert informasjon&lt;/b>&lt;/font>
+Epost: {% templatetag openvariable %} medlem.epost {% templatetag closevariable %}
+Telefon: {% templatetag openvariable %} medlem.mobnr {% templatetag closevariable %}
+Fødeår: {% templatetag openvariable %} medlem.fodt {% templatetag closevariable %}
+
+&lt;font size=8>Kontakt oss på &lt;i>skriv@nynorsk.no&lt;/i> for å oppdatera, melda flytting og so bortetter.&lt;/font>
+</textarea>
         <p class=help>Du kan bruka variablar som t.d. <code>{% templatetag openvariable %} medlem.postnr {% templatetag closevariable %}</code> og <code>{% templatetag openvariable %} giro.belop {% templatetag closevariable %}</code>.
       </div>
     </div>
