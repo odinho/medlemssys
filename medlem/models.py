@@ -323,10 +323,12 @@ class Medlem(models.Model):
     status_html.admin_order_field = 'status'
     status_html.allow_tags = True
 
-    def full_adresse(self, namn=False):
-        return self.full_postadresse(namn, heimeadresse=True)
+    def full_adresse(self, **kwargs):
+        if 'namn' not in kwargs:
+            kwargs['namn'] = False
+        return self.full_postadresse(heimeadresse=True, **kwargs)
 
-    def full_postadresse(self, namn=True, heimeadresse=False):
+    def full_postadresse(self, namn=True, heimeadresse=False, as_list=False):
         adr = []
         if namn:
             adr.append(unicode(self))
@@ -345,12 +347,14 @@ class Medlem(models.Model):
                 adr.append(ekstra)
             if len(postnr) > 4:
                 adr.append(postnr)
+        if as_list:
+            return adr
         return u"\n".join(adr)
 
-    def full_betalingsadresse(self, namn=True):
+    def full_betalingsadresse(self, **kwargs):
         if self.betalt_av:
-            return self.betalt_av.full_betalingsadresse(namn)
-        return self.full_postadresse(namn)
+            return self.betalt_av.full_betalingsadresse(**kwargs)
+        return self.full_postadresse(**kwargs)
 
     def set_val(self, tittel, add=True):
         if add:

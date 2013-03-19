@@ -199,7 +199,7 @@ class GiroAdmin(VersionAdmin):
                 admin_actions.csv_list,
             ]
     def medlem_admin_change(self, obj):
-        return obj.admin_change()
+        return obj.medlem.admin_change()
     medlem_admin_change.short_description = _("Medlem")
     medlem_admin_change.admin_order_field = 'medlem'
     medlem_admin_change.allow_tags = True

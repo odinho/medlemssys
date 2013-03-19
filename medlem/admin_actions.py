@@ -25,6 +25,7 @@ def simple_member_list(modeladmin, request, queryset):
                  u"Fødd".encode("utf-8"),
                  "Heimeadresse",
                  "Postadresse",
+                 "Poststad",
                  "Mobiltelefon",
                  "Epost",
                  "Lokallag",
@@ -35,10 +36,18 @@ def simple_member_list(modeladmin, request, queryset):
             belop = belop.innbetalt_belop
         if not belop:
             belop = '-'
+        postadr, poststad = '', ''
+        adr = m.full_postadresse(namn=False, as_list=True)
+        if len(adr) == 1:
+            poststad = adr[0]
+        elif len(adr) > 1:
+            postadr = ', '.join(adr[:-1])
+            poststad = adr[-1]
         a = [m,
              m.fodt,
              m.full_adresse(namn=False),
-             m.full_postadresse(namn=False),
+             postadr,
+             poststad,
              m.mobnr,
              m.epost,
              m.lokallag_display(),

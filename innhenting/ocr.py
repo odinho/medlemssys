@@ -4,7 +4,7 @@
 import datetime
 from django.db.models import Q
 
-import mod10
+from medlemssys import mod10
 from medlemssys.medlem.models import Giro
 from medlemssys.medlem.models import update_denormalized_fields
 
