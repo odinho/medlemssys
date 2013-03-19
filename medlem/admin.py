@@ -135,6 +135,9 @@ class LokallagAdmin(admin.ModelAdmin):
     inlines = [MedlemInline,]
     prepopulated_fields = {"slug": ("namn",)}
 
+class LokallagOvervakingAdmin(admin.ModelAdmin):
+    model = LokallagOvervaking
+    raw_id_fields = ['medlem']
 
 class TilskipInline(admin.TabularInline):
     model = Medlem.tilskiping.through
@@ -160,7 +163,7 @@ class ValAdmin(admin.ModelAdmin):
     model = Val
     inlines = [ValInline,]
 
-class GiroAdmin(admin.ModelAdmin):
+class GiroAdmin(VersionAdmin):
     model = Giro
     raw_id_fields = ['medlem']
     list_display = ('pk', 'medlem_admin_change', 'kid', 'belop', 'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto', 'status')
@@ -214,8 +217,8 @@ admin.site.register(Lokallag, LokallagAdmin)
 admin.site.register(Tilskiping, TilskipAdmin)
 admin.site.register(Nemnd, NemndAdmin)
 admin.site.register(Giro, GiroAdmin)
+admin.site.register(LokallagOvervaking, LokallagOvervakingAdmin)
 
-admin.site.register(LokallagOvervaking)
 admin.site.register(Rolletype)
 admin.site.register(PostNummer)
 

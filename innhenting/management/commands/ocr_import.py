@@ -57,6 +57,7 @@ class Command(BaseCommand):
             else:
                 giro.desc = 'OCR'
             giro.save()
+            self.err(u"{giro}: Betalte {giro.belop} ({giro.pk})".format(giro=giro))
 
             if giro.medlem.status == 'I' and giro.innbetalt_belop >= giro.belop:
                 self.err("{medlem} var infoperson, flyttar til medlem etter betaling".format(medlem=giro.medlem))
