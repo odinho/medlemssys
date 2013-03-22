@@ -215,6 +215,7 @@ class GiroAdmin(VersionAdmin):
 admin.site.register(Medlem, MedlemAdmin)
 admin.site.register(Lokallag, LokallagAdmin)
 admin.site.register(Tilskiping, TilskipAdmin)
+admin.site.register(Val, ValAdmin)
 admin.site.register(Nemnd, NemndAdmin)
 admin.site.register(Giro, GiroAdmin)
 admin.site.register(LokallagOvervaking, LokallagOvervakingAdmin)
