@@ -79,7 +79,6 @@ class MedlemAdmin(VersionAdmin):
     )
     actions = [ admin_actions.simple_member_list,
                 admin_actions.csv_list,
-                admin_actions.pdf_giro,
                 admin_actions.lag_giroar, ]
 
     class Media:
@@ -196,6 +195,7 @@ class GiroAdmin(VersionAdmin):
                 admin_actions.giro_status_ferdig,
                 admin_actions.giro_status_postlagt,
                 admin_actions.giro_list,
+                admin_actions.pdf_giro,
                 admin_actions.csv_list,
             ]
     def medlem_admin_change(self, obj):

@@ -51,8 +51,7 @@ Fødeår: {% templatetag openvariable %} medlem.fodt {% templatetag closevariabl
       </div>
     </div>
     </fieldset>
-
-    {% if n_allereie_giro or n_utmelde %}
+    {% if n_betalte or n_utmelde %}
       <fieldset class="module aligned">
         {% if n_utmelde %}
         <div class=form-row>
@@ -67,7 +66,7 @@ Fødeår: {% templatetag openvariable %} medlem.fodt {% templatetag closevariabl
         <div class=form-row>
           <div class=field-box>
             <input type=checkbox name=ink-betalt> <label for=ink-betalt>Inkluder allereie betalte</label>
-            <p>Det er <strong>{{ n_betalte }} medlem som allereie har betalt</strong> i lista di.
+            <p>Det er <strong>{{ n_betalte }} giro{{ n_betalte|pluralize:"ar" }} som allereie er betalt{{ n_betalte|pluralize:"e" }}</strong> i lista di.
           </div>
         </div>
         {% endif %}

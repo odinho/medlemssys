@@ -108,6 +108,7 @@ def giro_list(modeladmin, request, queryset):
 giro_list.short_description = "Enkel revisorliste"
 
 def pdf_giro(modeladmin, request, queryset):
+    from .models import Medlem
     # User has already written some text, make PDF
     if request.POST.get('post'):
         import os
@@ -115,8 +116,6 @@ def pdf_giro(modeladmin, request, queryset):
         from reportlab.pdfgen import canvas
         from reportlab.pdfbase import pdfmetrics
         from reportlab.pdfbase.ttfonts import TTFont
-
-        from .models import Medlem
 
         pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB-hacked.ttf'))
         response = HttpResponse(mimetype="application/pdf")
@@ -128,14 +127,12 @@ def pdf_giro(modeladmin, request, queryset):
         pdf = canvas.Canvas(buf)
 
         if not request.POST.get("ink-utmeld"):
-            queryset = queryset.filter(utmeldt_dato__isnull=True)
+            queryset = queryset.filter(medlem__utmeldt_dato__isnull=True)
         if not request.POST.get("ink-betalt"):
-            queryset = queryset.exclude(pk__in=Medlem.objects.betalande())
+            queryset = queryset.exclude(innbetalt_dato__isnull=False)
 
-        # Draw things on the PDF. Here's where the PDF generation happens.
-        # See the ReportLab documentation for the full list of functionality.
-        for m in queryset:
-            giro = m.gjeldande_giro()
+        for giro in queryset:
+            m = giro.medlem
             if not giro:
                 continue
             if request.POST.get('pdf_type') == 'medlemskort':
@@ -155,8 +152,8 @@ def pdf_giro(modeladmin, request, queryset):
 
     opts = modeladmin.model._meta
     app_label = opts.app_label
-    n_utmelde = queryset.filter(utmeldt_dato__isnull=False).count()
-    n_betalte = queryset.betalande().count()
+    n_utmelde = queryset.filter(medlem__utmeldt_dato__isnull=False).count()
+    n_betalte = queryset.filter(innbetalt__isnull=False).count()
     g_frist = datetime.date.today() + datetime.timedelta(30)
 
     title = _("Lag giro-PDF-ar")
@@ -228,19 +225,11 @@ def _giro_medlemskort(pdf, request, m, giro):
 
     pdf.setFont('Helvetica', 16)
     pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
-
     pdf.setFontSize(12)
-    text = u"""<font size=11>{text}</font>
 
-
-    <font size=12><b>Registrert informasjon</b></font>
-    Epost: {m.epost}
-    Telefon: {m.mobnr}
-    Fødeår: {m.fodt}
-    <font size=8>
-    Kontakt oss på <i>skriv@nynorsk.no</i> for å oppdatera, melda flytting og so bortetter.</font>
-    """.format(text=request.POST.get('text'), m=m)
-    text_content = Template(text).render(Context({'medlem': m, 'giro': giro})).replace('\n', '<br/>')
+    text_template = Template(request.POST.get('text'))
+    text_context = Context({'medlem': m, 'giro': giro})
+    text_content = text_template.render(text_context).replace('\n', '<br/>')
 
     _pdf_p(pdf, text_content, 1, 25.5, size_w=18, size_h=13)
 
