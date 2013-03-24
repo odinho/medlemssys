@@ -5,7 +5,7 @@
 from django.contrib.admin.filters import RelatedFieldListFilter, DateFieldListFilter, SimpleListFilter
 from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext as _
-from django.db.models import Q
+from django.db.models import Q, F
 from datetime import date
 
 class SporjingFilter(SimpleListFilter):
@@ -38,6 +38,22 @@ class SporjingFilter(SimpleListFilter):
         elif self.value() == 'betalandeifjor':
             return queryset.betalande(year - 1)
 
+class GiroSporjingFilter(SimpleListFilter):
+    title = _(u"giro-spørjingar")
+    parameter_name = 'sporjing'
+
+    def lookups(self, request, model_admin):
+        return (
+                ('strange', u"Rare/feil giroar"),
+            )
+
+    def queryset(self, request, queryset):
+        if self.value() == 'strange':
+            not_fully_paid = ~Q(innbetalt_belop=0) & ~Q(innbetalt_belop=F('belop'))
+            paid_but_not_finished = Q(innbetalt__isnull=False) & ~Q(status='F')
+            unpaid_but_finished = (Q(innbetalt__isnull=True) | Q(innbetalt_belop=0)) & Q(status='F')
+
+            return queryset.filter(not_fully_paid | paid_but_not_finished | unpaid_but_finished)
 
 class FodtFilter(SimpleListFilter):
     title = _(u"alder i år")

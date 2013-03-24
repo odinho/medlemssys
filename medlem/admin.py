@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from reversion.admin import VersionAdmin
 
 from medlemssys.settings import STATIC_URL
-from filters import AdditiveSubtractiveFilter, FodtFilter, SporjingFilter #, Filter, TimeSince
+from filters import AdditiveSubtractiveFilter, FodtFilter, SporjingFilter, GiroSporjingFilter #, Filter, TimeSince
 
 import admin_actions
 from models import *
@@ -170,6 +170,7 @@ class GiroAdmin(VersionAdmin):
     date_hierarchy = 'oppretta'
     list_filter = (
         'status',
+        GiroSporjingFilter,
         'gjeldande_aar',
         'innbetalt',
         'hensikt',
