@@ -455,6 +455,7 @@ GIRO_STATUSAR = (
     ('E', "(E) Sendingsfeil"),
     ('M', "Manuelt postlagt"),
     ('F', "Ferdig"),
+    ('U', "Utgått ubetalt"),
 )
 
 class Giro(models.Model):
