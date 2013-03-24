@@ -107,8 +107,8 @@ def giro_list(modeladmin, request, queryset):
     return response
 giro_list.short_description = "Enkel revisorliste"
 
+@transaction.commit_on_success
 def pdf_giro(modeladmin, request, queryset):
-    from .models import Medlem
     # User has already written some text, make PDF
     if request.POST.get('post'):
         import os
@@ -129,7 +129,7 @@ def pdf_giro(modeladmin, request, queryset):
         if not request.POST.get("ink-utmeld"):
             queryset = queryset.filter(medlem__utmeldt_dato__isnull=True)
         if not request.POST.get("ink-betalt"):
-            queryset = queryset.exclude(innbetalt_dato__isnull=False)
+            queryset = queryset.exclude(innbetalt__isnull=False)
 
         for giro in queryset:
             m = giro.medlem
@@ -140,6 +140,9 @@ def pdf_giro(modeladmin, request, queryset):
             else:
                 pdf = _giro_faktura(pdf, request, m, giro)
             pdf.showPage()
+            if request.POST.get('merk-postlagt'):
+                giro.status = 'M'
+                giro.save()
 
         # Close the PDF object cleanly.
         pdf.save()
@@ -156,7 +159,7 @@ def pdf_giro(modeladmin, request, queryset):
     n_betalte = queryset.filter(innbetalt__isnull=False).count()
     g_frist = datetime.date.today() + datetime.timedelta(30)
 
-    title = _("Lag giro-PDF-ar")
+    title = _("Lag giro-PDF-ar ({c} giroar)".format(c=queryset.count()))
 
     context = {
         "title": title,

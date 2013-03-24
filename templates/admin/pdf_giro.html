@@ -50,6 +50,13 @@ Fødeår: {% templatetag openvariable %} medlem.fodt {% templatetag closevariabl
           </select>
       </div>
     </div>
+    <div class=form-row>
+      <div class=field-box>
+        <input type=checkbox name=merk-postlagt checked>
+           <label for=merk-postlagt>Markér som postlagt</label>
+        <p>Sett status til <code>Manuelt postlagt</code> for giroane som kjem med i PDF-en.
+      </div>
+    </div>
     </fieldset>
     {% if n_betalte or n_utmelde %}
       <fieldset class="module aligned">
