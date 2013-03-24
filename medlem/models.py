@@ -380,6 +380,11 @@ class Medlem(models.Model):
     admin_change.admin_order_field = 'medlem'
     admin_change.allow_tags = True
 
+    def save(self, *args, **kwargs):
+        if ' ' in self.mobnr:
+            self.mobnr = ''.join(self.mobnr.split())
+        super(Medlem, self).save(*args, **kwargs)
+
 
 @transaction.commit_on_success
 def update_denormalized_fields():
