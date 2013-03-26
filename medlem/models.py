@@ -455,7 +455,7 @@ GIRO_STATUSAR = (
     ('E', "(E) Sendingsfeil"),
     ('M', "Manuelt postlagt"),
     ('F', "Ferdig"),
-    ('U', "Utgått ubetalt"),
+    ('U', u"Utgått ubetalt"),
 )
 
 class Giro(models.Model):
@@ -478,7 +478,7 @@ class Giro(models.Model):
 
     class Meta:
         verbose_name_plural = "giroar"
-        ordering = ('-oppretta',)
+        ordering = ('-oppdatert', '-innbetalt', '-pk')
 
     def __unicode__(self):
         betalt = "IKKJE BETALT"
@@ -493,7 +493,12 @@ class Giro(models.Model):
 
     def admin_change(self):
         url = reverse('admin:medlem_giro_change', args=(self.pk,))
-        return u'<a href="{0}">{1}</a>'.format(url, self)
+        belop = str(self.innbetalt_belop)
+        if self.belop != self.innbetalt_belop:
+            belop = '{0}/{1}'.format(self.innbetalt_belop, self.belop)
+        if self.betalt():
+            return '<a href="{url}">{img} {belop}</a>'.format(url=url, img='<img src="/static/admin/img/icon-yes.gif" alt="Betalt">', belop=belop)
+        return '<a href="{url}">{img} {belop}</a>'.format(url=url, img='<img src="/static/admin/img/icon-no.gif" alt="Ikkje betalt">', belop=belop)
     admin_change.short_description = _("Giro")
     admin_change.admin_order_field = 'giro'
     admin_change.allow_tags = True

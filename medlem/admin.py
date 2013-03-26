@@ -33,7 +33,7 @@ class VervaMedlemInline(admin.TabularInline):
 
 class MedlemAdmin(VersionAdmin):
     list_display = ('id', '__unicode__', 'lokallag_changelist', 'er_innmeldt',
-                    'har_betalt', 'fodt_farga', 'status_html')
+                    'siste_giro_info', 'fodt_farga', 'status_html')
     list_display_links = ('id', '__unicode__')
     date_hierarchy = 'innmeldt_dato'
     list_filter = (
@@ -47,6 +47,7 @@ class MedlemAdmin(VersionAdmin):
             'status',
             'lokallag',
             'giroar__status',
+            'tilskiping',
         )
     raw_id_fields = ['verva_av', 'betalt_av']
     readonly_fields = ('_siste_medlemspengar', 'oppretta', 'oppdatert')
@@ -120,6 +121,17 @@ class MedlemAdmin(VersionAdmin):
     lokallag_changelist.admin_order_field = 'lokallag__name'
     lokallag_changelist.allow_tags = True
 
+    def siste_giro_info(self, obj):
+        gjeldande = obj.gjeldande_giro()
+        if gjeldande:
+            return gjeldande.admin_change()
+        fjor = obj.gjeldande_giro(datetime.today().year - 1)
+        if fjor:
+            return '{}: {}'.format(fjor.gjeldande_aar, fjor.admin_change())
+        return '&mdash;'
+    siste_giro_info.short_description = _("Siste giro")
+    siste_giro_info.admin_order_field = 'giroar'
+    siste_giro_info.allow_tags = True
 
 class MedlemInline(admin.TabularInline):
     model = Medlem

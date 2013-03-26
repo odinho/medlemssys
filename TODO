@@ -3,6 +3,7 @@ Lag motmæletingarliste
  - tingar
 Automatisk sending av faktura for medlemspengar
 Batch-sending av faktura for medlemspengar
+API? rest-framework, vs django-nap? Solution looking for problem?
 
 
 ## URL-ar
