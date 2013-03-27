@@ -3,8 +3,9 @@
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+import reversion
 
-from models import Medlem, EndraMedlemForm, InnmeldingMedlemForm, Lokallag
+from models import Medlem, EndraMedlemForm, InnmeldingMedlemForm, Lokallag, Val
 
 def create_medlem(request):
     if request.method == 'POST':
@@ -24,7 +25,20 @@ def edit_medlem(request, id, kode):
 
     if request.method == 'POST':
         form = EndraMedlemForm(request.POST, instance=m)
-        print form.changed_data
+        post_val = request.POST.get('val_epost', '')
+        post_val += request.POST.get('val_post', '')
+        post_val += request.POST.get('val_tlf',  '')
+        with reversion.create_revision():
+            reversion.set_comment('Brukar oppdaterte {}'.format(form.changed_data))
+            for tittel in ('Ikkje epost', u'Ikkje Motmæle', 'Ikkje ring', 'Ikkje epost',
+                           'Ikkje Norsk Tidend', 'Ikkje nyhendebrev'):
+                           #'Ikkje lokallagsepost', 'Ikkje SMS', 'Ikkje nyhendebrev'):
+                val_obj = Val.objects.get(tittel=tittel)
+                if tittel in post_val:
+                    m.val.add(val_obj)
+                else:
+                    m.val.remove(val_obj)
+            form.save()
 
     form = EndraMedlemForm(instance=m)
     return render(request, 'medlem/edit.html', {

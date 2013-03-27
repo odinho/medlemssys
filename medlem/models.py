@@ -362,6 +362,9 @@ class Medlem(models.Model):
         else:
             self.val.remove(Val.objects.get(tittel=tittel))
 
+    def val_exists(self, tittel):
+        return self.val.filter(tittel=tittel).exists()
+
     def lokallag_display(self):
         if not self.lokallag_id:
             return u"(ingen)"
@@ -403,8 +406,8 @@ class EndraMedlemForm(ModelForm):
     class Meta:
         model = Medlem
         fields = ('fornamn', 'mellomnamn', 'etternamn',
-                  'fodt', 'postnr', 'postadr', 'epost', 'mobnr',
-                  'lokallag', 'val')
+                  'fodt', 'postadr', 'postnr', 'epost', 'mobnr',
+                  'lokallag',)
 
 class InnmeldingMedlemForm(ModelForm):
     class Meta:

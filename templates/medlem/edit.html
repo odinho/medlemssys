@@ -1,13 +1,24 @@
 {% extends "base.html" %}
+{% load utils %}
 
 {% block content %}
+<style>
+#id_epost, #id_postadr { width: 96% }
+#id_postnr, #id_fodt { width: 5em; }
+#id_mobnr { width: 8em; }
+</style>
+<div style="max-width: 800px; margin: 0 auto; box-shadow: 0 0 50px -30px #000; padding: 40px; ">
 <h1>Endra {{ object }}</h1>
 <form method=post action="">
 {% csrf_token %}
-    <table>
+    <table style="float:left; max-width:400px;">
+      <tr><td colspan=2><h2>Informasjon</h2>
         {{ form }}
+    </table>
+
+    <table style="float: left; max-width: 400px;">
       <tr><td colspan=2><h2>Kontaktinnstillingar</h2>
-      <tr><td><label>post</label> <td>
+      <!--tr><td><label>post</label> <td>
       <input type=checkbox value=nt checked>Norsk Tidend
       <input type=checkbox value=mm checked>Motmæle
       <input type=checkbox value=post checked>Vanleg post
@@ -19,28 +30,43 @@
 
       <tr><td><label>telefon</label> <td>
       <input type=checkbox value=sms checked>SMS
-      <input type=checkbox value=telefon checked>Ring
+      <input type=checkbox value=telefon checked>Ring-->
 
-      <tr><td><label>post</label> <td><select>
-      <option value=0>Motmæle, Norsk Tidend og post frå NMU
-      <option value=ikkje_nt>Motmæle og post frå NMU
-      <option value=ikkje_mm>Norsk Tidend og post frå NMU
-      <option value=ikkje_mm,ikkje_nt>Post frå NMU
+      <tr><td><label>post</label> <td><select name=val_post id=val_post>
+      {% val_option object '' 'Ikkje Motmæle,Ikkje Norsk Tidend' %}
+        Motmæle, Norsk Tidend og post frå NMU
+      {% val_option object 'Ikkje Norsk Tidend' 'Ikkje Motmæle' %}
+        Motmæle og post frå NMU
+      {% val_option object 'Ikkje Motmæle' 'Ikkje Norsk Tidend' %}
+        Norsk Tidend og post frå NMU
+      {% val_option object 'Ikkje Motmæle,Ikkje Norsk Tidend' '' %}
+        Post frå NMU
       </select>
 
-      <tr><td><label>epost</label> <td><select>
-      <option value=0>Frå lokallag og NMU
-      <option value=ikkje_sentralt>Frå lokallag
-      <option value=ikkje_lokallag>Frå NMU
-      <option value=ikkje_sentralt,ikkje_lokallag>Ingen epost
+      <tr><td><label>telefon</label> <td><select name=val_tlf id=val_tlf>
+      {% val_option object '' 'Ikkje ring,Ikkje SMS' %}
+        Ring og SMS
+      {% val_option object 'Ikkje ring' 'Ikkje SMS' %}
+        Berre SMS
+      {% val_option object 'Ikkje ring,Ikkje SMS' '' %}
+        Ingen telefonbruk
       </select>
 
-      <tr><td><label>telefon</label> <td><select>
-      <option value=0>Ring og SMS
-      <option value=ikkje_ring>Berre SMS
-      <option value=ikkje_telefon>Ingen telefonbruk
-      </select>
+      <tr><td><label>epost</label> <td><select name=val_epost id=val_epost>
+      {% val_option object '' 'Ikkje epost,Ikkje lokallagsepost' %}
+        Frå lokallag og NMU
+      {% val_option object 'Ikkje epost' 'Ikkje lokallagsepost' %}
+        Frå lokallag
+      {% val_option object 'Ikkje lokallagsepost' 'Ikkje epost' %}
+        Frå NMU
+      {% val_option object 'Ikkje epost,Ikkje lokallagsepost' '' %}
+        Ingen epost
+      <tr><td><td>
+      <label><input type=checkbox name=val_nyhendebrev {% val_checked object 'Ikkje nyhendebrev' %}>Motta nyhendebrev (omtrent 1 gong i månaden)</label>
+
     </table>
+    <div style="width:100%; clear:both; margin-bottom:20px;"></div>
     <input type=submit value=Endra>
 </form>
+</div>
 {% endblock %}
