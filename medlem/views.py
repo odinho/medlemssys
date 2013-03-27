@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
-from models import Medlem, InnmeldingMedlemForm, Lokallag
+from models import Medlem, EndraMedlemForm, InnmeldingMedlemForm, Lokallag
 
 def create_medlem(request):
     if request.method == 'POST':
@@ -15,8 +15,21 @@ def create_medlem(request):
     else:
         form = InnmeldingMedlemForm()
 
-    return render_to_response('create_medlem.html', {
+    return render(request, 'medlem/create.html', {
         'form': form,
+    })
+
+def edit_medlem(request, id, kode):
+    m = Medlem.objects.get(pk=id)
+
+    if request.method == 'POST':
+        form = EndraMedlemForm(request.POST, instance=m)
+        print form.changed_data
+
+    form = EndraMedlemForm(instance=m)
+    return render(request, 'medlem/edit.html', {
+       'object': m,
+       'form': form,
     })
 
 @login_required
@@ -24,13 +37,13 @@ def ringjelister(request):
     lokallag = Lokallag.objects.all().order_by('andsvar')
     Medlem.objects.filter()
 
-    return render_to_response('medlem/ringjeliste.html', {
+    return render(request, 'medlem/ringjeliste.html', {
         'lokallag': lokallag,
     })
 
 @login_required
 def search(request):
-    return render_to_response('medlem/search.html', {})
+    return render(request, 'medlem/search.html', {})
 
 import json
 from django.db.models import Q

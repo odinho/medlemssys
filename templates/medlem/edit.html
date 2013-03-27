@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Endra {{ object }}</h1>
+<form method=post action="">
+{% csrf_token %}
+    <table>
+        {{ form }}
+      <tr><td colspan=2><h2>Kontaktinnstillingar</h2>
+      <tr><td><label>post</label> <td>
+      <input type=checkbox value=nt checked>Norsk Tidend
+      <input type=checkbox value=mm checked>Motmæle
+      <input type=checkbox value=post checked>Vanleg post
+
+      <tr><td><label>epost</label> <td>
+      <input type=checkbox value=nyhendebrev checked>Nyhendebrev
+      <input type=checkbox value=admin checked>Administrativ
+      <input type=checkbox value=lokallag checked>Lokallag
+
+      <tr><td><label>telefon</label> <td>
+      <input type=checkbox value=sms checked>SMS
+      <input type=checkbox value=telefon checked>Ring
+
+      <tr><td><label>post</label> <td><select>
+      <option value=0>Motmæle, Norsk Tidend og post frå NMU
+      <option value=ikkje_nt>Motmæle og post frå NMU
+      <option value=ikkje_mm>Norsk Tidend og post frå NMU
+      <option value=ikkje_mm,ikkje_nt>Post frå NMU
+      </select>
+
+      <tr><td><label>epost</label> <td><select>
+      <option value=0>Frå lokallag og NMU
+      <option value=ikkje_sentralt>Frå lokallag
+      <option value=ikkje_lokallag>Frå NMU
+      <option value=ikkje_sentralt,ikkje_lokallag>Ingen epost
+      </select>
+
+      <tr><td><label>telefon</label> <td><select>
+      <option value=0>Ring og SMS
+      <option value=ikkje_ring>Berre SMS
+      <option value=ikkje_telefon>Ingen telefonbruk
+      </select>
+    </table>
+    <input type=submit value=Endra>
+</form>
+{% endblock %}

@@ -399,6 +399,13 @@ class MedlemForm(ModelForm):
     class Meta:
         model = Medlem
 
+class EndraMedlemForm(ModelForm):
+    class Meta:
+        model = Medlem
+        fields = ('fornamn', 'mellomnamn', 'etternamn',
+                  'fodt', 'postnr', 'postadr', 'epost', 'mobnr',
+                  'lokallag', 'val')
+
 class InnmeldingMedlemForm(ModelForm):
     class Meta:
         model = Medlem
@@ -529,6 +536,10 @@ class Rolletype(models.Model):
     def __unicode__(self):
         return self.namn
 
+    class Meta:
+        verbose_name_plural = "rolle i lokallag"
+        ordering = ['namn']
+
 class Rolle(models.Model):
     medlem = models.ForeignKey(Medlem)
     lokallag = models.ForeignKey(Lokallag)
@@ -536,6 +547,7 @@ class Rolle(models.Model):
 
     class Meta:
         verbose_name_plural = "rolle i lokallag"
+        ordering = ['rolletype', 'medlem']
 
     def __unicode__(self):
         return u"%s, %s (%s)" % (self.medlem, self.lokallag, self.rolletype)
