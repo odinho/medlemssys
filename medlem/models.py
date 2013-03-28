@@ -202,7 +202,7 @@ class Medlem(models.Model):
     bortepostnr = models.CharField(
             _("borte-postnr"), max_length=4, blank=True, null=True)
     borteadr = models.CharField(_("borte-adresse"), max_length=255,
-            blank=True, null=True)
+            blank=True, null=True, help_text="Dersom borte-adressene er sett, vert post sendt her. For t.d. hybel- og utenlandsadresser.")
 
     # Om medlemen
     gjer = models.CharField(_("gjer"), max_length=255,
@@ -411,8 +411,8 @@ class EndraMedlemForm(ModelForm):
     class Meta:
         model = Medlem
         fields = ('fornamn', 'mellomnamn', 'etternamn',
-                  'fodt', 'postadr', 'postnr', 'epost', 'mobnr',
-                  'lokallag',)
+                  'fodt', 'postadr', 'ekstraadr', 'postnr', 'epost', 'mobnr',
+                  'lokallag', 'borteadr', 'bortepostnr')
 
 class InnmeldingMedlemForm(ModelForm):
     class Meta:

@@ -3,11 +3,12 @@
 
 {% block content %}
 <style>
-#id_epost, #id_postadr { width: 96% }
-#id_postnr, #id_fodt { width: 5em; }
+#id_epost, #id_postadr, #id_borteadr { width: 96% }
+#id_postnr, #id_fodt, #id_bortepostnr { width: 5em; }
 #id_mobnr { width: 8em; }
+.helptext { font-size: 0.8em; color: #666; }
 </style>
-<div style="max-width: 800px; margin: 0 auto; box-shadow: 0 0 50px -30px #000; padding: 40px; ">
+<div style="max-width: 802px; margin: 0 auto; box-shadow: 0 0 50px -30px #000; padding: 40px; ">
 <h1>Endra {{ object }}</h1>
 <form method=post action="">
 {% csrf_token %}
