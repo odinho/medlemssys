@@ -271,6 +271,9 @@ class Medlem(models.Model):
         return " ".join([ x for x in [self.fornamn, self.mellomnamn, self.etternamn] if x ])
     __unicode__.admin_order_field = 'etternamn'
 
+    def get_absolute_url(self):
+        return reverse('medlem_edit', args=(self.pk, self.nykel))
+
     def er_innmeldt(self):
         if (self.utmeldt_dato):
             return self.utmeldt_dato > date.today()
