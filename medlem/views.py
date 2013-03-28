@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 import reversion
@@ -20,9 +20,15 @@ def create_medlem(request):
         'form': form,
     })
 
-def edit_medlem(request, id, kode):
-    m = Medlem.objects.get(pk=id)
-
+def edit_medlem(request, id, nykel):
+    forbid = False
+    try:
+        m = Medlem.objects.get(pk=id)
+    except Medlem.DoesNotExist:
+        forbid = True
+    if forbid or nykel != m.nykel:
+        return HttpResponseForbidden("<h1>Medlemen finst ikkje, "
+                                     "eller nykelen er feil</h1>")
     if request.method == 'POST':
         form = EndraMedlemForm(request.POST, instance=m)
         post_val = request.POST.get('val_epost', '')
