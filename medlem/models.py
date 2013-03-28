@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
+import random
 from datetime import date, datetime
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -13,6 +14,9 @@ from django.utils.translation import ugettext_lazy as _
 
 from medlemssys import mod10
 
+
+def generate_password(length=7):
+    return ''.join(random.choice('abcdefghjkmnpqrstuvwxyz23456789') for x in range(length))
 
 class Val(models.Model):
     tittel = models.CharField(_("kort forklaring"), max_length=100, unique=True)
@@ -236,6 +240,8 @@ class Medlem(models.Model):
                                 blank=True, null=True)
     oppretta = models.DateTimeField(_("oppretta"), auto_now_add=True)
     oppdatert = models.DateTimeField(_("oppdatert"), auto_now=True)
+    nykel = models.CharField(_("nykel"), max_length=255,
+            blank=True, default=generate_password)
 
     @property
     def stad(self):
@@ -387,7 +393,6 @@ class Medlem(models.Model):
         if ' ' in self.mobnr:
             self.mobnr = ''.join(self.mobnr.split())
         super(Medlem, self).save(*args, **kwargs)
-
 
 @transaction.commit_on_success
 def update_denormalized_fields():

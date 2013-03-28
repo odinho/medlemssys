@@ -34,10 +34,10 @@ INSTALLED_APPS = (
     'medlemssys.statistikk',
     'medlemssys.giro',
     'reversion',
+    'south',
 
 #   'emencia.django.newsletter',
 #   'tagging',
-#   'south',
 )
 
 STATICFILES_FINDERS = (

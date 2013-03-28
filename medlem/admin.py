@@ -68,7 +68,7 @@ class MedlemAdmin(VersionAdmin):
         (u'Ikkje pakravde felt', {
             'classes': ('left', 'collapse'),
             'fields': (
-                ('utmeldt_dato', '_siste_medlemspengar', 'user'),
+                ('utmeldt_dato', '_siste_medlemspengar', 'user', 'nykel'),
                 ('heimenr', 'gjer'),
                 ('innmeldingstype', 'innmeldingsdetalj', 'verva_av'),
                 'merknad',
