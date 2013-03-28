@@ -2,7 +2,7 @@
   "http://www.w3.org/TR/html5/strict.dtd">
 <html>
   <head>
-    <title>nynorsk.no</title>
+    <title>Norsk Målungdom medlemsregister</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <!--    <link rel="shortcut icon" href="/static/nynorsk-16.png"> -->
     {% block extrahead %}{% endblock %}
@@ -55,6 +55,7 @@ nav { display: none; }
   <div id=site-title><a href="/">Medlemssys</a></div>
 </div>
 
+{% block header %}
 <nav>
   <ul>
     <li><a href="/">Framsida</a>
@@ -63,6 +64,7 @@ nav { display: none; }
     <li><a href="/accounts/logout">Logg ut</a>
   </ul>
 </nav>
+{% endblock header %}
 
 <div id="content">
 	{% block content %}Ingenting her{% endblock %}
@@ -72,7 +74,7 @@ nav { display: none; }
 </aside>
 
 <footer>
-	<p><small>System av <a href="http://velmont.no">Odin Hørthe</a></small></p>
+	<p><small>System av <a href="http://velmont.no">Odin Hørthe Omdal</a></small></p>
 </footer>
 
 </div>

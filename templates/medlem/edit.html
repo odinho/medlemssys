@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load utils %}
 
+{% block header %}{% endblock %}
 {% block content %}
 <style>
 #id_epost, #id_postadr, #id_borteadr { width: 96% }
@@ -9,7 +10,7 @@
 .helptext { font-size: 0.8em; color: #666; }
 </style>
 <div style="max-width: 802px; margin: 0 auto; box-shadow: 0 0 50px -30px #000; padding: 40px; ">
-<h1>Endra {{ object }}</h1>
+<h1>{{ object }} <span style="font-weight:normal">&ndash; medlemsoppdatering</span></h1>
 <form method=post action="">
 {% csrf_token %}
     <table style="float:left; max-width:400px;">
@@ -69,5 +70,10 @@
     <div style="width:100%; clear:both; margin-bottom:20px;"></div>
     <input type=submit value=Endra>
 </form>
+{% for r in object.lokallagsrolle.all %}
+<h2>{{ r }}</h2>
+<p>Sidan du har ei rolle i {{ r }}, so kan du sjå medlemslistene til {{ r }}.
+<p><a href='{{ r.listing }}'>Lokallagslister for {{ r }}</a>
+{% endfor %}
 </div>
 {% endblock %}

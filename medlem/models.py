@@ -46,6 +46,9 @@ class Lokallag(models.Model):
         return self.medlem_set.betalande().count()
     num_medlem.short_description = "medlemstal"
 
+    def listing(self):
+        return reverse('lokallag_home', args=(self.slug,))
+
     def save(self, *args, **kwargs):
         if not self.slug or self.slug == "":
             self.slug = slugify(self.namn)
