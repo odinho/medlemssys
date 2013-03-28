@@ -396,7 +396,7 @@ class Medlem(models.Model):
     admin_change.allow_tags = True
 
     def save(self, *args, **kwargs):
-        if ' ' in self.mobnr:
+        if self.mobnr and ' ' in self.mobnr:
             self.mobnr = ''.join(self.mobnr.split())
         super(Medlem, self).save(*args, **kwargs)
 
