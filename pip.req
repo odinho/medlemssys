@@ -6,6 +6,8 @@ django_extensions
 django-apptemplates
 south
 reportlab
+django-reversion-compare
+diff-match-patch
 
 
 # Optional (not in use)

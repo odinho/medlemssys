@@ -33,7 +33,9 @@ INSTALLED_APPS = (
     'medlemssys.innhenting',
     'medlemssys.statistikk',
     'medlemssys.giro',
+
     'reversion',
+    'reversion_compare',
     'south',
 
 #   'emencia.django.newsletter',

@@ -3,7 +3,7 @@
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
-from reversion.admin import VersionAdmin
+from reversion_compare.admin import CompareVersionAdmin
 
 from medlemssys.settings import STATIC_URL
 from filters import AdditiveSubtractiveFilter, FodtFilter, SporjingFilter, GiroSporjingFilter #, Filter, TimeSince
@@ -31,7 +31,7 @@ class VervaMedlemInline(admin.TabularInline):
     fields = ['innmeldingstype', 'innmeldingsdetalj', 'lokallag', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt']
     readonly_fields = ('innmeldingstype', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt')
 
-class MedlemAdmin(VersionAdmin):
+class MedlemAdmin(CompareVersionAdmin):
     list_display = ('id', '__unicode__', 'lokallag_changelist', 'er_innmeldt',
                     'siste_giro_info', 'fodt_farga', 'status_html')
     list_display_links = ('id', '__unicode__')
@@ -138,7 +138,7 @@ class MedlemInline(admin.TabularInline):
     extra = 3
     fields = ['fornamn', 'etternamn', 'postadr', 'postnr', 'epost', 'mobnr', 'fodt']
 
-class LokallagAdmin(admin.ModelAdmin):
+class LokallagAdmin(CompareVersionAdmin):
     list_display = ('pk', 'namn', 'num_medlem', 'andsvar',
                     'fylkeslag', 'distrikt', 'lokalsats', 'aktivt')
     list_editable = ('namn', 'andsvar', 'lokalsats', 'aktivt')
@@ -146,14 +146,14 @@ class LokallagAdmin(admin.ModelAdmin):
     inlines = [MedlemInline,]
     prepopulated_fields = {"slug": ("namn",)}
 
-class LokallagOvervakingAdmin(admin.ModelAdmin):
+class LokallagOvervakingAdmin(CompareVersionAdmin):
     model = LokallagOvervaking
     raw_id_fields = ['medlem']
 
 class TilskipInline(admin.TabularInline):
     model = Medlem.tilskiping.through
     raw_id_fields = ['medlem']
-class TilskipAdmin(admin.ModelAdmin):
+class TilskipAdmin(CompareVersionAdmin):
     model = Tilskiping
     list_display = ('__unicode__', 'slug', 'start', 'stopp', 'num_deltakarar')
     inlines = [TilskipInline,]
@@ -162,7 +162,7 @@ class TilskipAdmin(admin.ModelAdmin):
 class NemndInline(admin.TabularInline):
     model = Medlem.nemnd.through
     raw_id_fields = ['medlem']
-class NemndAdmin(admin.ModelAdmin):
+class NemndAdmin(CompareVersionAdmin):
     list_display = ('pk', 'namn', 'start', 'stopp',)
     list_editable = ('namn',)
     inlines = [NemndInline,]
@@ -170,7 +170,7 @@ class NemndAdmin(admin.ModelAdmin):
 class ValInline(admin.TabularInline):
     model = Medlem.val.through
     raw_id_fields = ['medlem']
-class ValAdmin(admin.ModelAdmin):
+class ValAdmin(CompareVersionAdmin):
     model = Val
     inlines = [ValInline,]
     fieldsets = (
@@ -182,7 +182,7 @@ class ValAdmin(admin.ModelAdmin):
         }),
     )
 
-class GiroAdmin(VersionAdmin):
+class GiroAdmin(CompareVersionAdmin):
     model = Giro
     raw_id_fields = ['medlem']
     list_display = ('pk', 'medlem_admin_change', 'kid', 'belop', 'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto', 'status')
