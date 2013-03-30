@@ -125,13 +125,13 @@ class MedlemQuerySet(QuerySet):
     def ikkje_utmelde(self, year=date.today().year):
         """Medlem som ikkje er eksplisitt utmelde"""
         return self.alle().filter(
-            Q(utmeldt_dato__isnull=True) | Q(utmeldt_dato__gt=date(year+1, 1, 1))
+            Q(utmeldt_dato__isnull=True) | Q(utmeldt_dato__gte=date(year+1, 1, 1))
         )
 
     def utmelde(self, year=date.today().year):
         """Medlem som er utmelde"""
         return self.alle().filter(
-            utmeldt_dato__isnull=False, utmeldt_dato__lte=date(year+1, 1, 1)
+            utmeldt_dato__isnull=False, utmeldt_dato__lt=date(year+1, 1, 1)
         )
 
     def betalande(self, year=date.today().year):
