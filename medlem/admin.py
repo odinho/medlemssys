@@ -127,7 +127,7 @@ class MedlemAdmin(VersionAdmin):
             return gjeldande.admin_change()
         fjor = obj.gjeldande_giro(datetime.today().year - 1)
         if fjor:
-            return '{}: {}'.format(fjor.gjeldande_aar, fjor.admin_change())
+            return '{0}: {1}'.format(fjor.gjeldande_aar, fjor.admin_change())
         return '&mdash;'
     siste_giro_info.short_description = _("Siste giro")
     siste_giro_info.admin_order_field = 'giroar'
@@ -173,6 +173,14 @@ class ValInline(admin.TabularInline):
 class ValAdmin(admin.ModelAdmin):
     model = Val
     inlines = [ValInline,]
+    fieldsets = (
+        (None, {
+            'fields': ('tittel', 'forklaring'),
+            'description': 'Val er avslått som standard, so det er lurt å utforma '
+                           'vala slik at dei fleste ikkje treng ha dei på. T.d. '
+                           '«Ikkje ring» i staden for «Ring».',
+        }),
+    )
 
 class GiroAdmin(VersionAdmin):
     model = Giro

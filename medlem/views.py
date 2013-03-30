@@ -35,7 +35,7 @@ def edit_medlem(request, id, nykel):
         post_val += request.POST.get('val_post', '')
         post_val += request.POST.get('val_tlf',  '')
         with reversion.create_revision():
-            reversion.set_comment('Brukar oppdaterte {}'.format(form.changed_data))
+            reversion.set_comment('Brukar oppdaterte {0}'.format(form.changed_data))
             for tittel in ('Ikkje epost', u'Ikkje Motmæle', 'Ikkje ring', 'Ikkje epost',
                            'Ikkje Norsk Tidend', 'Ikkje nyhendebrev'):
                            #'Ikkje lokallagsepost', 'Ikkje SMS', 'Ikkje nyhendebrev'):

@@ -48,7 +48,7 @@ class OCR(object):
                 continue
             f['giro'] = giro
             if giro.betalt():
-                f['msg'].append("Giroen ({}) er allereie betalt".format(giro.admin_change()))
+                f['msg'].append("Giroen ({0}) er allereie betalt".format(giro.admin_change()))
                 continue
 
             if f['belop'] < giro.belop:
