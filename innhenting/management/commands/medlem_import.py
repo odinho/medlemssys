@@ -546,8 +546,9 @@ def send_overvakingar():
                           if k not in ["_siste_medlemspengar",
                                        "innmeldingstype",
                                        "oppdatert",
-                                       "oppretta" ] ]
-
+                                       "oppretta",
+                                       "nykel",
+                                      ]]
             if 'utmeldt_dato' in changed_keys and new.field_dict['utmeldt_dato']:
                 utmeld_medlem.append(m)
             elif 'lokallag' in changed_keys:
@@ -559,9 +560,9 @@ def send_overvakingar():
             else:
                 ukjend_endring.append(m)
 
-        if not (len(nye_medlem) + len(nye_infofolk)         \
-                + len(tilflytta_medlem) + len(endra_medlem) \
-                + len(utmeld_medlem) + len(vekkflytta_medlem)):
+        if not (len(nye_medlem) + len(nye_infofolk) +
+                len(tilflytta_medlem) + len(endra_medlem) +
+                len(utmeld_medlem) + len(vekkflytta_medlem)):
             # Ikkje send noko dersom det er ingenting å melda
             continue
 
