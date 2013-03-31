@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_static %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+     <a href="../">{% trans "Home" %}</a> &rsaquo;
+     {% trans "Versjonar" %}
+</div>
+{% endblock %}
+
+{% block content %}
+    <h1>Versjonar</h1>
+
+    <div class="module aligned">
+    <div class=form-row>
+      <table>
+        <col> <col style='width:40%'> <col style='width:40%'> <col>
+        <tr><th>Dato <th>Endra <th>Kva <th>Kven
+      {% for rev, ver in revision_list %}
+        <tr><td> {{ rev.date_created }} <td>{{ ver|safe|truncatewords_html:100 }} <td>{{ rev.comment|linebreaks }} <td>{{ rev.user|default:"" }}
+      {% endfor %}
+      </table>
+    </div>
+    </div>
+{% endblock %}
