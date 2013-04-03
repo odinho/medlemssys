@@ -418,7 +418,7 @@ class EndraMedlemForm(ModelForm):
         model = Medlem
         fields = ('fornamn', 'mellomnamn', 'etternamn',
                   'fodt', 'postadr', 'ekstraadr', 'postnr', 'epost', 'mobnr',
-                  'lokallag', 'borteadr', 'bortepostnr')
+                  'borteadr', 'bortepostnr')
 
 class InnmeldingMedlemForm(ModelForm):
     class Meta:
