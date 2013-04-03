@@ -19,6 +19,8 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = "Norsk Målungdom <skriv@nynorsk.no>"
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 ADMINS = (
     ('Odin', 'odin.omdal@gmail.com'),
@@ -78,3 +80,28 @@ SECRET_KEY = 'e!(o%l1myqy-v(ocxf*xkr)q#=l-^%yxgcod_uicne1wh5ggi1'
 NEWSLETTER_USE_WORKGROUPS = True
 NEWSLETTER_DEFAULT_HEADER_REPLY = NEWSLETTER_DEFAULT_HEADER_SENDER = \
         'Norsk Målungdom <skriv@nynorsk.no>'
+
+# Logging handler, sending email on error
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}

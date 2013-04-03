@@ -34,9 +34,8 @@ def send_rekning(giro):
                                             {"medlem": giro.medlem, "giro": giro})
 
     msg = EmailMultiAlternatives(subject,
-            text_content,
-            "skriv@nynorsk.no",
-            [ giro.medlem.epost ])
+            body=text_content,
+            to=[ giro.medlem.epost ])
     msg.attach_alternative(html_content, "text/html")
     msg.send()
 
