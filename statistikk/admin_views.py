@@ -3,7 +3,7 @@ from reversion.models import Revision
 
 def show_revisions(request):
     revision_list = []
-    for r in Revision.objects.all().order_by('-date_created')[:100]:
+    for r in Revision.objects.all().order_by('-date_created')[:250]:
         if revision_list and str(revision_list[-1][0]) == str(r):
             revision_list[-1][0].comment += "\n" + r.comment
             continue
