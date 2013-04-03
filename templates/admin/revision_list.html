@@ -17,7 +17,7 @@
         <col> <col style='width:40%'> <col style='width:40%'> <col>
         <tr><th>Dato <th>Endra <th>Kva <th>Kven
       {% for rev, ver in revision_list %}
-        <tr><td> {{ rev.date_created }} <td>{{ ver|safe|truncatewords_html:100 }} <td>{{ rev.comment|linebreaks }} <td>{{ rev.user|default:"" }}
+        <tr><td> {{ rev.date_created }} <td>{{ ver|safe }} <td>{{ rev.comment|linebreaks }} <td>{{ rev.user|default:"" }}
       {% endfor %}
       </table>
     </div>
