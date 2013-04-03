@@ -20,15 +20,16 @@ table ul { padding: 0 0 0 1em; }
     <h1>Hent inn OCR-fil (registrer girobetalingar)</h1>
 
     {% if processed %}
-    <table><tr><th>dato <th>KID <th>beløp <th>giro</tr>
+    <table><tr><th>dato <th>KID <th>beløp <th>giro <th>person </tr>
     {% for ocr in processed %}
         <tr>
             <td>{{ ocr.dato }}
             <td>{{ ocr.kid }}
             <td>{{ ocr.belop }}
             <td>{{ ocr.giro.admin_change|safe }}
+            <td>{{ ocr.giro.medlem.admin_change|safe }}
             {% if ocr.msg %}
-              <tr class=error><td colspan=4><ul>
+              <tr class=error><td colspan=5><ul>
                 {% for e in ocr.msg %}
                   <li>{{ e|safe }}
                 {% endfor %}
@@ -43,12 +44,13 @@ table ul { padding: 0 0 0 1em; }
 
     {% if not_processed %}
     <h2>Ikkje prosesserte innbetalingar</h2>
-    <table><tr><th>dato <th>KID <th>beløp <th>feil</tr>
+    <table><tr><th>dato <th>KID <th>beløp <th>medlem <th>feil</tr>
     {% for ocr in not_processed %}
         <tr>
             <td>{{ ocr.dato }}
             <td>{{ ocr.kid }}
             <td>{{ ocr.belop }}
+            <td>{{ ocr.giro.medlem.admin_change|safe }}
             <td>
             {% if ocr.msg %}
                 <ul>
