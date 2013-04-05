@@ -58,6 +58,7 @@ class GiroSporjingFilter(SimpleListFilter):
 class FodtFilter(SimpleListFilter):
     title = _(u"alder i år")
     parameter_name = "alder"
+    field = 'fodt'
 
     def lookups(self, request, model_admin):
         return (
@@ -73,20 +74,27 @@ class FodtFilter(SimpleListFilter):
     def queryset(self, request, queryset):
         year = date.today().year
 
+        restriction = {}
         if self.value() == 'under-26':
-            return queryset.filter(fodt__gt=(year - 26))
+            restriction = { self.field + '__gt': (year - 26)}
         elif self.value() == 'over-25':
-            return queryset.filter(fodt__lt=(year - 25))
+            restriction = { self.field + '__lt': (year - 25)}
         if self.value() == 'under-30':
-            return queryset.filter(fodt__gt=(year - 30))
+            restriction = { self.field + '__gt': (year - 30)}
         elif self.value() == 'over-29':
-            return queryset.filter(fodt__lt=(year - 29))
+            restriction = { self.field + '__lt': (year - 29)}
         elif self.value() == '25':
-            return queryset.filter(fodt=(year - 25))
+            restriction = { self.field: (year - 25)}
         elif self.value() == '26':
-            return queryset.filter(fodt=(year - 26))
+            restriction = { self.field: (year - 26)}
         elif self.value() == 'invalid':
-            return queryset.filter(Q(fodt__isnull=True) | Q(fodt__lt=(year-120)) | Q(fodt__gt=year))
+            return queryset.filter(Q(**{self.field + '__isnull': True}) |
+                                   Q(**{self.field + '__lt': (year-120)}) |
+                                   Q(**{self.field + '__gt': year}))
+        return queryset.filter(**restriction)
+
+class MedlemFodtFilter(FodtFilter):
+    field = 'medlem__fodt'
 
 class TimeSinceFilter(DateFieldListFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):

@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from reversion_compare.admin import CompareVersionAdmin
 
 from medlemssys.settings import STATIC_URL
-from filters import AdditiveSubtractiveFilter, FodtFilter, SporjingFilter, GiroSporjingFilter #, Filter, TimeSince
+from filters import AdditiveSubtractiveFilter, FodtFilter, MedlemFodtFilter,SporjingFilter, GiroSporjingFilter #, Filter, TimeSince
 
 import admin_actions
 from models import *
@@ -196,6 +196,7 @@ class GiroAdmin(CompareVersionAdmin):
         'hensikt',
         'konto',
         'belop',
+        MedlemFodtFilter,
         'medlem__lokallag',
     )
     readonly_fields = ('oppretta',)
