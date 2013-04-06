@@ -12,4 +12,7 @@ def send(request):
                 'successful': successful,
                 'unsuccessful': unsuccessful })
     ventar = Giro.objects.filter(status='V').select_related('medlem')
-    return render(request, 'admin/giro/send.html', { 'ventar': ventar })
+    return render(request, 'admin/giro/send.html', {
+        'ventar': ventar,
+        'title': 'Send ventande giroar',
+    })

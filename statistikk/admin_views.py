@@ -20,4 +20,7 @@ def show_revisions(request):
             text = "Totalt {0} endringar: {1} ...".format(total_changes, text)
         revision_list.append((r, text))
 
-    return render(request, 'admin/revision_list.html', { 'revision_list': revision_list })
+    return render(request, 'admin/revision_list.html', {
+        'revision_list': revision_list,
+        'title': 'Versjonar',
+    })

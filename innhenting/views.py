@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+# vim: ts=4 sts=4 expandtab ai
 from django.shortcuts import render
 from medlemssys.innhenting.ocr import OCR
 
@@ -11,6 +13,10 @@ def import_ocr(request):
         not_processed = filter(lambda o: not o['processed'], ocr.data)
         return render(request, 'admin/import_ocr_done.htm', {
                 'not_processed': not_processed,
-                'processed': processed })
+                'processed': processed,
+                'title': u'OCR-køyring',
+            })
 
-    return render(request, 'admin/import_ocr.htm')
+    return render(request, 'admin/import_ocr.htm', {
+        'title': u'OCR-køyring',
+    })
