@@ -117,7 +117,7 @@ def pdf_giro(modeladmin, request, queryset):
         from reportlab.pdfbase import pdfmetrics
         from reportlab.pdfbase.ttfonts import TTFont
 
-        pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB-hacked.ttf'))
+        pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB.ttf'))
         response = HttpResponse(mimetype="application/pdf")
         response['Content-Disposition'] = 'filename=girosending.pdf'
 

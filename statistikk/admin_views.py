@@ -13,11 +13,11 @@ def show_revisions(request):
             if hasattr(version.object, 'admin_change'):
                 str_ver.append(version.object.admin_change())
             else:
-                str_ver.append(str(version.object))
+                str_ver.append(unicode(version.object))
         total_changes = r.version_set.count()
-        text = ', '.join(str_ver)
+        text = u', '.join(str_ver)
         if total_changes > SHOW_CHANGES:
-            text = "Totalt {0} endringar: {1} ...".format(total_changes, text)
+            text = u"Totalt {0} endringar: {1} ...".format(total_changes, text)
         revision_list.append((r, text))
 
     return render(request, 'admin/revision_list.html', {

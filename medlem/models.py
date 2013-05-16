@@ -190,11 +190,14 @@ class Medlem(models.Model):
     # Hadde denne før, men importering gjorde folk so gamle då: default=date.today().year - 17,
 
     # Kontakt
-    postnr = models.CharField(_("postnr"), max_length=4)
+    postnr = models.CharField(
+        _("postnr"), max_length=4,
+        help_text="'0000' viss norsk adresse manglar")
     epost = models.CharField(_("epost"), max_length=255,
             blank=True, null=True)
-    postadr = models.CharField(_("postadresse"), max_length=255,
-            blank=True, null=True)
+    postadr = models.CharField(
+        _("postadresse"), max_length=255, blank=True, null=True,
+        help_text="Skriv utanlands-/skuleadresse i borte-addresse")
     ekstraadr = models.CharField(_("ekstraadresse"), max_length=255,
             blank=True, null=True)
     mobnr = models.CharField(_("mobiltelefon"), max_length=50,
@@ -203,9 +206,11 @@ class Medlem(models.Model):
             blank=True, null=True)
 
     bortepostnr = models.CharField(
-            _("borte-postnr"), max_length=4, blank=True, null=True)
-    borteadr = models.CharField(_("borte-adresse"), max_length=255,
-            blank=True, null=True, help_text="Dersom borte-adressene er sett, vert post sendt her. For t.d. hybel- og utenlandsadresser.")
+            _("borte-postnr"), max_length=255, blank=True, null=True,
+            help_text="T.d. '0864' eller 'c/o John Smith, 50012 OX-5, Oxford England'")
+    borteadr = models.CharField(
+            _("borte-adresse"), max_length=255, blank=True, null=True,
+            help_text="Dersom borte-adressene er sett, vert post sendt her. For t.d. hybel- og utenlandsadresser.")
 
     # Om medlemen
     gjer = models.CharField(_("gjer"), max_length=255,
