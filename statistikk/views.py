@@ -1,11 +1,20 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
+import datetime
+import json
+import re
+import reversion
+import smtplib
+from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
+from django.db.models import Q
 from django.http import HttpResponse
-import datetime, json, re, operator
+from django.template import Context, loader
 
-from medlemssys.medlem.models import Lokallag, Medlem
-from models import LokallagStat
+from medlemssys.medlem.models import Lokallag, Medlem, LokallagOvervaking
+from .models import LokallagStat
+
+from medlemssys.medlem import admin # Needed to register reversion
 
 def update_lokallagstat():
     lokallag = Lokallag.objects.all()
@@ -83,3 +92,119 @@ def vervometer(request):
                                  'maal': maal,
                                  'gjenstaande': gjenstaande,
                               })
+
+
+def send_overvakingar():
+    for overvak in LokallagOvervaking.objects.filter( Q(deaktivert__isnull=True) | Q(deaktivert__gt=datetime.datetime.now()) ):
+        epost = overvak.epost
+        if overvak.medlem:
+            epost = overvak.medlem.epost
+
+        if (datetime.datetime.now() - overvak.sist_oppdatert) < datetime.timedelta(days=6, seconds=22*60*60):
+            # Har sendt epost for mindre enn 7 dagar sidan, so ikkje send noko no.
+            # TODO: Dette er ein sjukt dårleg måte å gjera dette på, fiks betre
+            continue
+
+        sist_oppdatering = overvak.sist_oppdatert
+        overvak.sist_oppdatert = datetime.datetime.now()
+
+        medlem = overvak.lokallag.medlem_set.alle().filter(oppdatert__gt=sist_oppdatering)
+        nye_medlem = list(medlem.filter(oppretta__gt=sist_oppdatering).exclude(status='I'))
+        nye_infofolk = list(medlem.filter(oppretta__gt=sist_oppdatering, status='I'))
+        # Alle andre, "gamle" medlemar
+        medlem = medlem.exclude(oppretta__gt=sist_oppdatering)
+
+        # Finn dei som har flytta til eit ANNA lokallag
+        try:
+            sist_statistikk = LokallagStat.objects.get(
+                                veke="{0:%Y-%W}".format(sist_oppdatering),
+                                lokallag=overvak.lokallag)
+        except LokallagStat.DoesNotExist:
+            sist_statistikk = LokallagStat.objects.filter(
+                                oppretta__gt=sist_oppdatering,
+                                lokallag=overvak.lokallag
+                ).order_by("-oppretta")[0]
+
+            #stderr(u"LokallagStat for {0}, {1:%Y-%W} fanst ikkje. Brukar {2}" \
+            #            .format(overvak.lokallag,
+            #                sist_oppdatering,
+            #                sist_statistikk))
+
+        if sist_statistikk:
+            medlemar_sist = json.loads(sist_statistikk.interessante)
+            medlemar_no = overvak.lokallag.medlem_set.interessante().values_list('pk', flat=True)
+            vekkflytta_medlem = Medlem.objects.filter(
+                                    pk__in=set(medlemar_sist) - set(medlemar_no),
+                                    utmeldt_dato__isnull=True)
+        else:
+            vekkflytta_medlem = []
+
+
+        tilflytta_medlem, utmeld_medlem, endra_medlem, ukjend_endring = [], [], [], []
+        for m in medlem:
+            try:
+                old = reversion.get_for_date(m, sist_oppdatering)
+            except reversion.models.Version.DoesNotExist:
+                continue
+
+            new = reversion.get_for_object(m)[0]
+
+            changed_keys = filter(lambda k: old.field_dict[k] != new.field_dict[k], new.field_dict.keys())
+            m.changed = [ (k, old.field_dict[k], new.field_dict[k])
+                          for k in changed_keys
+                          if k not in ["_siste_medlemspengar",
+                                       "innmeldingstype",
+                                       "oppdatert",
+                                       "oppretta",
+                                       "nykel",
+                                      ]]
+            if 'utmeldt_dato' in changed_keys and new.field_dict['utmeldt_dato']:
+                utmeld_medlem.append(m)
+            elif 'lokallag' in changed_keys:
+                tilflytta_medlem.append(m)
+            elif 'status' in changed_keys and old.field_dict['status'] == 'I':
+                nye_medlem.append(m)
+            elif m.changed:
+                endra_medlem.append(m)
+            else:
+                ukjend_endring.append(m)
+
+        if not (len(nye_medlem) + len(nye_infofolk) +
+                len(tilflytta_medlem) + len(endra_medlem) +
+                len(utmeld_medlem) + len(vekkflytta_medlem)):
+            # Ikkje send noko dersom det er ingenting å melda
+            continue
+
+        dagar = (datetime.datetime.now() - sist_oppdatering).days
+
+        context = Context({
+                    'epost' : epost,
+               'overvaking' : overvak,
+                 'lokallag' : overvak.lokallag,
+         'sist_oppdatering' : sist_oppdatering,
+                    'dagar' : dagar,
+               'nye_medlem' : nye_medlem,
+             'nye_infofolk' : nye_infofolk,
+             'endra_medlem' : endra_medlem,
+            'utmeld_medlem' : utmeld_medlem,
+           'ukjend_endring' : ukjend_endring,
+         'tilflytta_medlem' : tilflytta_medlem,
+        'vekkflytta_medlem' : vekkflytta_medlem,
+             })
+
+        text_content = loader.get_template('epostar/lokallag_overvaking.txt').render(context)
+        html_content = loader.get_template('epostar/lokallag_overvaking.html').render(context)
+
+        emne = loader.get_template('epostar/lokallag_overvaking_emnefelt.txt').render(context)
+
+        msg = EmailMultiAlternatives(" ".join(emne.split())[:-1], text_content, "skriv@nynorsk.no", [epost])
+        msg.attach_alternative(html_content, "text/html")
+        try:
+            msg.send()
+        except smtplib.SMTPRecipientsRefused:
+            # TODO Do logging
+            continue
+
+        overvak.save()
+
+    return "Ferdig"
