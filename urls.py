@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.contrib import admin
+from django.views.generic.base import TemplateView
 
 admin.autodiscover()
 
@@ -18,8 +19,7 @@ urlpatterns = patterns('',
         'medlemssys.medlem.tilskiping.listing'),
     (r'^tilskiping/(?P<slug>[-\w]+)/$',
         'medlemssys.medlem.tilskiping.detail'),
-    (r'^takk', 'django.views.generic.simple.direct_to_template',
-        {'template': 'takk.html', }),
+    (r'^takk', TemplateView.as_view(template_name='takk.html')),
     (r'^stats/vervetopp/', 'medlemssys.statistikk.views.vervetopp'),
     (r'^stats/vervometer/', 'medlemssys.statistikk.views.vervometer'),
 #    url(r'^newsletters/', include('emencia.django.newsletter.urls')),

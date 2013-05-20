@@ -7,6 +7,8 @@ MEDLEM_CSV = PROJECT_ROOT + "nmu-medl.csv"
 GIRO_CSV   = PROJECT_ROOT + "nmu-bet.csv"
 LAG_CSV    = PROJECT_ROOT + "nmu-lag.csv"
 
+ALLOWED_HOSTS = ('.nynorsk.no',)
+
 KONTONUMMER = "3450 65 48618"
 #MEDIA_ROOT = join(PROJECT_ROOT, 'static')
 #MEDIA_URL = '/static/'
