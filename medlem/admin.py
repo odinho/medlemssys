@@ -188,6 +188,7 @@ class GiroAdmin(CompareVersionAdmin):
     list_display = ('pk', 'medlem_admin_change', 'kid', 'belop', 'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto', 'status')
     list_editable = ('innbetalt', 'innbetalt_belop', 'gjeldande_aar', 'status', )
     date_hierarchy = 'oppretta'
+    search_fields = ('=id', '=kid', 'medlem__pk', 'medlem__fornamn', 'medlem__etternamn',)
     list_filter = (
         'status',
         GiroSporjingFilter,

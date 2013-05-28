@@ -48,7 +48,7 @@ def manual_girosearch(request):
             else:
                 giropk_set.add(str(giro[0].pk))
                 giroar.append({'search': line, 'giro': giro[0]})
-        admin_url = '/admin/medlem/giro/?id__in={}'.format(','.join(giropk_set))
+        admin_url = '/admin/medlem/giro/?id__in={0}'.format(','.join(giropk_set))
         return render(request, 'admin/manual_girosearch.html', {
             'admin_url': admin_url,
             'form': form,
