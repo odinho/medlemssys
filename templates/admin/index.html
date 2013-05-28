@@ -1,14 +1,16 @@
 {% extends "admin:admin/index.html" %}
 {% load i18n %}
+{% load url from future %}
 
 {% block sidebar %}
 <div id="content-related">
     <div class="module" id="custom-links-module">
         <h2>{% trans 'Spesialsider' %}</h2>
         <ul>
-          <li><a href=innhenting/import_ocr/>Køyr OCR-fil</a>
-          <li><a href=medlem/giro/send/>Send ventande giroar</a>
-          <li><a href=revisions/>Endringslogg</a> (versjonar)
+          <li><a href={% url 'import_ocr' %}>Køyr OCR-fil</a>
+          <li><a href={% url 'giro_send' %}>Send ventande giroar</a>
+          <li><a href={% url 'giro_manual' %}>Manuelt girosøk</a>
+          <li><a href={% url 'show_revisions' %}>Endringslogg</a> (versjonar)
         </ul>
     </div>
 

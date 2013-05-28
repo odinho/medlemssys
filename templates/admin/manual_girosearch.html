@@ -1,0 +1,69 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+<style>
+table ul { padding: 0 0 0 1em; }
+.error { color: #990000; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+     <a href="../../">{% trans "Home" %}</a> &rsaquo;
+     <a href="/admin/medlem/giro/">Giro</a> &rsaquo;
+     {% trans "Manuell giroregistrering" %}
+</div>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post">{% csrf_token %}
+    <fieldset class="module aligned">
+
+    {% if giroar %}
+    <div class=form-row>
+    <p><table><tr><th>Søk <th>medlemsid <th>giroid <th>KID <th>giro <th>person </tr>
+    {% for giro in giroar %}
+    {% if 'error' in giro %}
+      <tr class=error>
+            <td>{{ giro.search }}
+            <td colspan=5>{{ giro.error }}
+    {% else %}
+        <tr>
+            <td>{{ giro.search }}
+            <td>{{ giro.giro.medlem.pk }}
+            <td>{{ giro.giro.pk }}
+            <td>{{ giro.giro.kid }}
+            <td>{{ giro.giro.admin_change|safe }}
+            <td>{{ giro.giro.medlem.admin_change|safe }}
+            {% if ocr.msg %}
+              <tr class=error><td colspan=5><ul>
+                {% for e in ocr.msg %}
+                  <li>{{ e|safe }}
+                {% endfor %}
+              </ul></tr>
+            {% endif %}
+        </tr>
+    {% endif %}
+    {% endfor %}
+    </table>
+    <p><ul><li><a href={{ admin_url }}>Vis desse i admin</a></ul>
+    </div>
+    {% endif %}
+
+    <div class=form-row>
+      <div>
+        <label for=search_data class=required>Søkestrenger for giroer</label>
+        {{ form.search_data }}
+        <p class=help>Søkjer etter KID-kode, fakturanummer og medlemsnummer i den rekkjefylgja.
+      </div>
+    </div>
+    </fieldset>
+
+    <input type=hidden name=action value=manuell_giroregistrering>
+    <input type=hidden name=post value=yes>
+    <div class=submit-row>
+      <input type=submit value="Søk etter giroar" class=default>
+    </div>
+
+    </form>
+{% endblock %}
