@@ -310,10 +310,15 @@ def giro_status_ferdig(modeladmin, request, queryset):
     with reversion.create_revision():
         reversion.set_comment("Giro status ferdig admin action")
         reversion.set_user(request.user)
+        today = datetime.date.today()
         for g in queryset:
             g.status='F'
+            if not g.innbetalt_belop:
+                g.innbetalt_belop = g.belop
+            if not g.innbetalt:
+                g.innbetalt = today
             g.save()
-giro_status_ferdig.short_description = "Sett girostatus 'Ferdig'"
+giro_status_ferdig.short_description = "Sett giro betalt"
 
 def giro_status_postlagt(modeladmin, request, queryset):
     with reversion.create_revision():
