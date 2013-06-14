@@ -10,7 +10,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from medlemssys.statistikk.views import update_lokallagstat, send_overvakingar
-from medlemssys.giro.views import send_ventande_rekningar
 
 obj = ""
 
@@ -60,7 +59,6 @@ class Command(BaseCommand):
         update_denormalized_fields()
         update_lokallagstat()
         send_overvakingar()
-        send_ventande_rekningar()
 
     def get_filename(self, args, num, setting, fallback):
         if len(args) > num:
