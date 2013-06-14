@@ -328,3 +328,12 @@ def giro_status_postlagt(modeladmin, request, queryset):
         reversion.set_comment("Giro status postlagt admin action")
         reversion.set_user(request.user)
 giro_status_postlagt.short_description = "Sett girostatus 'Manuelt postlagt'"
+
+def giro_status_ventar(modeladmin, request, queryset):
+    with reversion.create_revision():
+        for g in queryset:
+            g.status='V'
+            g.save()
+        reversion.set_comment("Giro status ventar admin action")
+        reversion.set_user(request.user)
+giro_status_ventar.short_description = "Sett girostatus 'Ventar'"

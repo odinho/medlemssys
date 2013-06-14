@@ -199,6 +199,7 @@ class GiroAdmin(CompareVersionAdmin):
         'belop',
         MedlemFodtFilter,
         'medlem__lokallag',
+        'medlem__utmeldt_dato',
     )
     readonly_fields = ('oppretta',)
     fieldsets = (
@@ -217,6 +218,7 @@ class GiroAdmin(CompareVersionAdmin):
     actions = [
                 admin_actions.giro_status_ferdig,
                 admin_actions.giro_status_postlagt,
+                admin_actions.giro_status_ventar,
                 admin_actions.giro_list,
                 admin_actions.csv_list,
                 admin_actions.pdf_giro,
