@@ -5,38 +5,44 @@ import datetime
 
 from medlemssys.medlem.models import Medlem, Giro
 
+def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
+    year = datetime.date.today().year
+    if not name:
+        name = str(alder)
+        if (har_betalt):
+             name += "-betalt"
+        if (utmeldt):
+             name += "-utmeld"
+
+    medlem = Medlem(
+                    fornamn=name,
+                    etternamn="E",
+                    fodt=year - alder,
+                    postnr="5000")
+
+    if (utmeldt):
+        medlem.utmeldt_dato = datetime.datetime.now()
+
+    medlem.save()
+
+    if (har_betalt):
+        g = Giro(medlem=medlem,
+                 belop=80,
+                 innbetalt_belop=80,
+                 innbetalt=datetime.datetime.now())
+        g.save()
+
+    return medlem
+
+
 class MedlemTest(TestCase):
     medlemar = {}
     year = datetime.date.today().year
 
-    def lagMedlem(self, alder, utmeldt=False, har_betalt=False, name=""):
-        if not name:
-            name = str(alder)
-            if (har_betalt):
-                 name += "-betalt"
-            if (utmeldt):
-                 name += "-utmeld"
-
-        self.medlemar[name] = Medlem(
-                        fornamn=name,
-                        etternamn="E",
-                        fodt=self.year - alder,
-                        postnr="5000")
-
-        if (utmeldt):
-            self.medlemar[name].utmeldt_dato = datetime.datetime.now()
-
-        self.medlemar[name].save()
-
-        if (har_betalt):
-            g = Giro(medlem=self.medlemar[name],
-                     belop=80,
-                     innbetalt_belop=80,
-                     innbetalt=datetime.datetime.now())
-            g.save()
-
-        return self.medlemar[name]
-
+    def lagMedlem(self, *args, **kwargs):
+        medlem = lagMedlem(*args, **kwargs)
+        self.medlemar[medlem.fornamn] = medlem
+        return medlem
 
     def setUp(self):
         self.lagMedlem(25, utmeldt=False, har_betalt=False)
