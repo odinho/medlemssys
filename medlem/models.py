@@ -22,6 +22,10 @@ class Val(models.Model):
     tittel = models.CharField(_("kort forklaring"), max_length=100, unique=True)
     forklaring = models.TextField(_("lang forklaring"), blank=True)
 
+    @property
+    def namn(self):
+        return self.tittel
+
     class Meta:
         verbose_name_plural = "val"
 

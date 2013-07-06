@@ -11,7 +11,8 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.template import Context, loader
 
-from medlemssys.medlem.models import Lokallag, Medlem, LokallagOvervaking
+from medlemssys.medlem.models import (
+    Lokallag, Medlem, LokallagOvervaking, Val, Tilskiping, Nemnd)
 from .models import LokallagStat
 
 from medlemssys.medlem import admin # Needed to register reversion
@@ -92,6 +93,12 @@ def vervometer(request):
                                  'maal': maal,
                                  'gjenstaande': gjenstaande,
                               })
+def namn_from_pks(model, val_keys):
+    namn = []
+    for vk in val_keys:
+        namn.append(model.objects.get(pk=vk).namn)
+    return namn
+
 
 
 def send_overvakingar():
@@ -149,7 +156,29 @@ def send_overvakingar():
 
             new = reversion.get_for_object(m)[0]
 
-            changed_keys = filter(lambda k: old.field_dict[k] != new.field_dict[k], new.field_dict.keys())
+            def _changed_field(k):
+                if old.field_dict[k] == new.field_dict[k]:
+                    return False
+                if (old.field_dict[k] in (None, '', 'None') and
+                        new.field_dict[k] in (None, '', 'None')):
+                    return False
+                if (isinstance(old.field_dict[k], basestring) and
+                        "".join(old.field_dict[k].split())
+                        == "".join(new.field_dict[k].split())):
+                    return False
+                return True
+            changed_keys = filter(_changed_field, new.field_dict.keys())
+
+            def _humanify_pks(field, model):
+                if field in changed_keys:
+                    old.field_dict[field] = ", ".join(
+                        namn_from_pks(model, map(int, old.field_dict[field])))
+                    new.field_dict[field] = ", ".join(
+                        namn_from_pks(model, map(int, new.field_dict[field])))
+            _humanify_pks('val', Val)
+            _humanify_pks('nemnd', Nemnd)
+            _humanify_pks('tilskiping', Tilskiping)
+
             m.changed = [ (k, old.field_dict[k], new.field_dict[k])
                           for k in changed_keys
                           if k not in ["_siste_medlemspengar",
