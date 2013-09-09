@@ -45,15 +45,23 @@ class GiroSporjingFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         return (
                 ('strange', u"Rare/feil giroar"),
+                ('teljandeifjor', u"Teljande (i fjor)"),
             )
 
     def queryset(self, request, queryset):
+        year = date.today().year
+
         if self.value() == 'strange':
             not_fully_paid = ~Q(innbetalt_belop=0) & ~Q(innbetalt_belop=F('belop'))
             paid_but_not_finished = Q(innbetalt__isnull=False) & ~Q(status='F')
             unpaid_but_finished = (Q(innbetalt__isnull=True) | Q(innbetalt_belop=0)) & Q(status='F')
-
             return queryset.filter(not_fully_paid | paid_but_not_finished | unpaid_but_finished)
+        elif self.value() == 'teljandeifjor':
+            from .models import Medlem
+            return (queryset
+                .filter(
+                    medlem__in=Medlem.objects.teljande(year - 1).values_list('pk', flat=True))
+                .filter(gjeldande_aar=year - 1))
 
 class FodtFilter(SimpleListFilter):
     title = _(u"alder i år")
