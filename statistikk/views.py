@@ -11,11 +11,11 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.template import Context, loader
 
-from medlemssys.medlem.models import (
+from medlem.models import (
     Lokallag, Medlem, LokallagOvervaking, Val, Tilskiping, Nemnd)
 from .models import LokallagStat
 
-from medlemssys.medlem import admin # Needed to register reversion
+from medlem import admin # Needed to register reversion
 
 def update_lokallagstat():
     lokallag = Lokallag.objects.all()

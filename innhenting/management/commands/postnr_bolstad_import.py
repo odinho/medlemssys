@@ -2,7 +2,7 @@
 # vim: fileencoding=utf-8 shiftwidth=4 tabstop=4 expandtab softtabstop=4 ai
 from __future__ import print_function
 from django.core.management.base import BaseCommand, CommandError
-from medlemssys.medlem.models import PostNummer
+from medlem.models import PostNummer
 import csv
 import os
 

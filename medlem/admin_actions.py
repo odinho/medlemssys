@@ -224,7 +224,7 @@ def _giro_faktura(pdf, request, m, giro):
 def _giro_medlemskort(pdf, request, m, giro):
     from reportlab.lib.units import cm #, mm
 
-    from medlemssys.mod10 import mod10
+    from mod10 import mod10
 
     pdf.setFont('Helvetica', 16)
     pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
@@ -269,7 +269,7 @@ def _giro_medlemskort(pdf, request, m, giro):
 
 @transaction.commit_on_success
 def lag_giroar(modeladmin, request, queryset):
-    from medlemssys.medlem.models import Giro
+    from medlem.models import Giro
 
     year = datetime.date.today().year
     if not request.POST.get('post'):

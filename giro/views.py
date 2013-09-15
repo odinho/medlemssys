@@ -8,7 +8,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
 from django.db.models import F
 
-from medlemssys.medlem.models import Giro
+from medlem.models import Giro
 from models import GiroTemplate
 
 @transaction.commit_on_success

@@ -9,7 +9,7 @@ from optparse import make_option
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-from medlemssys.statistikk.views import update_lokallagstat, send_overvakingar
+from statistikk.views import update_lokallagstat, send_overvakingar
 
 obj = ""
 
@@ -80,9 +80,9 @@ from django.db import transaction
 from django.db.models import Q
 from dateutil.parser import parse
 
-from medlemssys.medlem.models import Medlem, Lokallag, Giro, Tilskiping
-from medlemssys.medlem.models import KONTI, update_denormalized_fields
-from medlemssys.statistikk.models import LokallagStat
+from medlem.models import Medlem, Lokallag, Giro, Tilskiping
+from medlem.models import KONTI, update_denormalized_fields
+from statistikk.models import LokallagStat
 
 def stderr(msg):
     if obj:

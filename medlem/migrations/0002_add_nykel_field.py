@@ -3,7 +3,7 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models, transaction
-from medlemssys.medlem.models import generate_password
+from medlem.models import generate_password
 
 
 class Migration(SchemaMigration):

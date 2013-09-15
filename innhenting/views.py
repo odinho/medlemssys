@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 from django.shortcuts import render
-from medlemssys.innhenting.ocr import OCR
+from innhenting.ocr import OCR
 
 def import_ocr(request):
     if request.method == 'POST':

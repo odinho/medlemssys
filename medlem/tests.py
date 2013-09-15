@@ -3,7 +3,7 @@
 from django.test import TestCase
 import datetime
 
-from medlemssys.medlem.models import Medlem, Giro
+from medlem.models import Medlem, Giro
 
 def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
     year = datetime.date.today().year

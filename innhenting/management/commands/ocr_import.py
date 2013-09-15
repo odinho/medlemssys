@@ -7,8 +7,8 @@ from django.db.models import Q
 from django.db import transaction
 import os
 
-from medlemssys.medlem.models import Giro
-from medlemssys.medlem.models import update_denormalized_fields
+from medlem.models import Giro
+from medlem.models import update_denormalized_fields
 from ocr import parse_ocr
 
 obj = ""

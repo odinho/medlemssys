@@ -17,7 +17,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
-ROOT_URLCONF = 'medlemssys.urls'
+ROOT_URLCONF = 'urls'
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -29,10 +29,10 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.humanize',
 
-    'medlemssys.medlem',
-    'medlemssys.innhenting',
-    'medlemssys.statistikk',
-    'medlemssys.giro',
+    'medlem',
+    'innhenting',
+    'statistikk',
+    'giro',
 
     'reversion',
     'reversion_compare',

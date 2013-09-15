@@ -12,7 +12,7 @@ from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 #from emencia.django.newsletter.mailer import mailing_started
 
-from medlemssys import mod10
+import mod10
 
 
 def generate_password(length=7):
