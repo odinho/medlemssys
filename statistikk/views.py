@@ -204,14 +204,7 @@ def send_overvakingar():
             # Ikkje send noko dersom det er ingenting å melda
             continue
 
-        dagar = (datetime.datetime.now() - sist_oppdatering).days
-
-        context = Context({
-                    'epost' : epost,
-               'overvaking' : overvak,
-                 'lokallag' : overvak.lokallag,
-         'sist_oppdatering' : sist_oppdatering,
-                    'dagar' : dagar,
+        ctx = {
                'nye_medlem' : nye_medlem,
              'nye_infofolk' : nye_infofolk,
              'endra_medlem' : endra_medlem,
@@ -219,15 +212,14 @@ def send_overvakingar():
            'ukjend_endring' : ukjend_endring,
          'tilflytta_medlem' : tilflytta_medlem,
         'vekkflytta_medlem' : vekkflytta_medlem,
-             })
+             }
+        msg = create_overvaking_email(
+                epost,
+                overvak,
+                overvak.lokallag,
+                sist_oppdatering,
+                **ctx)
 
-        text_content = loader.get_template('epostar/lokallag_overvaking.txt').render(context)
-        html_content = loader.get_template('epostar/lokallag_overvaking.html').render(context)
-
-        emne = loader.get_template('epostar/lokallag_overvaking_emnefelt.txt').render(context)
-
-        msg = EmailMultiAlternatives(" ".join(emne.split())[:-1], text_content, "skriv@nynorsk.no", [epost])
-        msg.attach_alternative(html_content, "text/html")
         try:
             msg.send()
         except smtplib.SMTPRecipientsRefused:
@@ -237,3 +229,23 @@ def send_overvakingar():
         overvak.save()
 
     return "Ferdig"
+
+def create_overvaking_email(epost, overvaking, lokallag, sist_oppdatering, **ctx):
+        ctx['dagar'] = (datetime.datetime.now() - sist_oppdatering).days
+        ctx['lokallag'] = lokallag
+        ctx['overvaking'] = overvaking
+        context = Context(ctx)
+
+        text_content = (loader
+                        .get_template('epostar/lokallag_overvaking.txt')
+                        .render(context))
+        html_content = (loader
+                        .get_template('epostar/lokallag_overvaking.html')
+                        .render(context))
+        emne = (loader
+                .get_template('epostar/lokallag_overvaking_emnefelt.txt')
+                .render(context))
+        msg = EmailMultiAlternatives(" ".join(emne.split())[:-1], text_content, "skriv@nynorsk.no", [epost])
+        msg.attach_alternative(html_content, "text/html")
+
+        return msg
