@@ -190,7 +190,7 @@ class MedlemManager(models.Manager):
 class Medlem(models.Model):
     fornamn = models.CharField(_("fornamn"), max_length=255)
     mellomnamn = models.CharField(_("mellomnamn"), max_length=255,
-            blank=True, null=True)
+            blank=True)
     etternamn = models.CharField(_("etternamn"), max_length=255)
     fodt = models.IntegerField(_(u"født"), max_length=4,
             blank=True, null=True)
@@ -201,16 +201,16 @@ class Medlem(models.Model):
         _("postnr"), max_length=4,
         help_text="'0000' viss norsk adresse manglar")
     epost = models.CharField(_("epost"), max_length=255,
-            blank=True, null=True)
+            blank=True)
     postadr = models.CharField(
         _("postadresse"), max_length=255, blank=True, null=True,
         help_text="Skriv utanlands-/skuleadresse i borte-addresse")
     ekstraadr = models.CharField(_("ekstraadresse"), max_length=255,
-            blank=True, null=True)
+            blank=True)
     mobnr = models.CharField(_("mobiltelefon"), max_length=50,
-            blank=True, null=True)
+            blank=True)
     heimenr = models.CharField(_("heimetelefon"), max_length=50,
-            blank=True, null=True)
+            blank=True)
 
     bortepostnr = models.CharField(
             _("borte-postnr"), max_length=255, blank=True, null=True,
@@ -221,7 +221,7 @@ class Medlem(models.Model):
 
     # Om medlemen
     gjer = models.CharField(_("gjer"), max_length=255,
-        blank=True, null=True)
+        blank=True)
     kjon = models.CharField(_("kjønn"), max_length=1, choices=(("M", "Mann"),
         ("K", "Kvinne"), ("U", "Udefinert")), default="U")
     merknad = models.TextField(_("merknad"), blank=True, default="")
@@ -239,7 +239,7 @@ class Medlem(models.Model):
     innmeldingstype = models.CharField(_("innmtype"), max_length=1,
             choices=INNMELDINGSTYPAR, default='U')
     innmeldingsdetalj = models.CharField(_("detalj om innmelding"), max_length=255,
-        blank=True, null=True, help_text=_("Skriv inn vervemedlem i hakeparantesar ([1234])"))
+        blank=True, help_text=_("Skriv inn vervemedlem i hakeparantesar ([1234])"))
     verva_av = models.ForeignKey('Medlem', related_name='har_verva', blank=True, null=True)
     betalt_av = models.ForeignKey('Medlem', related_name='betalar_for', blank=True, null=True)
 
@@ -581,9 +581,8 @@ class Rolle(models.Model):
 
 class LokallagOvervaking(models.Model):
     medlem = models.ForeignKey(Medlem, blank=True, null=True)
-    epost = models.CharField(_("epost"), max_length=255,
-            blank=True, null=True, help_text="""Vert brukt dersom medlem ikkje er satt""")
-
+    epost = models.CharField(_("epost"), max_length=255, blank=True,
+            help_text="""Vert brukt dersom medlem ikkje er satt""")
     lokallag = models.ForeignKey(Lokallag)
     deaktivert = models.DateTimeField(blank=True, null=True)
     sist_oppdatert = models.DateTimeField(auto_now=True)
