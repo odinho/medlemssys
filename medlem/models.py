@@ -61,6 +61,15 @@ class Lokallag(models.Model):
             return [self.epost]
         return self.rollemedlem.exclude(epost='').values_list('epost', flat=True)
 
+    def styret(self):
+        return self.rolle_set.all()
+
+    def styret_admin(self):
+        styret = [u"{} ({})".format(x.medlem.admin_change(), x.rolletype) for x in self.styret()]
+        return u', '.join(styret)
+    styret_admin.short_description = _("Styret")
+    styret_admin.allow_tags = True
+
     def save(self, *args, **kwargs):
         if not self.slug or self.slug == "":
             self.slug = slugify(self.namn)

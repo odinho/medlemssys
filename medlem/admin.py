@@ -133,17 +133,16 @@ class MedlemAdmin(CompareVersionAdmin):
     siste_giro_info.admin_order_field = 'giroar'
     siste_giro_info.allow_tags = True
 
-class MedlemInline(admin.TabularInline):
-    model = Medlem
-    extra = 3
-    fields = ['fornamn', 'etternamn', 'postadr', 'postnr', 'epost', 'mobnr', 'fodt']
+class RolleInline(admin.TabularInline):
+    model = Rolle
+    extra = 0
 
 class LokallagAdmin(CompareVersionAdmin):
-    list_display = ('pk', 'namn', 'num_medlem', 'andsvar',
-                    'fylkeslag', 'distrikt', 'lokalsats', 'aktivt')
-    list_editable = ('namn', 'andsvar', 'lokalsats', 'aktivt')
+    list_display = ('pk', 'namn', 'num_medlem', 'andsvar', 'fylkeslag',
+                    'distrikt', 'lokalsats', 'aktivt', 'styret_admin',)
+    list_editable = ('aktivt',)
     list_per_page = 200
-    inlines = [MedlemInline,]
+    inlines = [RolleInline,]
     prepopulated_fields = {"slug": ("namn",)}
 
 class LokallagOvervakingAdmin(CompareVersionAdmin):
@@ -151,6 +150,9 @@ class LokallagOvervakingAdmin(CompareVersionAdmin):
     list_display = ('__unicode__', 'lokallag', 'medlem', 'epost',
                     'epostar_admin', 'sist_oppdatert')
     list_per_page = 250
+    fields = ('medlem', 'epost', 'lokallag', 'deaktivert', 'sist_oppdatert',
+              'epostar_admin')
+    readonly_fields = ('sist_oppdatert', 'epostar_admin',)
     raw_id_fields = ['medlem']
 
 class TilskipInline(admin.TabularInline):
@@ -188,10 +190,13 @@ class ValAdmin(CompareVersionAdmin):
 class GiroAdmin(CompareVersionAdmin):
     model = Giro
     raw_id_fields = ['medlem']
-    list_display = ('pk', 'medlem_admin_change', 'kid', 'belop', 'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto', 'status')
+    list_display = ('pk', 'medlem_admin_change', 'kid', 'belop',
+                    'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto',
+                    'status')
     list_editable = ('innbetalt', 'innbetalt_belop', 'gjeldande_aar', 'status', )
     date_hierarchy = 'oppretta'
-    search_fields = ('=id', '=kid', 'medlem__pk', 'medlem__fornamn', 'medlem__etternamn',)
+    search_fields = ('=id', '=kid', 'medlem__pk', 'medlem__fornamn',
+                     'medlem__etternamn',)
     list_filter = (
         'status',
         GiroSporjingFilter,
