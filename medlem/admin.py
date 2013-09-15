@@ -148,6 +148,9 @@ class LokallagAdmin(CompareVersionAdmin):
 
 class LokallagOvervakingAdmin(CompareVersionAdmin):
     model = LokallagOvervaking
+    list_display = ('__unicode__', 'lokallag', 'medlem', 'epost',
+                    'epostar_admin', 'sist_oppdatert')
+    list_per_page = 250
     raw_id_fields = ['medlem']
 
 class TilskipInline(admin.TabularInline):

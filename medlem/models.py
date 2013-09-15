@@ -600,11 +600,16 @@ class LokallagOvervaking(models.Model):
 
     def epostar(self):
         if self.medlem:
-            return self.medlem.epost
+            return [self.medlem.epost]
         elif self.epost:
-            return self.epost
+            return [self.epost]
         else:
             return self.lokallag.styreepostar()
+
+    def epostar_admin(self):
+        return ', '.join(self.epostar())
+    epostar_admin.short_description = "Brukt epost"
+
 
     def __unicode__(self):
         ekstra = ""
