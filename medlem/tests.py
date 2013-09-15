@@ -15,10 +15,10 @@ def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
              name += "-utmeld"
 
     medlem = Medlem(
-                    fornamn=name,
-                    etternamn="E",
-                    fodt=year - alder,
-                    postnr="5000")
+        fornamn=name,
+        etternamn="E",
+        fodt=year - alder,
+        postnr="5000")
 
     if (utmeldt):
         medlem.utmeldt_dato = datetime.datetime.now()

@@ -103,13 +103,16 @@ def namn_from_pks(model, val_keys):
 
 
 def send_overvakingar():
-    for overvak in LokallagOvervaking.objects.filter( Q(deaktivert__isnull=True) | Q(deaktivert__gt=datetime.datetime.now()) ):
+    for overvak in LokallagOvervaking.objects.filter(
+            Q(deaktivert__isnull=True)
+            | Q(deaktivert__gt=datetime.datetime.now()) ):
         epost_seq = overvak.epostar()
         if not epost_seq:
             # Noone to send to anyway
             continue
 
-        if (datetime.datetime.now() - overvak.sist_oppdatert) < datetime.timedelta(days=6, seconds=22*60*60):
+        if ((datetime.datetime.now() - overvak.sist_oppdatert)
+                < datetime.timedelta(days=6, seconds=22*60*60)):
             # Har sendt epost for mindre enn 7 dagar sidan, so ikkje send noko no.
             # TODO: Dette er ein sjukt dårleg måte å gjera dette på, fiks betre
             continue
