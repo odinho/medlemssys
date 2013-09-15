@@ -34,94 +34,100 @@ def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
 
     return medlem
 
-
-class MedlemTest(TestCase):
+def lagTestMedlemar():
     medlemar = {}
     year = datetime.date.today().year
 
-    def lagMedlem(self, *args, **kwargs):
+    def opprett_og_lagra_medlem(*args, **kwargs):
         medlem = lagMedlem(*args, **kwargs)
-        self.medlemar[medlem.fornamn] = medlem
+        medlemar[medlem.fornamn] = medlem
         return medlem
 
-    def setUp(self):
-        self.lagMedlem(25, utmeldt=False, har_betalt=False)
-        self.lagMedlem(25, utmeldt=True,  har_betalt=False)
-        self.lagMedlem(25, utmeldt=False, har_betalt=True)
-        self.lagMedlem(25, utmeldt=True,  har_betalt=True)
+    opprett_og_lagra_medlem(25, utmeldt=False, har_betalt=False)
+    opprett_og_lagra_medlem(25, utmeldt=True,  har_betalt=False)
+    opprett_og_lagra_medlem(25, utmeldt=False, har_betalt=True)
+    opprett_og_lagra_medlem(25, utmeldt=True,  har_betalt=True)
 
-        self.lagMedlem(12, utmeldt=False, har_betalt=False)
-        self.lagMedlem(12, utmeldt=True,  har_betalt=False)
-        self.lagMedlem(12, utmeldt=False, har_betalt=True)
-        self.lagMedlem(12, utmeldt=True,  har_betalt=True)
+    opprett_og_lagra_medlem(12, utmeldt=False, har_betalt=False)
+    opprett_og_lagra_medlem(12, utmeldt=True,  har_betalt=False)
+    opprett_og_lagra_medlem(12, utmeldt=False, har_betalt=True)
+    opprett_og_lagra_medlem(12, utmeldt=True,  har_betalt=True)
 
-        self.lagMedlem(26, utmeldt=False, har_betalt=False)
-        self.lagMedlem(26, utmeldt=True,  har_betalt=False)
-        self.lagMedlem(26, utmeldt=False, har_betalt=True)
-        self.lagMedlem(26, utmeldt=True,  har_betalt=True)
+    opprett_og_lagra_medlem(26, utmeldt=False, har_betalt=False)
+    opprett_og_lagra_medlem(26, utmeldt=True,  har_betalt=False)
+    opprett_og_lagra_medlem(26, utmeldt=False, har_betalt=True)
+    opprett_og_lagra_medlem(26, utmeldt=True,  har_betalt=True)
 
-        m = self.lagMedlem(23, name="23-betaltifjor")
-        m.innmeldt_dato = datetime.date(self.year - 2, 1, 1)
-        Giro(medlem=m,
-             belop=80,
-             innbetalt_belop=80,
-             gjeldande_aar=self.year - 1,
-             oppretta=datetime.date(self.year - 1, 1, 1),
-             innbetalt=datetime.date(self.year - 1, 1, 1)).save()
-        m.save()
+    m = opprett_og_lagra_medlem(23, name="23-betaltifjor")
+    m.innmeldt_dato = datetime.date(year - 2, 1, 1)
+    Giro(medlem=m,
+         belop=80,
+         innbetalt_belop=80,
+         gjeldande_aar=year - 1,
+         oppretta=datetime.date(year - 1, 1, 1),
+         innbetalt=datetime.date(year - 1, 1, 1)).save()
+    m.save()
 
-        m = self.lagMedlem(23, name="23-betaltiforfjor")
-        m.innmeldt_dato = datetime.date(self.year - 2, 1, 1)
-        Giro(medlem=m,
-             belop=80,
-             innbetalt_belop=80,
-             gjeldande_aar=self.year - 2,
-             oppretta=datetime.date(self.year - 2, 1, 1),
-             innbetalt=datetime.date(self.year - 2, 1, 1)).save()
-        m.save()
+    m = opprett_og_lagra_medlem(23, name="23-betaltiforfjor")
+    m.innmeldt_dato = datetime.date(year - 2, 1, 1)
+    Giro(medlem=m,
+         belop=80,
+         innbetalt_belop=80,
+         gjeldande_aar=year - 2,
+         oppretta=datetime.date(year - 2, 1, 1),
+         innbetalt=datetime.date(year - 2, 1, 1)).save()
+    m.save()
 
-        m = self.lagMedlem(23, name="23-innmeldtifjor")
-        m.innmeldt_dato = datetime.date(self.year - 1, 1, 1)
-        Giro(medlem=m,
-             belop=80,
-             innbetalt_belop=0,
-             gjeldande_aar=self.year - 1,
-             oppretta=datetime.date(self.year - 1, 1, 1)).save()
-        m.save()
+    m = opprett_og_lagra_medlem(23, name="23-innmeldtifjor")
+    m.innmeldt_dato = datetime.date(year - 1, 1, 1)
+    Giro(medlem=m,
+         belop=80,
+         innbetalt_belop=0,
+         gjeldande_aar=year - 1,
+         oppretta=datetime.date(year - 1, 1, 1)).save()
+    m.save()
 
-        m = self.lagMedlem(23, name="23-innmeldtifjor-utmeldtiaar")
-        m.innmeldt_dato = datetime.date(self.year - 1, 1, 1)
-        m.utmeldt_dato = datetime.date(self.year, 1, 1)
-        Giro(medlem=m,
-             belop=80,
-             innbetalt_belop=0,
-             gjeldande_aar=self.year - 1,
-             oppretta=datetime.date(self.year - 1, 1, 1)).save()
-        m.save()
+    m = opprett_og_lagra_medlem(23, name="23-innmeldtifjor-utmeldtiaar")
+    m.innmeldt_dato = datetime.date(year - 1, 1, 1)
+    m.utmeldt_dato = datetime.date(year, 1, 1)
+    Giro(medlem=m,
+         belop=80,
+         innbetalt_belop=0,
+         gjeldande_aar=year - 1,
+         oppretta=datetime.date(year - 1, 1, 1)).save()
+    m.save()
 
-        m = self.lagMedlem(23, name="23-innmeldtiforfjor-utmeldtnesteaar")
-        m.innmeldt_dato = datetime.date(self.year - 2, 1, 1)
-        m.utmeldt_dato = datetime.date(self.year + 1, 1, 1)
-        m.save()
+    m = opprett_og_lagra_medlem(23, name="23-innmeldtiforfjor-utmeldtnesteaar")
+    m.innmeldt_dato = datetime.date(year - 2, 1, 1)
+    m.utmeldt_dato = datetime.date(year + 1, 1, 1)
+    m.save()
 
-        m = self.lagMedlem(23, name="23-betaltifjor-utmeldtnesteaar")
-        m.innmeldt_dato = datetime.date(self.year - 2, 1, 1)
-        m.utmeldt_dato = datetime.date(self.year + 1, 1, 1)
-        Giro(medlem=m,
-             belop=80,
-             innbetalt_belop=80,
-             gjeldande_aar=self.year - 1,
-             oppretta=datetime.date(self.year - 1, 1, 1),
-             innbetalt=datetime.date(self.year - 1, 1, 1)).save()
-        m.save()
+    m = opprett_og_lagra_medlem(23, name="23-betaltifjor-utmeldtnesteaar")
+    m.innmeldt_dato = datetime.date(year - 2, 1, 1)
+    m.utmeldt_dato = datetime.date(year + 1, 1, 1)
+    Giro(medlem=m,
+         belop=80,
+         innbetalt_belop=80,
+         gjeldande_aar=year - 1,
+         oppretta=datetime.date(year - 1, 1, 1),
+         innbetalt=datetime.date(year - 1, 1, 1)).save()
+    m.save()
 
-        m = self.lagMedlem(23, har_betalt=True, name="23-betalt-utmeldtnesteaar")
-        m.utmeldt_dato = datetime.date(self.year + 1, 1, 2)
-        m.save()
+    m = opprett_og_lagra_medlem(23, har_betalt=True, name="23-betalt-utmeldtnesteaar")
+    m.utmeldt_dato = datetime.date(year + 1, 1, 2)
+    m.save()
 
     # innmeldt og utmeldt i fjor
     # innmeldt i fjor, men utmeldt no
     # utmeldt til neste år
+
+    return medlemar
+
+class MedlemTest(TestCase):
+    year = datetime.date.today().year
+
+    def setUp(self):
+        self.medlemar = lagTestMedlemar()
 
     def test_alle(self):
         """
