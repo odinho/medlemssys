@@ -41,6 +41,9 @@ class Lokallag(models.Model):
     lokalsats = models.IntegerField(_("lokalsats"), default=0)
 
     aktivt = models.BooleanField(_("aktivt"), default=True)
+    epost = models.EmailField(_("epost"), blank=True,
+        help_text=_(u"""Eiga epostliste til styret. Tek prioritet
+        over å senda enkeltvis til dei som er registrert som styre."""))
 
     class Meta:
         verbose_name_plural = "lokallag"
@@ -52,6 +55,11 @@ class Lokallag(models.Model):
 
     def listing(self):
         return reverse('lokallag_home', args=(self.slug,))
+
+    def styreepostar(self):
+        if self.epost:
+            return [self.epost]
+        return self.rollemedlem.exclude(epost='').values_list('epost', flat=True)
 
     def save(self, *args, **kwargs):
         if not self.slug or self.slug == "":
@@ -590,6 +598,14 @@ class LokallagOvervaking(models.Model):
     class Meta:
         verbose_name_plural = "overvaking av lokallag"
 
+    def epostar(self):
+        if self.medlem:
+            return self.medlem.epost
+        elif self.epost:
+            return self.epost
+        else:
+            return self.lokallag.styreepostar()
+
     def __unicode__(self):
         ekstra = ""
         if self.deaktivert and self.deaktivert < datetime.now():
@@ -597,8 +613,10 @@ class LokallagOvervaking(models.Model):
 
         if self.medlem:
             return u"%s overvakar %s%s" % (self.medlem, self.lokallag, ekstra)
-        else:
+        elif self.epost:
             return u"%s overvakar %s%s" % (self.epost, self.lokallag, ekstra)
+        else:
+            return u"Overvaking %s%s" % (self.lokallag, ekstra)
 
 class PostNummer(models.Model):
     postnr = models.CharField(max_length=6)

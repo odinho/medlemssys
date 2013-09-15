@@ -15,7 +15,8 @@ from medlem.models import (
     Lokallag, Medlem, LokallagOvervaking, Val, Tilskiping, Nemnd)
 from .models import LokallagStat
 
-from medlem import admin # Needed to register reversion
+from medlem import admin
+assert admin # Silence pyflakes
 
 def update_lokallagstat():
     lokallag = Lokallag.objects.all()
@@ -103,9 +104,10 @@ def namn_from_pks(model, val_keys):
 
 def send_overvakingar():
     for overvak in LokallagOvervaking.objects.filter( Q(deaktivert__isnull=True) | Q(deaktivert__gt=datetime.datetime.now()) ):
-        epost = overvak.epost
-        if overvak.medlem:
-            epost = overvak.medlem.epost
+        epost_seq = overvak.epostar()
+        if not epost_seq:
+            # Noone to send to anyway
+            continue
 
         if (datetime.datetime.now() - overvak.sist_oppdatert) < datetime.timedelta(days=6, seconds=22*60*60):
             # Har sendt epost for mindre enn 7 dagar sidan, so ikkje send noko no.
@@ -214,7 +216,7 @@ def send_overvakingar():
         'vekkflytta_medlem' : vekkflytta_medlem,
              }
         msg = create_overvaking_email(
-                epost,
+                epost_seq,
                 overvak,
                 overvak.lokallag,
                 sist_oppdatering,
@@ -230,7 +232,7 @@ def send_overvakingar():
 
     return "Ferdig"
 
-def create_overvaking_email(epost, overvaking, lokallag, sist_oppdatering, **ctx):
+def create_overvaking_email(epost_seq, overvaking, lokallag, sist_oppdatering, **ctx):
         ctx['dagar'] = (datetime.datetime.now() - sist_oppdatering).days
         ctx['lokallag'] = lokallag
         ctx['overvaking'] = overvaking
@@ -245,7 +247,7 @@ def create_overvaking_email(epost, overvaking, lokallag, sist_oppdatering, **ctx
         emne = (loader
                 .get_template('epostar/lokallag_overvaking_emnefelt.txt')
                 .render(context))
-        msg = EmailMultiAlternatives(" ".join(emne.split())[:-1], text_content, "skriv@nynorsk.no", [epost])
+        msg = EmailMultiAlternatives(" ".join(emne.split())[:-1], text_content, "skriv@nynorsk.no", epost_seq)
         msg.attach_alternative(html_content, "text/html")
 
         return msg
