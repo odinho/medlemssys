@@ -4,7 +4,7 @@
 
 <h1>{{ lokallag }} medlemsliste</h1>
 
-<p>So, kva er endra dei siste {{ dagar }} dagane?
+<p>So, kva er endra dei siste {{ dagar }} dagane? <small>(ps, du finn <a href="http://medlem.nynorsk.no/{{ lokallag.listing }}">oppdaterte medlemslister i registeret</a>)</small>
 
 {% if nye_medlem %}
 
@@ -145,5 +145,9 @@
     {% for m in ukjend_endring %}{{m}}{% if not forloop.last %}, {% endif %}{% endfor %}.
 {% endif %}
 
-<p><small>{{ overvaking }}<br>
-Norsk Målungdom sitt medlemsregister</small></p>
+<hr>
+<p>Laget har {{ lokalag.medlem_set.interessante.count }} medlemar. Der {{ lokallag.medlem_set.betalande.count }} har betalt og {{ lokallag.medlem_set.teljande.count }} av dei er teljande.
+
+<p>-- <br><small>{{ overvaking }}<br>
+Norsk Målungdom sitt medlemsregister</small><br>
+http://medlem.nynorsk.no/{{ lokallag.listing }}</p>

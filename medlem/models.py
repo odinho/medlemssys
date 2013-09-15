@@ -58,6 +58,9 @@ class Lokallag(models.Model):
             self.slug = slugify(self.namn)
         super(Lokallag, self).save(*args, **kwargs)
 
+    def get_absolute_url(self):
+        return self.listing()
+
     def __unicode__(self):
         return self.namn
 
