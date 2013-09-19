@@ -67,7 +67,6 @@ def edit_medlem(request, id, nykel):
 @login_required
 def ringjelister(request):
     lokallag = Lokallag.objects.all().order_by('andsvar')
-    Medlem.objects.filter()
 
     return render(request, 'medlem/ringjeliste.html', {
         'lokallag': lokallag,
