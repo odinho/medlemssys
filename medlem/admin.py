@@ -112,10 +112,13 @@ class MedlemAdmin(CompareVersionAdmin):
     def lokallag_changelist(self, obj):
         url = reverse('admin:medlem_medlem_changelist')
         querystring = self._get_params.copy()
-        querystring['lokallag__id__exact'] = obj.lokallag.pk
+        if not obj.lokallag:
+            querystring['lokallag__isnull'] = True
+        else:
+            querystring['lokallag__id__exact'] = obj.lokallag.pk
         return u'<a href="{0}?{1}">{2}</a>'.format(url,
                                                    querystring.urlencode(),
-                                                   obj.lokallag)
+                                                   obj.lokallag_display())
     lokallag_changelist.short_description = _("Lokallag")
     lokallag_changelist.admin_order_field = 'lokallag__name'
     lokallag_changelist.allow_tags = True
