@@ -47,14 +47,13 @@ class MedlemAdmin(CompareVersionAdmin):
             'status',
             'lokallag',
             'giroar__status',
-            'tilskiping',
         )
     raw_id_fields = ['verva_av', 'betalt_av']
     readonly_fields = ('_siste_medlemspengar', 'oppretta', 'oppdatert')
     save_on_top = True
     inlines = [RolleInline, GiroInline, VervaMedlemInline]
     search_fields = ('fornamn', 'mellomnamn', 'etternamn', '=id', '^mobnr',)
-    filter_horizontal = ('val', 'tilskiping')
+    filter_horizontal = ('val',)
     fieldsets = (
         (None, {
             'classes': ('left',),
@@ -73,7 +72,7 @@ class MedlemAdmin(CompareVersionAdmin):
                 ('innmeldingstype', 'innmeldingsdetalj', 'verva_av'),
                 'merknad',
                 ('borteadr', 'bortepostnr', 'betalt_av'),
-                ('val', 'tilskiping', 'nemnd'),
+                ('val',),
                 ('oppretta', 'oppdatert'),
             )
         }),
@@ -155,22 +154,6 @@ class LokallagOvervakingAdmin(CompareVersionAdmin):
     readonly_fields = ('sist_oppdatert', 'epostar_admin',)
     raw_id_fields = ['medlem']
 
-class TilskipInline(admin.TabularInline):
-    model = Medlem.tilskiping.through
-    raw_id_fields = ['medlem']
-class TilskipAdmin(CompareVersionAdmin):
-    model = Tilskiping
-    list_display = ('__unicode__', 'slug', 'start', 'stopp', 'num_deltakarar')
-    inlines = [TilskipInline,]
-
-
-class NemndInline(admin.TabularInline):
-    model = Medlem.nemnd.through
-    raw_id_fields = ['medlem']
-class NemndAdmin(CompareVersionAdmin):
-    list_display = ('pk', 'namn', 'start', 'stopp',)
-    list_editable = ('namn',)
-    inlines = [NemndInline,]
 
 class ValInline(admin.TabularInline):
     model = Medlem.val.through
@@ -238,18 +221,9 @@ class GiroAdmin(CompareVersionAdmin):
     medlem_admin_change.allow_tags = True
 
 
-# XXX: Dette fungerer i Django 1.2
-#class NemndmedlemskapInline(MedlemInline):
-#    model = Medlem.nemnd.through
-#class NemndAdmin(admin.ModelAdmin):
-#    inlines = [NemndmedlemskapInline,]
-#admin.site.register(Nemnd, NemndAdmin)
-
 admin.site.register(Medlem, MedlemAdmin)
 admin.site.register(Lokallag, LokallagAdmin)
-admin.site.register(Tilskiping, TilskipAdmin)
 admin.site.register(Val, ValAdmin)
-admin.site.register(Nemnd, NemndAdmin)
 admin.site.register(Giro, GiroAdmin)
 admin.site.register(LokallagOvervaking, LokallagOvervakingAdmin)
 

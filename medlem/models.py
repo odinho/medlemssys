@@ -35,9 +35,9 @@ class Val(models.Model):
 class Lokallag(models.Model):
     namn = models.CharField(_("namn"), max_length=255, unique=True)
     slug = models.SlugField(_("nettnamn"), max_length=255, unique=True, blank=True)
-    fylkeslag = models.CharField(_("fylkeslag"), max_length=255)
-    distrikt = models.CharField(_("distrikt"), max_length=255)
-    andsvar = models.CharField(_("andsvar"), max_length=255)
+    fylkeslag = models.CharField(_("fylkeslag"), max_length=255, blank=True)
+    distrikt = models.CharField(_("distrikt"), max_length=255, blank=True)
+    andsvar = models.CharField(_("andsvar"), max_length=255, blank=True)
     lokalsats = models.IntegerField(_("lokalsats"), default=0)
 
     aktivt = models.BooleanField(_("aktivt"), default=True)
@@ -90,34 +90,6 @@ class Innmeldingstype(models.Model):
     def __unicode__(self):
         return self.namn
 
-class Nemnd(models.Model):
-    namn = models.CharField(_("namn"), max_length=64)
-    start = models.DateField(_("start"), default=date.today)
-    stopp = models.DateField(_("stopp"))
-
-    class Meta:
-        verbose_name_plural = "nemnder"
-
-    def __unicode__(self):
-        return u"%s (%s–%s)" % (self.namn, self.start.strftime("%y"),
-                                self.stopp.strftime("%y"))
-
-class Tilskiping(models.Model):
-    namn = models.CharField(_("namn"), max_length=64)
-    slug = models.SlugField(_("kortnamn"), max_length=64)
-    start = models.DateField(_("start"), default=date.today)
-    stopp = models.DateField(_("stopp"))
-
-    class Meta:
-        verbose_name_plural = "tilskipingar"
-
-    def num_deltakarar(self):
-        return self.medlem_set.count()
-    num_deltakarar.short_description = _("deltakarar")
-
-    def __unicode__(self):
-        return u"%s (%s)" % (self.namn, self.start.strftime("%Y"))
-    __unicode__.admin_order_field = 'namn'
 
 STATUSAR = (
     ("M", "Vanleg medlem"),
@@ -263,8 +235,6 @@ class Medlem(models.Model):
     # Tilkopla felt
     lokallag = models.ForeignKey(Lokallag, blank=True, null=True)
     val = models.ManyToManyField(Val, blank=True, null=True)
-    nemnd = models.ManyToManyField(Nemnd, blank=True, null=True)
-    tilskiping = models.ManyToManyField(Tilskiping, blank=True, null=True)
     lokallagsrolle = models.ManyToManyField(Lokallag,
         through='Rolle', related_name="rollemedlem", blank=True, null=True)
 

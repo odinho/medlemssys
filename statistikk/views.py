@@ -12,7 +12,7 @@ from django.http import HttpResponse
 from django.template import Context, loader
 
 from medlem.models import (
-    Lokallag, Medlem, LokallagOvervaking, Val, Tilskiping, Nemnd)
+    Lokallag, Medlem, LokallagOvervaking, Val)
 from .models import LokallagStat
 
 from medlem import admin
@@ -181,8 +181,6 @@ def send_overvakingar():
                     new.field_dict[field] = ", ".join(
                         namn_from_pks(model, map(int, new.field_dict[field])))
             _humanify_pks('val', Val)
-            _humanify_pks('nemnd', Nemnd)
-            _humanify_pks('tilskiping', Tilskiping)
 
             m.changed = [ (k, old.field_dict[k], new.field_dict[k])
                           for k in changed_keys

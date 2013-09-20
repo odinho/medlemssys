@@ -55,7 +55,6 @@ class Command(BaseCommand):
         for i in imp.import_bet():
             self.stdout.write(u"Betaling: {0}\n".format(unicode(i)).encode('utf8'))
 
-        fiks_tilskipingar()
         update_denormalized_fields()
         update_lokallagstat()
         send_overvakingar()
@@ -80,7 +79,7 @@ from django.db import transaction
 from django.db.models import Q
 from dateutil.parser import parse
 
-from medlem.models import Medlem, Lokallag, Giro, Tilskiping
+from medlem.models import Medlem, Lokallag, Giro
 from medlem.models import KONTI, update_denormalized_fields
 from statistikk.models import LokallagStat
 
@@ -467,14 +466,3 @@ class MamutImporter(NMUAccessImporter):
                 defaults={ 'fylkeslag': '', 'distrikt': '', 'andsvar': ''})[0]
 
         return True
-
-
-def fiks_tilskipingar():
-    tilskipingar = Tilskiping.objects.all()
-
-    for tils in tilskipingar:
-        medlemar = Medlem.objects.filter( \
-                Q(merknad__icontains=tils.slug))
-        tils.medlem_set.add(*medlemar)
-        tils.save()
-
