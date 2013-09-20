@@ -1,4 +1,5 @@
-# vim: encoding=utf8
+# -*- coding: utf-8 -*-
+# vim: ts=4 sts=4 expandtab ai
 from os.path import join, dirname
 
 PROJECT_ROOT = dirname(__file__) + "/../"
@@ -24,13 +25,15 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = "Norsk Målungdom <skriv@nynorsk.no>"
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
+BEHAVIOUR_MODULE = 'behaviour.barnogungdom'
+
 ADMINS = (
     ('Odin', 'odin.omdal@gmail.com'),
 )
 
 MANAGERS = ADMINS
 
-AUTH_PROFILE_MODULE='medlem.Medlem'
+AUTH_PROFILE_MODULE = 'medlem.Medlem'
 
 DATABASES = {
     'default': {

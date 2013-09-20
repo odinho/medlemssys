@@ -2,13 +2,14 @@
 # vim: ts=4 sts=4 expandtab ai
 import random
 from datetime import date, datetime
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
-from django.db.models import Q
-from django.db.models.query import QuerySet
 from django.forms import ModelForm
 from django.template.defaultfilters import slugify
+from django.utils.importlib import import_module
 from django.utils.translation import ugettext_lazy as _
 #from emencia.django.newsletter.mailer import mailing_started
 
@@ -110,65 +111,18 @@ INNMELDINGSTYPAR = (
     ("U", "--"),
 )
 
-class MedlemQuerySet(QuerySet):
-    def alle(self):
-        """Alle oppføringar i registeret"""
-        if getattr(self, 'core_filters', None):
-            return self.filter(**self.core_filters)
-
-        return self
-
-    def ikkje_utmelde(self, year=date.today().year):
-        """Medlem som ikkje er eksplisitt utmelde"""
-        return self.alle().filter(
-            Q(utmeldt_dato__isnull=True) | Q(utmeldt_dato__gte=date(year+1, 1, 1))
-        )
-
-    def utmelde(self, year=date.today().year):
-        """Medlem som er utmelde"""
-        return self.alle().filter(
-            utmeldt_dato__isnull=False, utmeldt_dato__lt=date(year+1, 1, 1)
-        )
-
-    def betalande(self, year=date.today().year):
-        """Medlem med ein medlemspengeinnbetaling inneverande år"""
-        return self.ikkje_utmelde(year) \
-            .filter(
-                giroar__gjeldande_aar=year,
-                giroar__innbetalt__isnull=False
-            ).distinct()
-
-    def unge(self, year=date.today().year):
-        """Medlem under 26 (altso i teljande alder)"""
-        return self.ikkje_utmelde(year) \
-            .filter(
-                fodt__gte = year - 25
-            )
-
-    def potensielt_teljande(self, year=date.today().year):
-        return self.unge(year).filter(postnr__gt="0000", postnr__lt="9999") \
-            .exclude(giroar__gjeldande_aar=year,
-                giroar__innbetalt__isnull=False)
-
-    def teljande(self, year=date.today().year):
-        """Medlem i teljande alder, med postnr i Noreg og med betalte medlemspengar"""
-        return self.betalande(year) & self.unge(year).distinct().filter(postnr__gt="0000", postnr__lt="9999")
-
-    def interessante(self, year=date.today().year):
-        """Medlem som har betalt i år eller i fjor."""
-        return self.ikkje_utmelde(year) \
-            .filter(
-                Q(innmeldt_dato__year=year) |
-                Q(giroar__gjeldande_aar=year,
-                  giroar__innbetalt__isnull=False) |
-                Q(giroar__gjeldande_aar=year-1,
-                  giroar__innbetalt__isnull=False)
-            ).distinct()
-
 
 class MedlemManager(models.Manager):
     def get_query_set(self):
-        return MedlemQuerySet(self.model)
+        mod_name = settings.BEHAVIOUR_MODULE
+        mod = import_module(mod_name)
+        try:
+            klass = getattr(mod, 'MedlemQuerySet')
+        except AttributeError:
+            raise ImproperlyConfigured(
+                'Behaviour module "{0}" does not define a '
+                '"MedlemQuerySet" class'.format(mod_name))
+        return klass(self.model)
 
     def __getattr__(self, attr, *args):
         if attr.startswith("_"):
