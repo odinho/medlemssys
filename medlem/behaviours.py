@@ -10,7 +10,6 @@ class MedlemQuerySetBase(QuerySet):
     ung_alder = None
 
     def __init__(self, *args, **kwargs):
-        print "hei", self.ung_alder
         assert self.ung_alder
         super(MedlemQuerySetBase, self).__init__(*args, **kwargs)
 
@@ -56,6 +55,18 @@ class MedlemQuerySetBase(QuerySet):
         """Medlem i teljande alder, med postnr i Noreg og med betalte
         medlemspengar"""
         return self.betalande(year) & self.unge(year).distinct().filter(postnr__gt="0000", postnr__lt="9999")
+
+    def nye(self, year=date.today().year):
+        """Nyinnmelde medlem i dette året"""
+        return self.ikkje_utmelde(year).filter(innmeldt_dato__year=year).distinct()
+
+    def teljande_nye(self, year=date.today().year):
+        """Nyinnmelde medlem som er teljande"""
+        return self.nye(year) & self.teljande(year)
+
+    def betalande_nye(self, year=date.today().year):
+        """Nyinnmelde medlem som har betalt"""
+        return self.nye(year) & self.betalande(year)
 
     def interessante(self, year=date.today().year):
         """Medlem som har betalt i år eller i fjor."""
