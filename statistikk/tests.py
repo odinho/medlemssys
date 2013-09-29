@@ -4,8 +4,8 @@ import datetime
 import re
 from django.test import TestCase
 
-from medlemssys.medlem.tests import lagTestMedlemar
-from medlemssys.statistikk.views import create_overvaking_email
+from medlem.tests import lagTestMedlemar
+from .views import create_overvaking_email
 
 class OvervakingEpostTest(TestCase):
     def setUp(self):
