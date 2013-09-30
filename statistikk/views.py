@@ -67,10 +67,13 @@ def vervetopp_json(request):
 
 from django.views.decorators.clickjacking import xframe_options_exempt
 
+FROM_DATE="2013-08-19"
+TO_DATE="2013-09-29"
+
 @xframe_options_exempt
 def vervetopp(request):
-    vervarar = Medlem.objects.filter(har_verva__innmeldt_dato__gte="2012-04-25",
-            har_verva__innmeldt_dato__lte="2012-06-30",
+    vervarar = Medlem.objects.filter(har_verva__innmeldt_dato__gte=FROM_DATE,
+            har_verva__innmeldt_dato__lte=TO_DATE,
             status="M").distinct()
 
     nye_vervarar = sorted(vervarar, key=lambda v: (v.har_verva.teljande().count(), v.har_verva.potensielt_teljande().count()), reverse=True)
@@ -79,10 +82,10 @@ def vervetopp(request):
 
 @xframe_options_exempt
 def vervometer(request):
-    teljande = Medlem.objects.teljande().filter(innmeldt_dato__gte="2012-04-25",
-            innmeldt_dato__lte="2012-06-30").distinct().count()
-    potensielt_teljande = Medlem.objects.potensielt_teljande().filter(innmeldt_dato__gte="2012-04-25",
-            innmeldt_dato__lte="2012-06-30").distinct().count()
+    teljande = Medlem.objects.teljande().filter(innmeldt_dato__gte=FROM_DATE,
+            innmeldt_dato__lte=TO_DATE).distinct().count()
+    potensielt_teljande = Medlem.objects.potensielt_teljande().filter(innmeldt_dato__gte=FROM_DATE,
+            innmeldt_dato__lte=TO_DATE).distinct().count()
     maal = 300
 
     gjenstaande = maal - (teljande + potensielt_teljande)
