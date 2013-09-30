@@ -21,3 +21,9 @@ def val_checked(medlem, val):
     if medlem.val_exists(val):
         return 'checked'
     return ''
+
+@register.simple_tag
+def val_exists(medlem, val):
+    if medlem.val_exists(val):
+        return val
+    return ''

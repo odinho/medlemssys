@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load utils %}
 
 {% block content %}
 <style type=text/css>
@@ -33,10 +34,10 @@
             <td>{{ m.pk }}</td>
             <td>{{ m }}</td>
             <td>{{ m.fodt }}</td>
-	    <td>{{ m.mobnr }}{% if m.heimenr %}, {{ m.heimenr }}{% endif %}</td>
-            <td>{{ m.postadr }}</td>
+	    <td>{% val_exists m 'Ikkje ring' %} {{ m.mobnr }}{% if m.heimenr %}, {{ m.heimenr }}{% endif %}</td>
+            <td>{{ m.postadr }}, {{ m.postnr }} {{ m.stad }}</td>
             <td>{{ m.epost }}</td>
-            <td>{{ m.har_betalt|yesno:"b,ub,?" }}</td>
+            <td>{{ m.har_betalt|yesno:"b,ub,?" }} </td>
           </tr>
   {% endfor %}
         </tbody>
