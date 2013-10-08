@@ -55,3 +55,5 @@ STATICFILES_FINDERS = (
 #   'django.core.context_processors.i18n',
 #   'emencia.django.newsletter.context_processors.media',
 #)
+
+BEHAVIOUR_MODULE = 'behaviour.barnogungdom'
