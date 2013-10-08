@@ -29,8 +29,8 @@ class VervaMedlemInline(admin.TabularInline):
     verbose_name_plural = _("vervingar")
     extra = 0
     classes = ['left']
-    fields = ['innmeldingstype', 'innmeldingsdetalj', 'lokallag', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt']
-    readonly_fields = ('innmeldingstype', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt')
+    fields = ['admin_change', 'innmeldingstype', 'innmeldingsdetalj', 'lokallag', 'postnr', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt']
+    readonly_fields = ('innmeldingstype', 'admin_change', 'postnr', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt')
 
 class MedlemAdmin(CompareVersionAdmin):
     list_display = ('id', '__unicode__', 'lokallag_changelist', 'er_innmeldt',
