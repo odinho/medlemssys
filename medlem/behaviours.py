@@ -84,8 +84,9 @@ class MedlemQuerySetBase(QuerySet):
         """Medlem som ikkje er eksplisitt utmelde"""
         from models import PostNummer
         nr = PostNummer.objects.filter(fylke=fylke).values_list('postnr', flat=True)
+        # Converting the QuerySet __in to a list because of a MySQL performance issue
         return self.alle().filter(
-                   postnr__in=nr.values_list('postnr', flat=True).distinct())
+                   postnr__in=list(nr.values_list('postnr', flat=True).distinct()))
 
     def kommune(self, kommune, fylke=None):
         """Medlem som ikkje er eksplisitt utmelde"""
@@ -93,5 +94,6 @@ class MedlemQuerySetBase(QuerySet):
         nr = PostNummer.objects.filter(kommune=kommune)
         if fylke:
             nr = nr.filter(fylke=fylke)
+        # Converting the QuerySet __in to a list because of a MySQL performance issue
         return self.alle().filter(
-                   postnr__in=nr.values_list('postnr', flat=True).distinct())
+                   postnr__in=list(nr.values_list('postnr', flat=True).distinct()))

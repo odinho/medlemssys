@@ -69,7 +69,8 @@ class StadFilter(ListFilter):
         }
         if self.param('stad_fylke') is None:
             if qs.count() < 1000:
-                fylke_qs = PostNummer.objects.filter(postnr__in=qs.values('postnr'))
+                # Converting the QuerySet __in to a list because of a MySQL performance issue
+                fylke_qs = PostNummer.objects.filter(postnr__in=list(qs.values('postnr')))
             else:
                 fylke_qs = PostNummer.objects.all()
             for fylke in fylke_qs.values_list('fylke', flat=True).distinct():
@@ -90,8 +91,10 @@ class StadFilter(ListFilter):
                 'display': fylke,
             }
             # Kommunar som er i dette fylket
+
+            # Converting the QuerySet __in to a list because of a MySQL performance issue
             kommune_qs = PostNummer.objects.filter(
-                             postnr__in=qs.values('postnr'),
+                             postnr__in=list(qs.values_list('postnr', flat=True)),
                              fylke=fylke,
                          ).values_list('kommune', flat=True).distinct()
             for kommune in kommune_qs:
