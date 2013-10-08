@@ -68,10 +68,11 @@ class StadFilter(ListFilter):
             'display': _('All'),
         }
         if self.param('stad_fylke') is None:
-            fylke_qs = PostNummer.objects.filter(
-                           postnr__in=qs.values('postnr')
-                       ).values_list('fylke', flat=True).distinct()
-            for fylke in fylke_qs:
+            if qs.count() < 1000:
+                fylke_qs = PostNummer.objects.filter(postnr__in=qs.values('postnr'))
+            else:
+                fylke_qs = PostNummer.objects.all()
+            for fylke in fylke_qs.values_list('fylke', flat=True).distinct():
                 yield {
                     'selected': self.param('stad_fylke') == fylke,
                     'query_string': cl.get_query_string({

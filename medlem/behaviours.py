@@ -84,7 +84,8 @@ class MedlemQuerySetBase(QuerySet):
         """Medlem som ikkje er eksplisitt utmelde"""
         from models import PostNummer
         nr = PostNummer.objects.filter(fylke=fylke).values_list('postnr', flat=True)
-        return self.alle().filter(postnr__in=nr)
+        return self.alle().filter(
+                   postnr__in=nr.values_list('postnr', flat=True).distinct())
 
     def kommune(self, kommune, fylke=None):
         """Medlem som ikkje er eksplisitt utmelde"""
