@@ -7,6 +7,7 @@ from reversion_compare.admin import CompareVersionAdmin
 
 from settings import STATIC_URL
 from filters import AdditiveSubtractiveFilter, FodtFilter, MedlemFodtFilter,SporjingFilter, GiroSporjingFilter #, Filter, TimeSince
+from filters import StadFilter
 
 import admin_actions
 from models import *
@@ -40,8 +41,9 @@ class MedlemAdmin(CompareVersionAdmin):
             SporjingFilter,
             ('val', AdditiveSubtractiveFilter),
             #('_siste_medlemspengar', TimeSinceFilter),
-            '_siste_medlemspengar',
             FodtFilter,
+            StadFilter,
+            '_siste_medlemspengar',
             'innmeldt_dato',
             'utmeldt_dato',
             'status',

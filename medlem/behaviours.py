@@ -78,3 +78,19 @@ class MedlemQuerySetBase(QuerySet):
                 Q(giroar__gjeldande_aar=year-1,
                   giroar__innbetalt__isnull=False)
             ).distinct()
+
+    # Postnummer
+    def fylke(self, fylke):
+        """Medlem som ikkje er eksplisitt utmelde"""
+        from models import PostNummer
+        nr = PostNummer.objects.filter(fylke=fylke).values_list('postnr', flat=True)
+        return self.alle().filter(postnr__in=nr)
+
+    def kommune(self, kommune, fylke=None):
+        """Medlem som ikkje er eksplisitt utmelde"""
+        from models import PostNummer
+        nr = PostNummer.objects.filter(kommune=kommune)
+        if fylke:
+            nr = nr.filter(fylke=fylke)
+        return self.alle().filter(
+                   postnr__in=nr.values_list('postnr', flat=True).distinct())

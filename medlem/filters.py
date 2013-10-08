@@ -2,7 +2,7 @@
 # vim: ts=4 sts=4 expandtab ai
 
 #from django.db import models
-from django.contrib.admin.filters import RelatedFieldListFilter, DateFieldListFilter, SimpleListFilter
+from django.contrib.admin.filters import RelatedFieldListFilter, DateFieldListFilter, SimpleListFilter, ListFilter
 from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext as _
 from django.db.models import Q, F
@@ -37,6 +37,79 @@ class SporjingFilter(SimpleListFilter):
             return queryset.teljande(year - 1)
         elif self.value() == 'betalandeifjor':
             return queryset.betalande(year - 1)
+
+class StadFilter(ListFilter):
+    title = _(u"stad")
+
+    def __init__(self, request, params, model, model_admin):
+        super(StadFilter, self).__init__(
+            request, params, model, model_admin)
+        self.request = request
+        for p in self.expected_parameters():
+            if p in params:
+                value = params.pop(p)
+                self.used_parameters[p] = value
+
+    def param(self, var):
+        return self.used_parameters.get(var, None)
+
+    def has_output(self):
+        return True
+
+    def expected_parameters(self):
+        return ('stad_fylke', 'stad_kommune')
+
+    def choices(self, cl):
+        from models import PostNummer
+        qs = cl.get_query_set(self.request)
+        yield {
+            'selected': self.param('stad_fylke') is None,
+            'query_string': cl.get_query_string({}, ['stad_fylke', 'stad_kommune']),
+            'display': _('All'),
+        }
+        if self.param('stad_fylke') is None:
+            fylke_qs = PostNummer.objects.filter(
+                           postnr__in=qs.values('postnr')
+                       ).values_list('fylke', flat=True).distinct()
+            for fylke in fylke_qs:
+                yield {
+                    'selected': self.param('stad_fylke') == fylke,
+                    'query_string': cl.get_query_string({
+                        'stad_fylke': fylke,
+                    }, []),
+                    'display': fylke,
+                }
+        else:
+            fylke = self.param('stad_fylke')
+            yield {
+                'selected': True,
+                'query_string': cl.get_query_string({
+                    'stad_fylke': fylke,
+                }, ['stad_kommune']),
+                'display': fylke,
+            }
+            # Kommunar som er i dette fylket
+            kommune_qs = PostNummer.objects.filter(
+                             postnr__in=qs.values('postnr'),
+                             fylke=fylke,
+                         ).values_list('kommune', flat=True).distinct()
+            for kommune in kommune_qs:
+                yield {
+                    'selected': self.param('stad_kommune') == kommune,
+                    'query_string': cl.get_query_string({
+                        'stad_kommune': kommune,
+                    }, []),
+                    'display': u'– {0}'.format(smart_unicode(kommune)),
+                }
+
+    def queryset(self, request, queryset):
+        if self.param('stad_kommune'):
+            return queryset.kommune(
+                       self.param('stad_kommune'),
+                       fylke=self.param('stad_fylke'))
+        elif self.param('stad_fylke'):
+            return queryset.fylke(self.param('stad_fylke'))
+        return queryset
 
 class GiroSporjingFilter(SimpleListFilter):
     title = _(u"giro-spørjingar")
