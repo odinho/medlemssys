@@ -15,7 +15,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         global obj
         obj = self
-        if options['force_update']:
+        if 'force_update' in options:
             self.force_update = True
 
         if not os.path.isfile(args[0]):
