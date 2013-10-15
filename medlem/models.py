@@ -36,8 +36,10 @@ class Val(models.Model):
 class Lokallag(models.Model):
     namn = models.CharField(_("namn"), max_length=255, unique=True)
     slug = models.SlugField(_("nettnamn"), max_length=255, unique=True, blank=True)
-    fylkeslag = models.CharField(_("fylkeslag"), max_length=255, blank=True)
-    distrikt = models.CharField(_("distrikt"), max_length=255, blank=True)
+    kommunes = models.CharField(_("kommunar"), max_length=255, blank=True,
+                   help_text="""Kommaseparert med stor forbokstav, t.d. "Stavanger, Sandnes".""")
+    fylke = models.CharField(_("fylke"), max_length=255, blank=True,
+                   help_text="""Berre eitt fylke, stor forbokstav. Overstyrer kommuner visst denne finst.""")
     andsvar = models.CharField(_("andsvar"), max_length=255, blank=True)
     lokalsats = models.IntegerField(_("lokalsats"), default=0)
 
@@ -214,6 +216,22 @@ class Medlem(models.Model):
         except PostNummer.DoesNotExist:
             return "?"
 
+    @property
+    def bukommune(self):
+        postnr = self.bortepostnr or self.postnr
+        try:
+            return PostNummer.objects.get(postnr=postnr).kommune
+        except PostNummer.DoesNotExist:
+            return "?"
+
+    @property
+    def bufylke(self):
+        postnr = self.bortepostnr or self.postnr
+        try:
+            return PostNummer.objects.get(postnr=postnr).fylke
+        except PostNummer.DoesNotExist:
+            return "?"
+
     # Managers
     objects = MedlemManager()
 
@@ -335,6 +353,32 @@ class Medlem(models.Model):
         if not self.lokallag_id:
             return u"(ingen)"
         return unicode(self.lokallag)
+
+    def proposed_lokallag(self):
+        """
+        Lokallag that the system would choose itself if it had
+        to go only on the postnr (or bortepostnr) of the member.
+        """
+        alder = self.alder()
+        lags = set(Lokallag.objects.filter(
+            models.Q(fylke=self.bufylke)
+            | models.Q(kommunes__icontains=self.bukommune)))
+        ordered = []
+        if self.lokallag in lags:
+            lags.remove(self.lokallag)
+            ordered = [self.lokallag]
+        last = None
+        for lag in lags:
+            if 'student' in lag.namn.lower():
+                if alder > 18:
+                    ordered.insert(0, lag)
+                else:
+                    last = lag
+                continue
+            ordered.append(lag)
+        if last:
+            ordered.append(last)
+        return ordered
 
     def gjeldande_giro(self, year=date.today().year):
         try:

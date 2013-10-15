@@ -142,8 +142,8 @@ class RolleInline(admin.TabularInline):
     extra = 0
 
 class LokallagAdmin(CompareVersionAdmin):
-    list_display = ('pk', 'namn', 'num_medlem', 'andsvar', 'fylkeslag',
-                    'distrikt', 'lokalsats', 'aktivt', 'styret_admin',)
+    list_display = ('pk', 'namn', 'num_medlem', 'andsvar',
+        'lokalsats', 'aktivt', 'styret_admin',)
     list_editable = ('aktivt',)
     list_per_page = 200
     inlines = [RolleInline,]
