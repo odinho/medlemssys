@@ -6,7 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from medlem.models import Lokallag
 
 class LokallagStat(models.Model):
-    lokallag = models.ForeignKey(Lokallag)
+    lokallag = models.ForeignKey(Lokallag, null=True, on_delete=models.SET_NULL)
     veke = models.CharField(_("År-veke"), max_length=7)
 
     n_teljande = models.IntegerField(_("tal på teljande"))

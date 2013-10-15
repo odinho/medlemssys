@@ -187,7 +187,8 @@ class Medlem(models.Model):
     betalt_av = models.ForeignKey('Medlem', related_name='betalar_for', blank=True, null=True)
 
     # Tilkopla felt
-    lokallag = models.ForeignKey(Lokallag, blank=True, null=True)
+    lokallag = models.ForeignKey(Lokallag,
+        blank=True, null=True, on_delete=models.SET_NULL)
     val = models.ManyToManyField(Val, blank=True, null=True)
     lokallagsrolle = models.ManyToManyField(Lokallag,
         through='Rolle', related_name="rollemedlem", blank=True, null=True)
