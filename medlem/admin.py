@@ -81,7 +81,9 @@ class MedlemAdmin(CompareVersionAdmin):
     )
     actions = [ admin_actions.simple_member_list,
                 admin_actions.csv_list,
-                admin_actions.lag_giroar, ]
+                admin_actions.lag_giroar,
+                admin_actions.suggest_lokallag,
+              ]
 
     class Media:
         css = {

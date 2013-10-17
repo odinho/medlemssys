@@ -1,0 +1,102 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+<style>
+table ul { padding: 0 0 0 1em; }
+.error { color: #990000; }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+     <a href="../../">{% trans "Home" %}</a> &rsaquo;
+     Medlem &rsaquo;
+     <a href="/admin/medlem/medlem/">Medlem</a> &rsaquo;
+     {% trans "Foreslå lokallag" %}
+</div>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post">{% csrf_token %}
+
+    {% if suggested_new %}
+      <h2>Føreslegne lokallagsjustering</h2>
+      <button type=button onclick='choose_top("suggested_new"); return false'>Vel topp-forslaga</button>
+      <table id=suggested_new>
+        <thead><tr><th>namn <th>alder <th>bustad <th>noverande lokallag <th>nytt lokallag </tr></thead>
+        <tbody>
+        {% for m in suggested_new %}
+          <tr id=medlem-{{ m.pk }} data-lokallag={{ m.lokallag.pk }}>
+            <td>{{ m }}
+            <td>{{ m.alder }}
+            <td>{{ m.postnr }} {{ m.stad }} ({{ m.bukommune }})
+            <td>{{ m.lokallag }}
+            <td>
+              {% for f in m.suggested %}
+                {{ f }}
+              {% endfor %}
+            <td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% if totally_new %}
+      <h2>Føreslegne lokallagsbytte</h2>
+      <table>
+        <thead><tr><th>namn <th>alder <th>bustad <th>noverande lokallag <th>nytt lokallag </tr></thead>
+        <tbody>
+        {% for m in totally_new %}
+          <tr id=medlem-{{ m.pk }} data-lokallag={{ m.lokallag.pk }}>
+            <td>{{ m }}
+            <td>{{ m.alder }}
+            <td>{{ m.postnr }} {{ m.stad }} ({{ m.bukommune }})
+            <td>{{ m.lokallag }}
+            <td>
+              {% for f in m.suggested %}
+                {{ f }}
+              {% endfor %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+    {% for obj in queryset %}<input type=hidden name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}">{% endfor %}
+    <input type=hidden name=action value={{ action }}>
+    <input type=hidden name=post value=yes>
+    <div class=submit-row>
+      <input type=submit value="Oppdater lokallag" class=default>
+    </div>
+    </form>
+
+<script>
+  var radios = document.querySelectorAll("input[type=radio]")
+  radios = Array.prototype.slice.call(radios)
+  radios.forEach(function(radio) {
+    radio.addEventListener('click', function() {
+      /* Try finding the parent TR */
+      for (paren=radio.parentElement; paren.tagName != "TR"; paren=paren.parentElement)
+        ;
+      if (!'lokallag' in paren.dataset)
+        return;
+      if (paren.dataset['lokallag'] == radio.value)
+        paren.classList.remove('selected')
+      else
+        paren.classList.add('selected')
+    })
+  })
+
+  function choose_top(id) {
+    trs = document.getElementById(id).querySelectorAll("tr")
+    for (var i=0; i < trs.length; i++) {
+      input = trs[i].querySelector('input[type=radio]')
+      if (!input)
+        continue
+      input.click()
+    }
+  }
+
+</script>
+{% endblock %}

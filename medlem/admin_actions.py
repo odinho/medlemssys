@@ -15,6 +15,7 @@ from django.template.response import TemplateResponse
 from django.utils.translation import ugettext as _
 
 import admin # reversion
+from .forms import SuggestedLokallagForm
 
 def simple_member_list(modeladmin, request, queryset):
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
@@ -337,3 +338,75 @@ def giro_status_ventar(modeladmin, request, queryset):
         reversion.set_comment("Giro status ventar admin action")
         reversion.set_user(request.user)
 giro_status_ventar.short_description = "Sett girostatus 'Ventar'"
+
+
+@transaction.commit_on_success
+def suggest_lokallag(modeladmin, request, queryset):
+    if request.POST.get('post'):
+        updated = []
+        with reversion.create_revision():
+            reversion.set_comment("Endra lokallag med suggest_lokallag")
+            reversion.set_user(request.user)
+            for m in queryset:
+                pk = "lokallag_{0}".format(m.pk)
+                if pk not in request.POST:
+                    continue
+                try:
+                    new_lokallag_id = int(request.POST[pk])
+                except ValueError:
+                    continue
+                if m.lokallag_id == new_lokallag_id:
+                    continue
+                m.lokallag_id = new_lokallag_id
+                m.save()
+                updated.append(m)
+        modeladmin.message_user(
+            request,
+            "{} brukarar med oppdaterte lokallag".format(len(updated)))
+        return None
+    already_ok = []
+    suggested_new = []
+    totally_new = []
+    nothing = []
+    for m in queryset:
+        m.prop = m.proposed_lokallag()
+        if m.prop and m.lokallag == m.prop[0]:
+            already_ok.append(m)
+        elif m.lokallag in m.prop:
+            suggested_new.append(m)
+        elif m.prop:
+            totally_new.append(m)
+        else:
+            nothing.append(m)
+
+        choices = [(l.pk, l.namn) for l in m.prop]
+        if m.lokallag and m.lokallag not in m.prop:
+            choices.append((m.lokallag_id, m.lokallag.namn))
+        elif not m.lokallag:
+            choices.append(('', '(ingen)'))
+        m.suggested = SuggestedLokallagForm(
+                          auto_id='id_{}_%s'.format(m.pk),
+                          initial={
+                              'lokallag': m.lokallag_id,
+                              'medlem': m.pk,
+                          },
+                          lokallag_choices=choices,
+                          medlem_id=m.pk)
+
+    title = _("Endra lokallag ({c} medlemar)".format(c=queryset.count()))
+    opts = modeladmin.model._meta
+    app_label = opts.app_label
+    context = {
+        "title": title,
+        "queryset": queryset,
+        "opts": opts,
+        "app_label": app_label,
+        "action": 'suggest_lokallag',
+        "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+        "already_ok": already_ok,
+        "suggested_new": suggested_new,
+        "totally_new": totally_new,
+    }
+    return TemplateResponse(request, "admin/proposed_lokallag.html",
+              context, current_app=modeladmin.admin_site.name)
+suggest_lokallag.short_description = _(u"Foreslå lokallag")
