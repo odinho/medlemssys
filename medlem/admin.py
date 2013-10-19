@@ -146,7 +146,7 @@ class RolleInline(admin.TabularInline):
 class LokallagAdmin(CompareVersionAdmin):
     list_display = ('pk', 'namn', 'num_medlem', 'andsvar',
         'lokalsats', 'aktivt', 'styret_admin',)
-    list_editable = ('aktivt',)
+    list_editable = ('andsvar', 'aktivt',)
     list_per_page = 200
     inlines = [RolleInline,]
     prepopulated_fields = {"slug": ("namn",)}
