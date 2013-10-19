@@ -124,7 +124,7 @@ class MedlemAdmin(CompareVersionAdmin):
                                                    querystring.urlencode(),
                                                    obj.lokallag_display())
     lokallag_changelist.short_description = _("Lokallag")
-    lokallag_changelist.admin_order_field = 'lokallag__name'
+    lokallag_changelist.admin_order_field = 'lokallag__namn'
     lokallag_changelist.allow_tags = True
 
     def siste_giro_info(self, obj):
