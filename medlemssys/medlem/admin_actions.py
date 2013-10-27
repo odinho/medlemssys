@@ -109,6 +109,52 @@ def giro_list(modeladmin, request, queryset):
 giro_list.short_description = "Enkel revisorliste"
 
 @transaction.commit_on_success
+def communicate_giro(modeladmin, request, queryset):
+    from communication.models import Communication, CommunicationIntentForm
+    if request.POST.get('post'):
+        form = CommunicationIntentForm(request.POST)
+        if form.is_valid():
+            if not request.POST.get("ink-utmeld"):
+                queryset = queryset.filter(medlem__utmeldt_dato__isnull=True)
+            if not request.POST.get("ink-betalt"):
+                queryset = queryset.exclude(innbetalt__isnull=False)
+
+            form.save()
+            for giro in queryset:
+                com = Communication.create_from_intent(
+                    form.instance, medlem=giro.medlem, giro=giro)
+                com.save()
+            return None
+    else:
+        # Clean form, no post
+        form = CommunicationIntentForm()
+
+    opts = modeladmin.model._meta
+    app_label = opts.app_label
+    n_utmelde = queryset.filter(medlem__utmeldt_dato__isnull=False).count()
+    n_betalte = queryset.filter(innbetalt__isnull=False).count()
+    g_frist = datetime.date.today() + datetime.timedelta(30)
+
+
+    title = _("Communicate ({c} giros)".format(c=queryset.count()))
+
+    context = {
+        "title": title,
+        "queryset": queryset,
+        "opts": opts,
+        "app_label": app_label,
+        "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
+        "n_utmelde": n_utmelde,
+        "n_betalte": n_betalte,
+        "g_frist": g_frist,
+        "form": form,
+    }
+
+    return TemplateResponse(request, "admin/communicate_giro.html", context,
+            current_app=modeladmin.admin_site.name)
+communicate_giro.short_description = _("Communicate about these giros")
+
+@transaction.commit_on_success
 def pdf_giro(modeladmin, request, queryset):
     # User has already written some text, make PDF
     if request.POST.get('post'):
@@ -178,94 +224,6 @@ def pdf_giro(modeladmin, request, queryset):
 pdf_giro.short_description = "Lag giro-PDF"
 
 
-def _pdf_p(pdf, text, x, y, size_w=None, size_h=None):
-    from reportlab.lib.units import cm #, mm
-    from reportlab.platypus import Paragraph
-    from reportlab.lib.styles import getSampleStyleSheet
-
-    if not size_w:
-        size_w = 19
-    if not size_h:
-        size_h = size_w
-
-    style = getSampleStyleSheet()['BodyText']
-    p = Paragraph(text, style)
-    used_w, used_h = p.wrap(size_w*cm, size_h*cm)
-    p.wrapOn(pdf, size_w*cm, size_h*cm)
-    p.drawOn(pdf, x*cm, y*cm - used_h)
-
-def _giro_faktura(pdf, request, m, giro):
-    from reportlab.lib.units import cm #, mm
-
-    pdf.setFont('Helvetica', 16)
-    pdf.drawString(1.0*cm, 16*cm, u"%s" % request.POST.get('title'))
-
-    pdf.setFontSize(11)
-    text = request.POST.get('text')
-    text_content = Template(text).render(Context({'medlem': m, 'giro': giro})).replace('\n', '<br/>')
-    _pdf_p(pdf, text_content, 1, 15.5, size_w=19, size_h=13)
-    _pdf_p(pdf, m.full_betalingsadresse().replace('\n', '<br/>\n'), 1, 26, size_w=8, size_h=6)
-    _pdf_p(pdf, u"""\
-        Kundenr: {m.pk}<br/>
-        Fakturanr: {g.pk}<br/>
-        Fakturadato: {now}<br/>
-        Betalingsfrist: {frist}<br/>
-        Til konto: <b>{kontonr}</b><br/>
-        KID-nummer: <b>{g.kid}</b><br/>
-        Å betala: <b>{g.belop},00</b><br/>
-        """.format(m=m,
-                   g=giro,
-                   kontonr=settings.KONTONUMMER,
-                   now=datetime.date.today(),
-                   frist=request.POST.get('frist')),
-        15, 26, size_w=4, size_h=6)
-
-    return pdf
-
-def _giro_medlemskort(pdf, request, m, giro):
-    from reportlab.lib.units import cm #, mm
-
-    from innhenting import mod10
-
-    pdf.setFont('Helvetica', 16)
-    pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
-    pdf.setFontSize(12)
-
-    text_template = Template(request.POST.get('text'))
-    text_context = Context({'medlem': m, 'giro': giro})
-    text_content = text_template.render(text_context).replace('\n', '<br/>')
-
-    _pdf_p(pdf, text_content, 1, 25.5, size_w=18, size_h=13)
-
-    pdf.setFont('OCRB', 11)
-    tekst = pdf.beginText(1.2*cm, 5.5*cm)
-    for adrdel in m.full_betalingsadresse().split('\n'):
-        tekst.textLine(adrdel.strip())
-    pdf.drawText(tekst)
-
-    pdf.drawString(13*cm, 12.8*cm, u"%s" % giro.belop)
-    pdf.drawString(15*cm, 12.8*cm, u"%s" % '00')
-    pdf.drawString(14*cm, 14.2*cm, u"%s" % m.pk)
-    pdf.drawString(18.3*cm, 14.2*cm, u"%s" % giro.gjeldande_aar)
-
-    if m.har_betalt():
-        pdf.drawString(18*cm, 12.8*cm, "BETALT")
-        pdf.setFillColorRGB(0, 0, 0)
-        pdf.rect(0,  5.3*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
-        pdf.rect(0, 4.85*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
-        pdf.rect(0,  1.9*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
-        pdf.rect(0, 1.45*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
-    else:
-        pdf.drawString(17.1*cm, 9.3*cm, u"%s" % request.POST.get('frist'))
-
-        pdf.drawString(5.0*cm,  1.58*cm, u"%s" % giro.kid)
-        pdf.drawString(8.5*cm,  1.58*cm, u"%s" % giro.belop)
-        pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
-        pdf.drawString(11.9*cm, 1.58*cm,
-                       u"%s" % mod10.mod10(unicode(giro.belop) + '00'))
-        pdf.drawString(13.2*cm, 1.58*cm, u"%s" % settings.KONTONUMMER)
-
-    return pdf
 
 
 @transaction.commit_on_success

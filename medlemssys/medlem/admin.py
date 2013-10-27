@@ -221,6 +221,7 @@ class GiroAdmin(CompareVersionAdmin):
                 admin_actions.giro_list,
                 admin_actions.csv_list,
                 admin_actions.pdf_giro,
+                admin_actions.communicate_giro,
             ]
     def medlem_admin_change(self, obj):
         return obj.medlem.admin_change()

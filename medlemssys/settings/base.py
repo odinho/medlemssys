@@ -33,6 +33,7 @@ INSTALLED_APPS = (
     'innhenting',
     'statistikk',
     'giro',
+    'communication',
 
     'reversion',
     'reversion_compare',

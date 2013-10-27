@@ -312,6 +312,9 @@ class Medlem(models.Model):
             kwargs['namn'] = False
         return self.full_postadresse(heimeadresse=True, **kwargs)
 
+    def postadresse(self, **kwargs):
+        return self.full_postadresse(namn=False, **kwargs)
+
     def full_postadresse(self, namn=True, heimeadresse=False, as_list=False):
         adr = []
         if namn:

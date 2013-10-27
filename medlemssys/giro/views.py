@@ -30,8 +30,9 @@ def send_ventande_rekningar():
     return ventar
 
 def send_rekning(giro):
-    subject, text_content, html_content = generate_text("medlemspengar",
-                                            {"medlem": giro.medlem, "giro": giro})
+    subject, text_content, html_content = generate_text(
+        "medlemspengar",
+        {"medlem": giro.medlem, "giro": giro})
 
     msg = EmailMultiAlternatives(subject,
             body=text_content,

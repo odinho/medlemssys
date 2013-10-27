@@ -1,0 +1,64 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+     <a href="../../">{% trans "Home" %}</a> &rsaquo;
+     <a href="../">{{ app_label|capfirst }}</a> &rsaquo;
+     <a href="./">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
+     {% trans "Create communication" %}
+</div>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post">{% csrf_token %}
+
+    <fieldset class="module aligned">
+{% comment %}
+    <div class=form-row>
+      <div class=field-box>
+        <label for=title class=required>Tittel:</label> <input type=text name=title class=vTextField value="Medlemspengar for Norsk Målungdom">
+      </div>
+    </div>
+{% endcomment %}
+    {% for f in form %}
+    <div class=form-row>
+      <div class=field-box>
+        {{ f.label_tag }} {{ f }}
+        {{ f.errors }}
+      </div>
+    </div>
+    {% endfor %}
+    </fieldset>
+    {% if n_betalte or n_utmelde %}
+      <fieldset class="module aligned">
+        {% if n_utmelde %}
+        <div class=form-row>
+          <div class=field-box>
+            <input type=checkbox name=ink-utmeld> <label for=ink-utmeld>Inkluder utmelde</label>
+            <p>Det er <strong>{{ n_utmelde }} utmelde medlem</strong> i lista di.
+            <p class=help>Du bør eigentleg aldri sjå dette, for å senda giroar til utmelde medlem er ikkje særleg bra.
+          </div>
+        </div>
+        {% endif %}
+        {% if n_betalte %}
+        <div class=form-row>
+          <div class=field-box>
+            <input type=checkbox name=ink-betalt> <label for=ink-betalt>Inkluder allereie betalte</label>
+            <p>Det er <strong>{{ n_betalte }} giro{{ n_betalte|pluralize:"ar" }} som allereie er betalt{{ n_betalte|pluralize:"e" }}</strong> i lista di.
+          </div>
+        </div>
+        {% endif %}
+      </fieldset>
+    {% endif %}
+
+    {% for obj in queryset %}<input type=hidden name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}">{% endfor %}
+
+    <input type=hidden name=action value=communicate_giro>
+    <input type=hidden name=post value=yes>
+    <div class=submit-row>
+      <input type=submit value="Lag PDF-giroar" class=default>
+    </div>
+    </form>
+{% endblock %}
