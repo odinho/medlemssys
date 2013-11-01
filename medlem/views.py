@@ -35,30 +35,32 @@ def edit_medlem(request, id, nykel):
         post_val += request.POST.get('val_post', '')
         post_val += request.POST.get('val_tlf',  '')
         post_val += request.POST.get('val_nyhendebrev',  '')
-        with reversion.create_revision():
-            added = []
-            removed = []
-            for tittel in ('Ikkje epost', u'Ikkje Motmæle', 'Ikkje ring', 'Ikkje epost',
-                           'Ikkje Norsk Tidend', 'Ikkje nyhendebrev'):
-                           #'Ikkje lokallagsepost', 'Ikkje SMS', 'Ikkje nyhendebrev'):
-                val_obj = Val.objects.get(tittel=tittel)
-                if tittel in post_val:
-                    if not m.val_exists(tittel):
-                        added.append(tittel)
-                    m.val.add(val_obj)
-                else:
-                    if m.val_exists(tittel):
-                        removed.append(tittel)
-                    m.val.remove(val_obj)
-            comment = "Brukar oppdaterte {0}.".format(form.changed_data)
-            if added:
-                comment += " La til: {0}.".format(added)
-            if removed:
-                comment += " Tok vekk: {0}.".format(removed)
-            reversion.set_comment(comment)
-            form.save()
+        if form.is_valid():
+            with reversion.create_revision():
+                added = []
+                removed = []
+                for tittel in ('Ikkje epost', u'Ikkje Motmæle', 'Ikkje ring', 'Ikkje epost',
+                               'Ikkje Norsk Tidend', 'Ikkje nyhendebrev'):
+                               #'Ikkje lokallagsepost', 'Ikkje SMS', 'Ikkje nyhendebrev'):
+                    val_obj = Val.objects.get(tittel=tittel)
+                    if tittel in post_val:
+                        if not m.val_exists(tittel):
+                            added.append(tittel)
+                        m.val.add(val_obj)
+                    else:
+                        if m.val_exists(tittel):
+                            removed.append(tittel)
+                        m.val.remove(val_obj)
+                comment = "Brukar oppdaterte {0}.".format(form.changed_data)
+                if added:
+                    comment += " La til: {0}.".format(added)
+                if removed:
+                    comment += " Tok vekk: {0}.".format(removed)
+                reversion.set_comment(comment)
+                form.save()
+    else:
+        form = EndraMedlemForm(instance=m)
 
-    form = EndraMedlemForm(instance=m)
     return render(request, 'medlem/edit.html', {
        'object': m,
        'form': form,
