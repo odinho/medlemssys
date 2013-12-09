@@ -1,0 +1,66 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n admin_static %}
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+     <a href="../../">{% trans "Home" %}</a> &rsaquo;
+     <a href="../">{{ app_label|capfirst }}</a> &rsaquo;
+     <a href="./">{{ opts.verbose_name_plural|capfirst }}</a> &rsaquo;
+     {% trans "Create membership" %}
+</div>
+{% endblock %}
+
+{% block content %}
+    <form action="" method="post">{% csrf_token %}
+
+    <fieldset class="module aligned">
+{% comment %}
+    <div class=form-row>
+      <div class=field-box>
+        <label for=title class=required>Tittel:</label> <input type=text name=title class=vTextField value="Medlemspengar for Norsk Målungdom">
+      </div>
+    </div>
+{% endcomment %}
+    <div class=form-row>
+      <div class=field-box>
+        {{ form.type.label_tag }} {{ form.type }}
+        {{ form.type.errors }}
+      </div>
+    </div>
+    <div class=form-row>
+      <div class=field-box>
+        {{ form.start.label_tag }} {{ form.start }}
+        {{ form.start.errors }}
+      </div>
+    </div>
+    <div class=form-row>
+      <div class=field-box>
+        {{ form.end.label_tag }} {{ form.end }}
+        {{ form.end.errors }}
+      </div>
+    </div>
+    </fieldset>
+    {% if n_already_memberships %}
+      <fieldset class="module aligned">
+        <div class=form-row>
+          <div class=field-box>
+            {#<input type=checkbox name=ink-betalt> <label for=ink-betalt>Inkluder allereie betalte</label>#}
+            {{ form.only_membershipless.errors }}
+            {{ form.only_membershipless }}
+            {{ form.only_membershipless.label_tag }}
+            <p>Det er <strong>{{ n_already_memberships }} gyldig{{ n_already_memberships|pluralize:"e" }} medlemskap allereie</strong> i lista di. Dette vel berre dei som ikkje har noko.
+          </div>
+        </div>
+      </fieldset>
+    {% endif %}
+
+    {% for obj in queryset %}<input type=hidden name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}">{% endfor %}
+
+    <input type=hidden name=action value={{ action }}>
+    <input type=hidden name=post value=yes>
+    <div class=submit-row>
+      <input type=submit value="Lag PDF-giroar" class=default>
+    </div>
+    </form>
+{% endblock %}

@@ -490,6 +490,8 @@ GIRO_STATUSAR = (
 )
 
 class Giro(models.Model):
+    membership = models.ForeignKey('membership.Membership',
+        related_name='giros', blank=True, null=True)
     medlem = models.ForeignKey(Medlem, related_name='giroar')
     belop = models.PositiveIntegerField(_(u"Beløp"))
     innbetalt_belop = models.PositiveIntegerField(_(u"Innbetalt beløp"), default=0)

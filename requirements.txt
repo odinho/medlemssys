@@ -5,6 +5,7 @@ django_extensions
 django-apptemplates
 south
 reportlab
+django_model_utils
 #django-reversion-compare
 git+http://github.com/Velmont/django-reversion-compare.git@production#egg=django-reversion-compare
 diff-match-patch

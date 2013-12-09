@@ -3,6 +3,7 @@
 from datetime import date
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.utils import timezone
 
 class MedlemQuerySetBase(QuerySet):
     """Inherit from this base, call the class MedlemQuerySet and
@@ -78,6 +79,27 @@ class MedlemQuerySetBase(QuerySet):
                 Q(giroar__gjeldande_aar=year-1,
                   giroar__innbetalt__isnull=False)
             ).distinct()
+
+    def valid_membership(self, datetime=None):
+        """Medlem med gyldig medlemskap"""
+        datetime = datetime or timezone.now()
+        return self.alle().filter(
+            Q(memberships__isnull=False),
+            Q(memberships__start__lt=datetime),
+            Q(memberships__end__isnull=True) | Q(memberships__end__gt=datetime)
+        )
+
+    def invalid_membership(self, datetime=None):
+        """Medlem utan gyldig medlemskap"""
+        datetime = datetime or timezone.now()
+        qs = self.alle().filter(
+            Q(memberships__isnull=True) |
+            ~(Q(memberships__start__lt=datetime) &
+                (Q(memberships__end__isnull=True) |
+                 Q(memberships__end__gt=datetime))
+            )
+        )
+        return qs
 
     # Postnummer
     def fylke(self, fylke):
