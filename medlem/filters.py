@@ -123,9 +123,12 @@ class GiroSporjingFilter(SimpleListFilter):
         return (
                 ('strange', u"Rare/feil giroar"),
                 ('teljandeifjor', u"Teljande (i fjor)"),
+                ('teljande', u"Teljande (i år)"),
+                ('potensieltteljande', u"Potensielt teljande (i år)"),
             )
 
     def queryset(self, request, queryset):
+        from .models import Medlem
         year = date.today().year
 
         if self.value() == 'strange':
@@ -133,8 +136,17 @@ class GiroSporjingFilter(SimpleListFilter):
             paid_but_not_finished = Q(innbetalt__isnull=False) & ~Q(status='F')
             unpaid_but_finished = (Q(innbetalt__isnull=True) | Q(innbetalt_belop=0)) & Q(status='F')
             return queryset.filter(not_fully_paid | paid_but_not_finished | unpaid_but_finished)
+        elif self.value() == 'teljande':
+            return (queryset
+                .filter(
+                    medlem__in=Medlem.objects.teljande().values_list('pk', flat=True))
+                .filter(gjeldande_aar=year))
+        elif self.value() == 'potensieltteljande':
+            return (queryset
+                .filter(
+                    medlem__in=Medlem.objects.potensielt_teljande().values_list('pk', flat=True))
+                .filter(gjeldande_aar=year))
         elif self.value() == 'teljandeifjor':
-            from .models import Medlem
             return (queryset
                 .filter(
                     medlem__in=Medlem.objects.teljande(year - 1).values_list('pk', flat=True))
