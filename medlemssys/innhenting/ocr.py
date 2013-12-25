@@ -4,9 +4,9 @@
 import datetime
 from django.db.models import Q
 
-import mod10
 from medlem.models import Giro
 from medlem.models import update_denormalized_fields
+from . import mod10
 
 class OCR(object):
     TRANSAKSJONSTYPE = {

@@ -13,7 +13,7 @@ from django.utils.importlib import import_module
 from django.utils.translation import ugettext_lazy as _
 #from emencia.django.newsletter.mailer import mailing_started
 
-import mod10
+from innhenting import mod10
 
 
 def generate_password(length=7):

@@ -2,7 +2,8 @@
 # vim: ts=4 sts=4 expandtab ai
 from os.path import join, dirname
 
-PROJECT_ROOT = dirname(__file__) + "/../"
+PROJECT_ROOT = join(dirname(__file__), '..')
+REPO_ROOT = join(PROJECT_ROOT, '..')
 
 MEDLEM_CSV = PROJECT_ROOT + "nmu-medl.csv"
 GIRO_CSV   = PROJECT_ROOT + "nmu-bet.csv"
@@ -38,7 +39,7 @@ AUTH_PROFILE_MODULE = 'medlem.Medlem'
 DATABASES = {
     'default': {
        'ENGINE': 'django.db.backends.sqlite3',
-       'NAME': join(PROJECT_ROOT, 'db/db.sqlite'),
+       'NAME': join(REPO_ROOT, 'db/db.sqlite'),
     }
 }
 
@@ -80,7 +81,7 @@ STATICFILES_DIRS = (
 
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'e!(o%l1myqy-v(ocxf*xkr)q#=l-^%yxgcod_uicne1wh5ggi1'
+SECRET_KEY = 'ENDRA_MEG-e!(o%l1myqy-v(ocxf*xkr)q#=l-^%yxgcod_uicne1wh5ggi1'
 
 NEWSLETTER_USE_WORKGROUPS = True
 NEWSLETTER_DEFAULT_HEADER_REPLY = NEWSLETTER_DEFAULT_HEADER_SENDER = \

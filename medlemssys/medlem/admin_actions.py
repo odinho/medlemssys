@@ -225,7 +225,7 @@ def _giro_faktura(pdf, request, m, giro):
 def _giro_medlemskort(pdf, request, m, giro):
     from reportlab.lib.units import cm #, mm
 
-    from mod10 import mod10
+    from innhenting import mod10
 
     pdf.setFont('Helvetica', 16)
     pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
@@ -262,7 +262,7 @@ def _giro_medlemskort(pdf, request, m, giro):
         pdf.drawString(8.5*cm,  1.58*cm, u"%s" % giro.belop)
         pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
         pdf.drawString(11.9*cm, 1.58*cm,
-                       u"%s" % mod10(unicode(giro.belop) + '00'))
+                       u"%s" % mod10.mod10(unicode(giro.belop) + '00'))
         pdf.drawString(13.2*cm, 1.58*cm, u"%s" % settings.KONTONUMMER)
 
     return pdf

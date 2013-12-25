@@ -1,22 +1,31 @@
+Medlemssys
+==========
+
+Medlemsregister for norske organisasjonar.
+
+Bygd på datamodellen til Norsk Målungdom sitt gamle Access-register. Ein del
+pragmatiske løysingar som fylgje av det. Ingenting treng vera satt i stein.
 
 INSTALLASJON
-############
+------------
 
-git clone git@skog.s0.no:medlemssys
+    cd medlemssys
 
-virtualenv env
-. env/bin/activate
+    # Lag virtuelt Python-miljø
+    virtualenv env
+    . env/bin/activate
+    pip install -r requirements.txt
 
-cd medlemssys
-pip install -r pip.req
-./manage.py syncdb
-./manage.py collectstatic
-./manage.py loaddata fixtures/start_data.json
-./manage.py runserver
+    # Set opp testdatabasa
+    python medlemssys/manage.py syncdb
+    python medlemssys/manage.py migrate
+    python medlemssys/manage.py loaddata medlemssys/fixtures/start\_data.json
+
+    python medlemssys/manage.py runserver
 
 
 IMPORTERING AV MEDLEMSREGISTERDATA
-##################################
+----------------------------------
 
 Filformatet ventar NMU-format i CSV:
 
@@ -46,17 +55,9 @@ Du kan setja standardfilene i settings/local.py. Instellingane heiter:
     LAG_CSV
 
 
-OCR-IMPORTERING
-###############
-
-Legg OCR-fila i mappa di, eller gje ho som argument.
-
-    # Usage: manage.py ocr_import [options] [ ocr_fil.txt ]
-    ./manage.py ocr_import
-
-
 KØYR TESTANE
-############
+------------
+
 Det er alt for få testar, men eit par. Skriv gjerne fleire, og køyr dei ved kodeendring.
 
-    ./manage test medlem
+    ./manage test medlem giro statistikk
