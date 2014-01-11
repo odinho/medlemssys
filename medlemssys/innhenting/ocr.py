@@ -2,11 +2,19 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 import datetime
+import logging
 from django.db.models import Q
 
 from medlem.models import Giro
 from medlem.models import update_denormalized_fields
+
 from . import mod10
+
+logger = logging.getLogger(__name__)
+
+class OCRError(Exception):
+    pass
+
 
 class OCR(object):
     TRANSAKSJONSTYPE = {
@@ -44,18 +52,26 @@ class OCR(object):
                         Q(oppretta__year=f['dato'].year) | Q(oppretta__year=(f['dato'].year - 1)),
                         kid=f['kid'])
             except Giro.DoesNotExist:
-                f['msg'].append("Fann ikkje giroen, {dato:6s} {belop:4n} {kid:12s} {transaksjon}".format(**f))
+                msg = "Fann ikkje giroen, {dato:6s} {belop:4n} {kid:12s} {transaksjon}".format(**f)
+                logger.warning(msg)
+                f['msg'].append(msg)
                 continue
             f['giro'] = giro
             if giro.betalt():
-                f['msg'].append("Giroen ({0}) er allereie betalt".format(giro.admin_change()))
+                msg = "Giroen ({0}) er allereie betalt".format(giro.admin_change())
+                f['msg'].append(msg)
+                logger.warning("{giro.medlem}: {msg}".format(giro=giro, msg=msg))
                 continue
 
             if f['belop'] < giro.belop:
-                f['msg'].append("{giro}: for lite betalt! Rekna {giro.belop}, fekk {belop} ({giro.pk})".format(giro=giro, belop=f['belop']))
+                msg = "{giro}: for lite betalt! Rekna {giro.belop}, fekk {belop} ({giro.pk})".format(giro=giro, belop=f['belop'])
+                logger.warning("{giro.medlem}: {msg}".format(giro=giro, msg=msg))
+                f['msg'].append(msg)
             elif f['belop'] > giro.belop:
                 # XXX: Splitt opp? Registrer ein donasjon?
-                f['msg'].append("{giro}: Betalte meir, venta {giro.belop}, fekk {belop} ({giro.pk})".format(giro=giro, belop=f['belop']))
+                msg = "{giro}: Betalte meir, venta {giro.belop}, fekk {belop} ({giro.pk})".format(giro=giro, belop=f['belop'])
+                logger.info("{giro.medlem}: {msg}".format(giro=giro, msg=msg))
+                f['msg'].append(msg)
                 giro.innbetalt = f['dato']
             else:
                 giro.innbetalt = f['dato']
@@ -86,7 +102,7 @@ class OCR(object):
                 #forsendelsesnr = row[16:23]
                 break
         else:
-            raise Exception('Fann ikkje startrecord for sending')
+            raise OCRError('Fann ikkje startrecord for sending')
 
         for row in ocr_data:
             row = row.strip()
@@ -99,12 +115,12 @@ class OCR(object):
                     # Sluttrecord for oppdrag
                     pass
                 else:
-                    raise Exception("Forstår ikkje kode {0} ({1})!".format(row[6:8], row))
+                    raise OCRError("Forstår ikkje kode {0} ({1})!".format(row[6:8], row))
                 continue
 
             elif row[0:4] == "NY09":
                 if row[6:8] != "30":
-                    raise Exception("Venta startrecord 30, fekk {0}. ({1})!".format(row[6:8], row))
+                    raise OCRError("Venta startrecord 30, fekk {0}. ({1})!".format(row[6:8], row))
 
                 # Transaksjon
                 trans = self.TRANSAKSJONSTYPE[row[4:6]]
@@ -113,7 +129,7 @@ class OCR(object):
                 belop = int(row[32:49])/100.0
                 kid = row[49:74].strip()
                 if not mod10.check_number(kid.strip()):
-                    raise Exception("KID-nummer validerte ikkje ({0})".format(kid))
+                    raise OCRError("KID-nummer validerte ikkje ({0})".format(kid))
 
                 row2 = ocr_data.next()
                 oppdr_dato = row2[41:47]

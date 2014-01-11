@@ -45,12 +45,12 @@ table ul { padding: 0 0 0 1em; }
     {% if not_processed %}
     <h2>Ikkje prosesserte innbetalingar</h2>
     <table><tr><th>dato <th>KID <th>beløp <th>medlem <th>feil</tr>
-    {% for ocr in not_processed %}
+    {% for ocr in not_processed %}
         <tr>
             <td>{{ ocr.dato }}
             <td>{{ ocr.kid }}
             <td>{{ ocr.belop }}
-            <td>{{ ocr.giro.medlem.admin_change|safe }}
+            <td>{% if ocr.giro %}{{ ocr.giro.medlem.admin_change|safe }}{% endif %}
             <td>
             {% if ocr.msg %}
                 <ul>

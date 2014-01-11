@@ -16,6 +16,11 @@
     <fieldset class="module aligned">
     <div class=form-row>
       <div>
+        {% if errorlist %}
+          <ul class=errorlist>
+            {% for error in errorlist %}<li>{{ error }}{% endfor %}
+          </ul>
+        {% endif %}
         <label for=ocr_data class=required>OCR-data:</label>
         <textarea name=ocr_data class=vLargeTextField rows=25></textarea>
         <p class=help>Lim inn ei full OCR-køyring.
