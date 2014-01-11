@@ -62,6 +62,7 @@ class OCR(object):
                 #self.err("{belop:3n}kr ({giro.pk}) {giro} ".format(giro=giro, belop=f['belop']))
 
             giro.innbetalt_belop = f['belop']
+            giro.konto = 'A' # Medlemskonto (KID)
             if giro.desc:
                 giro.desc += '\nOCR'
             else:

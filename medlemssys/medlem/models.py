@@ -457,6 +457,7 @@ class InnmeldingMedlemForm(ModelForm):
 #mailing_started.connect(add_medlem_to_newsletters)
 
 KONTI = (
+    ('A', "Medlemskonto (KID)"),
     ('M', "Medlemskonto"),
     ('K', "Kassa"),
     ('B', "Brukskonto"),
