@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sw=4 sts=4 expandtab ai
-#from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
-from django.core.exceptions import ObjectDoesNotExist
+
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count
+from django.shortcuts import render_to_response, get_object_or_404
 
 from models import Medlem, Lokallag
 
@@ -20,7 +20,7 @@ def home(request):
 
 @login_required
 def lokallag_home(request, slug):
-    lokallag = Lokallag.objects.get(slug=slug)
+    lokallag = get_object_or_404(Lokallag, slug=slug)
 
     if not request.user.is_staff:
         try:
