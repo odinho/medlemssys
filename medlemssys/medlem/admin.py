@@ -1,29 +1,28 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
+import datetime
+from django.conf import settings
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
 from reversion_compare.admin import CompareVersionAdmin
 
-from settings import STATIC_URL
-from filters import AdditiveSubtractiveFilter, FodtFilter, MedlemFodtFilter,SporjingFilter, GiroSporjingFilter #, Filter, TimeSince
-from filters import StadFilter
-
-import admin_actions
-from models import *
+from . import admin_actions
+from . import filters
+from . import models
 
 class GiroInline(admin.TabularInline):
-    model = Giro
+    model = models.Giro
     extra = 1
     classes = ['left']
     fields = ['belop', 'innbetalt_belop', 'kid', 'gjeldande_aar', 'innbetalt', 'konto', 'desc', 'status']
     readonly_fields = ('status',)
 class RolleInline(admin.TabularInline):
-    model = Rolle
+    model = models.Rolle
     extra = 1
     classes = ['left']
 class VervaMedlemInline(admin.TabularInline):
-    model = Medlem
+    model = models.Medlem
     fk_name = 'verva_av'
     verbose_name = _("verving")
     verbose_name_plural = _("vervingar")
@@ -38,11 +37,11 @@ class MedlemAdmin(CompareVersionAdmin):
     list_display_links = ('id', '__unicode__')
     date_hierarchy = 'innmeldt_dato'
     list_filter = (
-            SporjingFilter,
-            ('val', AdditiveSubtractiveFilter),
+            filters.SporjingFilter,
+            ('val', filters.AdditiveSubtractiveFilter),
             #('_siste_medlemspengar', TimeSinceFilter),
-            FodtFilter,
-            StadFilter,
+            filters.FodtFilter,
+            filters.StadFilter,
             '_siste_medlemspengar',
             'innmeldt_dato',
             'utmeldt_dato',
@@ -87,8 +86,9 @@ class MedlemAdmin(CompareVersionAdmin):
 
     class Media:
         css = {
-            "all": (STATIC_URL + "medlem.css",
-                STATIC_URL + "css/forms.css",)
+            "all": (
+                settings.STATIC_URL + "medlem.css",
+                settings.STATIC_URL + "css/forms.css",)
         }
 
     def get_actions(self, request):
@@ -131,7 +131,7 @@ class MedlemAdmin(CompareVersionAdmin):
         gjeldande = obj.gjeldande_giro()
         if gjeldande:
             return gjeldande.admin_change()
-        fjor = obj.gjeldande_giro(datetime.today().year - 1)
+        fjor = obj.gjeldande_giro(datetime.date.today().year - 1)
         if fjor:
             return '{0}: {1}'.format(fjor.gjeldande_aar, fjor.admin_change())
         return '&mdash;'
@@ -140,7 +140,7 @@ class MedlemAdmin(CompareVersionAdmin):
     siste_giro_info.allow_tags = True
 
 class RolleInline(admin.TabularInline):
-    model = Rolle
+    model = models.Rolle
     extra = 0
 
 class LokallagAdmin(CompareVersionAdmin):
@@ -152,7 +152,7 @@ class LokallagAdmin(CompareVersionAdmin):
     prepopulated_fields = {"slug": ("namn",)}
 
 class LokallagOvervakingAdmin(CompareVersionAdmin):
-    model = LokallagOvervaking
+    model = models.LokallagOvervaking
     list_display = ('__unicode__', 'lokallag', 'medlem', 'epost',
                     'epostar_admin', 'sist_oppdatert')
     list_per_page = 250
@@ -163,10 +163,10 @@ class LokallagOvervakingAdmin(CompareVersionAdmin):
 
 
 class ValInline(admin.TabularInline):
-    model = Medlem.val.through
+    model = models.Medlem.val.through
     raw_id_fields = ['medlem']
 class ValAdmin(CompareVersionAdmin):
-    model = Val
+    model = models.Val
     inlines = [ValInline,]
     fieldsets = (
         (None, {
@@ -178,7 +178,7 @@ class ValAdmin(CompareVersionAdmin):
     )
 
 class GiroAdmin(CompareVersionAdmin):
-    model = Giro
+    model = models.Giro
     raw_id_fields = ['medlem']
     list_display = ('pk', 'medlem_admin_change', 'kid', 'belop',
                     'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto',
@@ -189,13 +189,13 @@ class GiroAdmin(CompareVersionAdmin):
                      'medlem__etternamn',)
     list_filter = (
         'status',
-        GiroSporjingFilter,
+        filters.GiroSporjingFilter,
         'gjeldande_aar',
         'innbetalt',
         'hensikt',
         'konto',
         'belop',
-        MedlemFodtFilter,
+        filters.MedlemFodtFilter,
         'medlem__lokallag',
         'medlem__status',
         'medlem__utmeldt_dato',
@@ -229,14 +229,14 @@ class GiroAdmin(CompareVersionAdmin):
     medlem_admin_change.allow_tags = True
 
 
-admin.site.register(Medlem, MedlemAdmin)
-admin.site.register(Lokallag, LokallagAdmin)
-admin.site.register(Val, ValAdmin)
-admin.site.register(Giro, GiroAdmin)
-admin.site.register(LokallagOvervaking, LokallagOvervakingAdmin)
+admin.site.register(models.Medlem, MedlemAdmin)
+admin.site.register(models.Lokallag, LokallagAdmin)
+admin.site.register(models.Val, ValAdmin)
+admin.site.register(models.Giro, GiroAdmin)
+admin.site.register(models.LokallagOvervaking, LokallagOvervakingAdmin)
 
-admin.site.register(Rolletype)
-admin.site.register(PostNummer)
+admin.site.register(models.Rolletype)
+admin.site.register(models.PostNummer)
 
 # Ta med lokallag ekstra (XXX: Usikkert om eg treng rolletype og giro)
 #reversion.register(Medlem, follow=["rolle_set", "giroar", "lokallag"])
