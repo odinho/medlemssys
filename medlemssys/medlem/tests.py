@@ -3,6 +3,7 @@
 from django.test import TestCase
 import datetime
 
+from medlem import models
 from medlem.models import Medlem, Giro
 
 def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
@@ -21,7 +22,7 @@ def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
         postnr="5000")
 
     if (utmeldt):
-        medlem.utmeldt_dato = datetime.datetime.now()
+        medlem.utmeldt_dato = datetime.date.today()
 
     medlem.save()
 
@@ -124,6 +125,42 @@ def lagTestMedlemar():
     return medlemar
 
 class MedlemTest(TestCase):
+
+    def test_utmeldt_delete_unpaid_giro_on_denormalized(self):
+        # Unpaid giros are deleted after member is utmeldt and
+        # update_denormalized_fields has run
+        m = lagMedlem(29, har_betalt=True)
+        g = Giro(medlem=m, belop=10)
+        g.save()
+        self.assertEqual(
+            [g.belop for g in m.giroar.all()], [10, 80])
+        m.utmeldt_dato = datetime.date.today()
+        m.save()
+        models.update_denormalized_fields()
+        self.assertEqual(
+            [g.belop for g in m.giroar.all()], [80])
+
+    def test_utmeldt_add_unpaid_giro(self):
+        # Adding new (unpaid) giro to utmeldt member doesn't
+        # actually get saved
+        m = lagMedlem(29, har_betalt=True, utmeldt=True)
+        g = Giro(medlem=m, belop=10)
+        g.save()
+        self.assertEqual(
+            [g.belop for g in m.giroar.all()], [80])
+
+    def test_utmeldt_add_paid_giro(self):
+        # Adding new (unpaid) giro to utmeldt member doesn't
+        # actually get saved
+        m = lagMedlem(29, har_betalt=True, utmeldt=True)
+        g = Giro(medlem=m, belop=20,
+                 innbetalt_belop=20, innbetalt=datetime.datetime.now())
+        g.save()
+        self.assertEqual(
+            [g.belop for g in m.giroar.all()], [20, 80])
+
+
+class MedlemManagerTest(TestCase):
     year = datetime.date.today().year
 
     def setUp(self):

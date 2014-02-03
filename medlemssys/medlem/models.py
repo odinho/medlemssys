@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 import random
-from datetime import date, datetime
+import datetime
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
@@ -176,9 +176,10 @@ class Medlem(models.Model):
             editable=False, default=None)
 
     # Medlemsskapet
-    innmeldt_dato = models.DateField(_("innmeldt"), default=date.today)
-    utmeldt_dato = models.DateField(_("utmeldt"), blank=True, null=True,
-            default=None)
+    innmeldt_dato = models.DateField(
+        _("innmeldt"), default=datetime.date.today)
+    utmeldt_dato = models.DateField(
+        _("utmeldt"), blank=True, null=True, default=None)
     status = models.CharField(_("medlstatus"), max_length=1,
             choices=STATUSAR, default="M")
     innmeldingstype = models.CharField(_("innmtype"), max_length=1,
@@ -240,7 +241,10 @@ class Medlem(models.Model):
         ordering = ['-id']
 
     def __unicode__(self):
-        return " ".join([ x for x in [self.fornamn, self.mellomnamn, self.etternamn] if x ])
+        return ' '.join(
+            [ x for x in [self.fornamn,
+                          self.mellomnamn,
+                          self.etternamn] if x ])
     __unicode__.admin_order_field = 'etternamn'
 
     def get_absolute_url(self):
@@ -248,25 +252,25 @@ class Medlem(models.Model):
 
     def er_innmeldt(self):
         if (self.utmeldt_dato):
-            return self.utmeldt_dato > date.today()
+            return self.utmeldt_dato > datetime.date.today()
         return True
     er_innmeldt.short_description = _("Innmeld")
     er_innmeldt.boolean = True
 
     def er_teljande(self):
-        return self.fodt > (date.today().year - 26)
+        return self.fodt > (datetime.date.today().year - 26)
     er_teljande.short_description = _("Teljande")
     er_teljande.boolean = True
 
     def er_gamal(self):
-        return self.fodt < (date.today().year - 23)
+        return self.fodt < (datetime.date.today().year - 23)
     er_teljande.short_description = _("Gamal")
     er_teljande.boolean = True
 
     def alder(self):
         if not self.fodt:
             return None
-        alder = date.today().year - self.fodt
+        alder = datetime.date.today().year - self.fodt
         if alder >= 0 and alder < 120:
             return alder
         return None
@@ -293,7 +297,7 @@ class Medlem(models.Model):
     fodt_farga.allow_tags = True
 
     def har_betalt(self):
-        if (self.giroar.filter(gjeldande_aar=date.today().year,
+        if (self.giroar.filter(gjeldande_aar=datetime.date.today().year,
                                  innbetalt__isnull=False)).exists():
             return True
         else:
@@ -380,7 +384,7 @@ class Medlem(models.Model):
             ordered.append(last)
         return ordered
 
-    def gjeldande_giro(self, year=date.today().year):
+    def gjeldande_giro(self, year=datetime.date.today().year):
         try:
             return self.giroar.filter(gjeldande_aar=year)[0]
         except IndexError:
@@ -400,12 +404,19 @@ class Medlem(models.Model):
 
 @transaction.commit_on_success
 def update_denormalized_fields():
-    for date in Giro.objects.values('gjeldande_aar').distinct().order_by('gjeldande_aar'):
-        Medlem.objects.filter(giroar__gjeldande_aar=date['gjeldande_aar'], giroar__innbetalt__isnull=False) \
-                .update(_siste_medlemspengar=date['gjeldande_aar'])
+    for date in (Giro.objects.values('gjeldande_aar')
+                 .distinct().order_by('gjeldande_aar')):
+        (Medlem.objects.filter(
+              giroar__gjeldande_aar=date['gjeldande_aar'],
+              giroar__innbetalt__isnull=False)
+           .update(_siste_medlemspengar=date['gjeldande_aar']))
 
-    Medlem.objects.filter(giroar__isnull=True).update(_siste_medlemspengar=None)
-
+    (Medlem.objects.filter(giroar__isnull=True)
+       .update(_siste_medlemspengar=None))
+    (Giro.objects.filter(
+          innbetalt__isnull=True,
+          medlem__utmeldt_dato__gte=datetime.date.today())
+       .delete())
 
 class MedlemForm(ModelForm):
     class Meta:
@@ -494,7 +505,7 @@ class Giro(models.Model):
     desc = models.TextField(_("Forklaring"), blank=True, default="")
 
     status = models.CharField(_("Status"), max_length=1, choices=GIRO_STATUSAR, default="V")
-    gjeldande_aar = models.PositiveIntegerField(_(u"Gjeldande år"), default=lambda: date.today().year)
+    gjeldande_aar = models.PositiveIntegerField(_(u"Gjeldande år"), default=lambda: datetime.date.today().year)
 
     class Meta:
         verbose_name_plural = "giroar"
@@ -524,6 +535,11 @@ class Giro(models.Model):
     admin_change.allow_tags = True
 
     def save(self, *args, **kwargs):
+        if not self.medlem.er_innmeldt() and self.innbetalt is None:
+            if self.pk:
+                self.delete()
+            return
+
         if not self.pk and self.betalt():
             self.status = 'F'
 
@@ -592,7 +608,7 @@ class LokallagOvervaking(models.Model):
 
     def __unicode__(self):
         ekstra = ""
-        if self.deaktivert and self.deaktivert < datetime.now():
+        if self.deaktivert and self.deaktivert < datetime.datetime.now():
             ekstra = " (deaktivert)"
 
         if self.medlem:
