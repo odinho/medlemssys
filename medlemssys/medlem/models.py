@@ -540,7 +540,7 @@ class Giro(models.Model):
                 self.delete()
             return
 
-        if not self.pk and self.betalt():
+        if self.betalt():
             self.status = 'F'
 
         if len(self.kid) < 1:
