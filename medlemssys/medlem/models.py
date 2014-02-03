@@ -252,7 +252,7 @@ class Medlem(models.Model):
 
     def er_innmeldt(self):
         if (self.utmeldt_dato):
-            return self.utmeldt_dato > datetime.date.today()
+            return self.utmeldt_dato >= datetime.date.today()
         return True
     er_innmeldt.short_description = _("Innmeld")
     er_innmeldt.boolean = True
