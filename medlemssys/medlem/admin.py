@@ -199,6 +199,7 @@ class GiroAdmin(CompareVersionAdmin):
         'medlem__lokallag',
         'medlem__status',
         'medlem__utmeldt_dato',
+        'medlem__innmeldt_dato',
     )
     readonly_fields = ('oppretta',)
     fieldsets = (
