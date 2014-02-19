@@ -5,7 +5,7 @@
 
     {% if successful %}
     <table><tr><th>Giro <th>Medlem <th>Epost <th>Status <th>Forklaring
-    {% for giro in successful %}
+    {% for giro in successful %}
         <tr>
             <td>{{ giro.admin_change|safe }}
             <td>{{ giro.medlem.admin_change|safe }} ({{ giro.medlem.alder }})
@@ -22,7 +22,7 @@
     {% if unsuccessful %}
     <h2>Problematiske giroar</h2>
     <table><tr><th>Giro <th>Medlem <th>Epost <th>Status <th>Forklaring
-    {% for giro in unsuccessful %}
+    {% for giro in unsuccessful %}
         <tr>
             <td>{{ giro.admin_change|safe }}
             <td>{{ giro.medlem.admin_change|safe }} ({{ giro.medlem.alder }})
