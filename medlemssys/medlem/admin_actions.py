@@ -87,6 +87,7 @@ def giro_list(modeladmin, request, queryset):
                  "Korleis",
                  "KID",
                  "Beløp",
+                 "Medlem-ID",
                  "Giro-ID",
                  ])
     for g in queryset:
@@ -101,6 +102,7 @@ def giro_list(modeladmin, request, queryset):
              g.konto,
              g.kid,
              g.belop,
+             g.medlem.id,
              g.pk]
 
         dc.writerow([unicode(s).encode("utf-8") for s in a])
