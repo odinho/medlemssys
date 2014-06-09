@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# vim: fileencoding=utf-8 shiftwidth=4 tabstop=4 expandtab softtabstop=4 ai
+# -*- coding: utf-8 -*-
+# vim: shiftwidth=4 tabstop=4 expandtab softtabstop=4 ai
 
 # Copyright 2009-2014 Odin Hørthe Omdal
 

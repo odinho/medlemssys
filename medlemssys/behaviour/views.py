@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Copyright 2009-2014 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.

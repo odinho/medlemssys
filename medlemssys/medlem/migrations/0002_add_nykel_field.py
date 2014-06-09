@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2009-2014 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.
@@ -16,10 +15,8 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
-import datetime
 from south.db import db
 from south.v2 import SchemaMigration
-from django.db import models, transaction
 from medlem.models import generate_password
 
 
