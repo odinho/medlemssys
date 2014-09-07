@@ -100,10 +100,12 @@ def giro_list(modeladmin, request, queryset):
                  "Dato",
                  "Lokallag",
                  u"Fødd".encode("utf-8"),
+                 "Epost",
+                 "Mobnr",
                  u"For år".encode("utf-8"),
                  "Korleis",
                  "KID",
-                 "Beløp",
+                 u"Beløp".encode("utf-8"),
                  "Medlem-ID",
                  "Giro-ID",
                  ])
@@ -115,6 +117,8 @@ def giro_list(modeladmin, request, queryset):
              g.innbetalt,
              g.medlem.lokallag_display(),
              g.medlem.fodt,
+             g.medlem.epost,
+             g.medlem.mobnr,
              g.gjeldande_aar,
              g.konto,
              g.kid,
@@ -125,7 +129,7 @@ def giro_list(modeladmin, request, queryset):
         dc.writerow([unicode(s).encode("utf-8") for s in a])
 
     return response
-giro_list.short_description = "Enkel revisorliste"
+giro_list.short_description = "Enkel giroliste"
 
 @transaction.commit_on_success
 def pdf_giro(modeladmin, request, queryset):
