@@ -99,6 +99,7 @@ class MedlemAdmin(CompareVersionAdmin):
                 admin_actions.csv_list,
                 admin_actions.lag_giroar,
                 admin_actions.suggest_lokallag,
+                admin_actions.members_meld_ut,
               ]
 
     class Media:

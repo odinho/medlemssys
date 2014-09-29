@@ -29,10 +29,26 @@ from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.template import Context, Template
 from django.template.response import TemplateResponse
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 import admin # reversion
 from .forms import SuggestedLokallagForm
+
+
+@transaction.commit_on_success
+def members_meld_ut(modeladmin, request, queryset):
+    today = timezone.now().date()
+    with reversion.create_revision():
+        reversion.set_comment("Meld ut medlemar")
+        reversion.set_user(request.user)
+        for m in queryset:
+            if not m.utmeldt_dato:
+                m.utmeldt_dato = today
+            if not m.fornamn.lower().startswith('utmeld'):
+                m.fornamn = u'UTMELD ' + m.fornamn
+            m.save()
+members_meld_ut.short_description = "Meld ut"
 
 def simple_member_list(modeladmin, request, queryset):
     response = HttpResponse(mimetype="text/csv; charset=utf-8")
