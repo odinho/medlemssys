@@ -276,17 +276,21 @@ def _giro_medlemskort(pdf, request, m, giro):
 
     _pdf_p(pdf, text_content, 1, 25.5, size_w=18, size_h=13)
 
+    # Medlemskort
+    pdf.drawString(13.0*cm, 14.9*cm, u"%s" % unicode(m))
+
     pdf.setFont('OCRB', 11)
+
+    pdf.drawString(13.8*cm, 14.3*cm, u"%s" % m.pk)
+    pdf.drawString(18.1*cm, 14.3*cm, u"%s" % giro.gjeldande_aar)
+    pdf.drawString(13.0*cm, 12.7*cm, u"%s" % giro.belop)
+    pdf.drawString(14.8*cm, 12.7*cm, u"%s" % '00')
+
+    # Giro
     tekst = pdf.beginText(1.2*cm, 5.5*cm)
     for adrdel in m.full_betalingsadresse().split('\n'):
         tekst.textLine(adrdel.strip())
     pdf.drawText(tekst)
-
-    pdf.drawString(13*cm, 12.8*cm, u"%s" % giro.belop)
-    pdf.drawString(15*cm, 12.8*cm, u"%s" % '00')
-    pdf.drawString(14*cm, 14.2*cm, u"%s" % m.pk)
-    pdf.drawString(18.3*cm, 14.2*cm, u"%s" % giro.gjeldande_aar)
-
     if m.har_betalt():
         pdf.drawString(18*cm, 12.8*cm, "BETALT")
         pdf.setFillColorRGB(0, 0, 0)
@@ -296,7 +300,6 @@ def _giro_medlemskort(pdf, request, m, giro):
         pdf.rect(0, 1.45*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
     else:
         pdf.drawString(17.1*cm, 9.3*cm, u"%s" % request.POST.get('frist'))
-
         pdf.drawString(5.0*cm,  1.58*cm, u"%s" % giro.kid)
         pdf.drawString(8.5*cm,  1.58*cm, u"%s" % giro.belop)
         pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
