@@ -51,7 +51,7 @@ def members_meld_ut(modeladmin, request, queryset):
 members_meld_ut.short_description = "Meld ut"
 
 def simple_member_list(modeladmin, request, queryset):
-    response = HttpResponse(mimetype="text/csv; charset=utf-8")
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
     response['Content-Disposition'] = 'filename=medlemer.csv'
 
     dc = csv.writer(response, quoting=csv.QUOTE_ALL)
@@ -93,7 +93,7 @@ def simple_member_list(modeladmin, request, queryset):
 simple_member_list.short_description = "Enkel medlemsliste"
 
 def csv_list(modeladmin, request, queryset):
-    response = HttpResponse(mimetype="text/csv; charset=utf-8")
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
     response['Content-Disposition'] = 'filename=dataliste.csv'
 
     dc = csv.writer(response)
@@ -106,12 +106,14 @@ def csv_list(modeladmin, request, queryset):
 csv_list.short_description = "Full dataliste"
 
 def giro_list(modeladmin, request, queryset):
-    response = HttpResponse(mimetype="text/csv; charset=utf-8")
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
     response['Content-Disposition'] = 'filename=giroar.csv'
 
     dc = csv.writer(response, quoting=csv.QUOTE_ALL)
     dc.writerow(["Namn",
-                 "Adresse",
+                 "Heimeadresse",
+                 "Postadresse",
+                 "Poststad",
                  "Betalt",
                  "Dato",
                  "Lokallag",
@@ -126,9 +128,18 @@ def giro_list(modeladmin, request, queryset):
                  "Giro-ID",
                  ])
     for g in queryset:
+        postadr, poststad = '', ''
+        adr = g.medlem.full_postadresse(namn=False, as_list=True)
+        if len(adr) == 1:
+            poststad = adr[0]
+        elif len(adr) > 1:
+            postadr = ', '.join(adr[:-1])
+            poststad = adr[-1]
 
         a = [g.medlem,
              g.medlem.full_adresse(namn=False),
+             postadr,
+             poststad,
              g.innbetalt_belop,
              g.innbetalt,
              g.medlem.lokallag_display(),
@@ -158,7 +169,7 @@ def pdf_giro(modeladmin, request, queryset):
         from reportlab.pdfbase.ttfonts import TTFont
 
         pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB.ttf'))
-        response = HttpResponse(mimetype="application/pdf")
+        response = HttpResponse(content_type="application/pdf")
         response['Content-Disposition'] = 'filename=girosending.pdf'
 
         buf = StringIO()

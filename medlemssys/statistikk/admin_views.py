@@ -27,10 +27,10 @@ def show_revisions(request):
             continue
         str_ver = []
         for version in r.version_set.all()[:SHOW_CHANGES]:
-            if hasattr(version.object, 'admin_change'):
+            try:
                 str_ver.append(version.object.admin_change())
-            else:
-                str_ver.append(unicode(version.object))
+            except (AttributeError, ValueError):
+                str_ver.append(unicode(version))
         total_changes = r.version_set.count()
         text = u', '.join(str_ver)
         if total_changes > SHOW_CHANGES:
