@@ -17,12 +17,22 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseForbidden
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-import reversion
+import json
 
-from models import Medlem, EndraMedlemForm, InnmeldingMedlemForm, Lokallag, Val
+import reversion
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.http import HttpResponse
+from django.http import HttpResponseForbidden
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+
+from models import EndraMedlemForm
+from models import InnmeldingMedlemForm
+from models import Lokallag
+from models import Medlem
+from models import Val
+
 
 def create_medlem(request):
     if request.method == 'POST':
@@ -36,6 +46,7 @@ def create_medlem(request):
     return render(request, 'medlem/create.html', {
         'form': form,
     })
+
 
 def edit_medlem(request, id, nykel):
     forbid = False
@@ -56,7 +67,7 @@ def edit_medlem(request, id, nykel):
             with reversion.create_revision():
                 added = []
                 removed = []
-                for tittel in ('Ikkje epost', u'Ikkje Motmæle', 'Ikkje ring', 'Ikkje epost',
+                for tittel in ('Ikkje epost', u'Ikkje Motmæle', 'Ikkje ring',
                                'Ikkje Norsk Tidend', 'Ikkje nyhendebrev'):
                                #'Ikkje lokallagsepost', 'Ikkje SMS', 'Ikkje nyhendebrev'):
                     val_obj = Val.objects.get(tittel=tittel)
@@ -83,6 +94,7 @@ def edit_medlem(request, id, nykel):
        'form': form,
     })
 
+
 @login_required
 def ringjelister(request):
     lokallag = Lokallag.objects.all().order_by('andsvar')
@@ -91,12 +103,11 @@ def ringjelister(request):
         'lokallag': lokallag,
     })
 
+
 @login_required
 def search(request):
     return render(request, 'medlem/search.html', {})
 
-import json
-from django.db.models import Q
 
 def get_members(terms, limit=20):
     search = None
@@ -109,22 +120,26 @@ def get_members(terms, limit=20):
 
     # Vanleg søk
     for q in terms:
-        search_part = Q(fornamn__istartswith=q)   \
-        | Q(mellomnamn__istartswith=q)            \
-        | Q(etternamn__istartswith=q)             \
-        | Q(fodt__icontains=q)                    \
-        | Q(lokallag__namn__icontains=q)          \
-        | Q(lokallag__slug__istartswith=q)
-
+        search_part = (
+            Q(fornamn__istartswith=q) |
+            Q(mellomnamn__istartswith=q) |
+            Q(etternamn__istartswith=q) |
+            Q(fodt__icontains=q) |
+            Q(lokallag__namn__icontains=q) |
+            Q(lokallag__slug__istartswith=q))
         if not search:
             search = search_part
         else:
             search = search & search_part
 
     if search:
-        return Medlem.objects.select_related('giroar').filter(search).order_by("-_siste_medlemspengar", "-fodt")[:limit]
+        return (
+            Medlem.objects.select_related('giroar')
+            .filter(search)
+            .order_by('-_siste_medlemspengar', '-fodt')[:limit])
 
     return Medlem.objects.select_related('giroar')[:limit]
+
 
 @login_required
 def get_members_json(request):
@@ -139,7 +154,9 @@ def get_members_json(request):
             member_json['lokallag'] = str(member.lokallag)
         else:
             member_json['lokallag'] = "(ingen)"
-        bet = member.giroar.filter(innbetalt__isnull=False).order_by("-gjeldande_aar").values_list("gjeldande_aar", flat=True)
+        bet = (member.giroar.filter(innbetalt__isnull=False)
+               .order_by('-gjeldande_aar')
+               .values_list('gjeldande_aar', flat=True))
         member_json['bet'] = [unicode(x) for x in bet]
         results.append(member_json)
     data = json.dumps(results)

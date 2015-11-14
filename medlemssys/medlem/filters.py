@@ -17,12 +17,17 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
-#from django.db import models
-from django.contrib.admin.filters import RelatedFieldListFilter, DateFieldListFilter, SimpleListFilter, ListFilter
+from datetime import date
+
+from django.contrib.admin.filters import DateFieldListFilter
+from django.contrib.admin.filters import ListFilter
+from django.contrib.admin.filters import RelatedFieldListFilter
+from django.contrib.admin.filters import SimpleListFilter
+from django.db.models import F
+from django.db.models import Q
 from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext as _
-from django.db.models import Q, F
-from datetime import date
+
 
 class SporjingFilter(SimpleListFilter):
     title = _(u"spørjingar")
@@ -54,6 +59,7 @@ class SporjingFilter(SimpleListFilter):
         elif self.value() == 'betalandeifjor':
             return queryset.betalande(year - 1)
 
+
 class StadFilter(ListFilter):
     title = _(u"stad")
 
@@ -80,13 +86,16 @@ class StadFilter(ListFilter):
         qs = cl.get_query_set(self.request)
         yield {
             'selected': self.param('stad_fylke') is None,
-            'query_string': cl.get_query_string({}, ['stad_fylke', 'stad_kommune']),
+            'query_string': cl.get_query_string(
+                {}, ['stad_fylke', 'stad_kommune']),
             'display': _('All'),
         }
         if self.param('stad_fylke') is None:
             if qs.count() < 1000:
-                # Converting the QuerySet __in to a list because of a MySQL performance issue
-                fylke_qs = PostNummer.objects.filter(postnr__in=list(qs.values('postnr')))
+                # Converting the QuerySet __in to a list because of a MySQL
+                # performance issue
+                fylke_qs = PostNummer.objects.filter(
+                    postnr__in=list(qs.values('postnr')))
             else:
                 fylke_qs = PostNummer.objects.all()
             for fylke in fylke_qs.values_list('fylke', flat=True).distinct():
@@ -108,11 +117,14 @@ class StadFilter(ListFilter):
             }
             # Kommunar som er i dette fylket
 
-            # Converting the QuerySet __in to a list because of a MySQL performance issue
-            kommune_qs = PostNummer.objects.filter(
-                             postnr__in=list(qs.values_list('postnr', flat=True)),
-                             fylke=fylke,
-                         ).values_list('kommune', flat=True).distinct()
+            # Converting the QuerySet __in to a list because of a MySQL
+            # performance issue
+            kommune_qs = (
+                PostNummer.objects.filter(
+                    postnr__in=list(qs.values_list('postnr', flat=True)),
+                    fylke=fylke)
+                .values_list('kommune', flat=True)
+                .distinct())
             for kommune in kommune_qs:
                 yield {
                     'selected': self.param('stad_kommune') == kommune,
@@ -131,6 +143,7 @@ class StadFilter(ListFilter):
             return queryset.fylke(self.param('stad_fylke'))
         return queryset
 
+
 class GiroSporjingFilter(SimpleListFilter):
     title = _(u"giro-spørjingar")
     parameter_name = 'sporjing'
@@ -148,25 +161,31 @@ class GiroSporjingFilter(SimpleListFilter):
         year = date.today().year
 
         if self.value() == 'strange':
-            not_fully_paid = ~Q(innbetalt_belop=0) & ~Q(innbetalt_belop=F('belop'))
+            not_fully_paid = (
+                ~Q(innbetalt_belop=0) & ~Q(innbetalt_belop=F('belop')))
             paid_but_not_finished = Q(innbetalt__isnull=False) & ~Q(status='F')
-            unpaid_but_finished = (Q(innbetalt__isnull=True) | Q(innbetalt_belop=0)) & Q(status='F')
-            return queryset.filter(not_fully_paid | paid_but_not_finished | unpaid_but_finished)
+            unpaid_but_finished = (
+                (Q(innbetalt__isnull=True) | Q(innbetalt_belop=0))
+                    & Q(status='F'))
+            return queryset.filter(not_fully_paid |
+                                   paid_but_not_finished |
+                                   unpaid_but_finished)
         elif self.value() == 'teljande':
             return (queryset
-                .filter(
-                    medlem__in=Medlem.objects.teljande().values_list('pk', flat=True))
+                .filter(medlem__in=(Medlem.objects.teljande()
+                                    .values_list('pk', flat=True)))
                 .filter(gjeldande_aar=year))
         elif self.value() == 'potensieltteljande':
             return (queryset
-                .filter(
-                    medlem__in=Medlem.objects.potensielt_teljande().values_list('pk', flat=True))
+                .filter(medlem__in=(Medlem.objects.potensielt_teljande()
+                                    .values_list('pk', flat=True)))
                 .filter(gjeldande_aar=year))
         elif self.value() == 'teljandeifjor':
             return (queryset
-                .filter(
-                    medlem__in=Medlem.objects.teljande(year - 1).values_list('pk', flat=True))
+                .filter(medlem__in=(Medlem.objects.teljande(year - 1)
+                                    .values_list('pk', flat=True)))
                 .filter(gjeldande_aar=year - 1))
+
 
 class FodtFilter(SimpleListFilter):
     title = _(u"alder i år")
@@ -175,13 +194,13 @@ class FodtFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-                ('under-26',    u"Under 26 (teljande)"),
-                ('over-25',     u"26 og eldre"),
-                ('under-30',    u"Under 30"),
-                ('over-29',     u"30 og eldre"),
-                ('25',          u"25 år (sisteårs teljande)"),
-                ('26',          u"26 år (ikkje teljande fyrste år)"),
-                ('invalid',     u"Sære aldre"),
+                ('under-26', u"Under 26 (teljande)"),
+                ('over-25',  u"26 og eldre"),
+                ('under-30', u"Under 30"),
+                ('over-29',  u"30 og eldre"),
+                ('25',       u"25 år (sisteårs teljande)"),
+                ('26',       u"26 år (ikkje teljande fyrste år)"),
+                ('invalid',  u"Sære aldre"),
             )
 
     def queryset(self, request, queryset):
@@ -206,8 +225,10 @@ class FodtFilter(SimpleListFilter):
                                    Q(**{self.field + '__gt': year}))
         return queryset.filter(**restriction)
 
+
 class MedlemFodtFilter(FodtFilter):
     field = 'medlem__fodt'
+
 
 class TimeSinceFilter(DateFieldListFilter):
     def __init__(self, field, request, params, model, model_admin, field_path):
@@ -273,12 +294,13 @@ class AdditiveSubtractiveFilter(RelatedFieldListFilter):
         return queryset
 
     def choices(self, cl):
+        used_params = set(self.used_parameters).intersection(self.using_params)
         yield {
-            'selected': len(set(self.used_parameters).intersection(self.using_params)) == 0,
+            'selected': len(used_params) == 0,
             'query_string': cl.get_query_string({}, self.using_params),
-            'display': _('All'),
+            'display': _("All"),
         }
-        for p in (('inc', _('Vis')), ('exc', _('Skjul'))):
+        for p in (('inc', _("Vis")), ('exc', _("Skjul"))):
             for lookup, title in self.lookup_choices:
                 # If the link is selected
                 if p[0] == self.used_parameters.get(self._make_param(lookup)):

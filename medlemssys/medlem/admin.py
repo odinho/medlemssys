@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 import datetime
+
 from django.conf import settings
 from django.contrib import admin
 from django.core.urlresolvers import reverse
@@ -27,6 +28,7 @@ from reversion_compare.admin import CompareVersionAdmin
 from . import admin_actions
 from . import filters
 from . import models
+
 
 class GiroInline(admin.TabularInline):
     model = models.Giro
@@ -45,8 +47,14 @@ class VervaMedlemInline(admin.TabularInline):
     verbose_name_plural = _("vervingar")
     extra = 0
     classes = ['left']
-    fields = ['admin_change', 'innmeldingstype', 'innmeldingsdetalj', 'lokallag', 'postnr', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt']
-    readonly_fields = ('innmeldingstype', 'admin_change', 'postnr', 'innmeldt_dato', '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt')
+    fields = [
+        'admin_change', 'innmeldingstype', 'innmeldingsdetalj',
+        'lokallag', 'postnr', 'innmeldt_dato', '_siste_medlemspengar',
+        'fodt_farga', 'er_innmeldt', 'har_betalt']
+    readonly_fields = (
+        'innmeldingstype', 'admin_change', 'postnr', 'innmeldt_dato',
+        '_siste_medlemspengar', 'fodt_farga', 'er_innmeldt', 'har_betalt')
+
 
 class MedlemAdmin(CompareVersionAdmin):
     list_display = ('id', '__unicode__', 'lokallag_changelist', 'er_innmeldt',
@@ -157,9 +165,11 @@ class MedlemAdmin(CompareVersionAdmin):
     siste_giro_info.admin_order_field = 'giroar'
     siste_giro_info.allow_tags = True
 
+
 class RolleInline(admin.TabularInline):
     model = models.Rolle
     extra = 0
+
 
 class LokallagAdmin(CompareVersionAdmin):
     list_display = ('pk', 'namn', 'num_medlem', 'andsvar',
@@ -167,7 +177,8 @@ class LokallagAdmin(CompareVersionAdmin):
     list_editable = ('andsvar', 'aktivt',)
     list_per_page = 200
     inlines = [RolleInline,]
-    prepopulated_fields = {"slug": ("namn",)}
+    prepopulated_fields = {'slug': ('namn',)}
+
 
 class LokallagOvervakingAdmin(CompareVersionAdmin):
     model = models.LokallagOvervaking
@@ -189,11 +200,12 @@ class ValAdmin(CompareVersionAdmin):
     fieldsets = (
         (None, {
             'fields': ('tittel', 'forklaring'),
-            'description': 'Val er avslått som standard, so det er lurt å utforma '
-                           'vala slik at dei fleste ikkje treng ha dei på. T.d. '
-                           '«Ikkje ring» i staden for «Ring».',
+            'description': "Val er avslått som standard, so det er lurt å utforma "
+                           "vala slik at dei fleste ikkje treng ha dei på. T.d. "
+                           "«Ikkje ring» i staden for «Ring».",
         }),
     )
+
 
 class GiroAdmin(CompareVersionAdmin):
     model = models.Giro

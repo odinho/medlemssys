@@ -51,12 +51,12 @@ def members_meld_ut(modeladmin, request, queryset):
 members_meld_ut.short_description = "Meld ut"
 
 def simple_member_list(modeladmin, request, queryset):
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'filename=medlemer.csv'
 
     dc = csv.writer(response, quoting=csv.QUOTE_ALL)
     dc.writerow(["Namn",
-                 u"Fødd".encode("utf-8"),
+                 u"Fødd".encode('utf-8'),
                  "Heimeadresse",
                  "Postadresse",
                  "Poststad",
@@ -86,27 +86,25 @@ def simple_member_list(modeladmin, request, queryset):
              m.epost,
              m.lokallag_display(),
              belop]
-
-        dc.writerow([unicode(s).encode("utf-8") for s in a])
-
+        dc.writerow([unicode(s).encode('utf-8') for s in a])
     return response
 simple_member_list.short_description = "Enkel medlemsliste"
 
 def csv_list(modeladmin, request, queryset):
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'filename=dataliste.csv'
 
     dc = csv.writer(response)
     dc.writerow(model_to_dict(queryset[0]).keys())
     for m in queryset:
         a = model_to_dict(m).values()
-        dc.writerow([unicode(s).encode("utf-8") for s in a])
+        dc.writerow([unicode(s).encode('utf-8') for s in a])
 
     return response
 csv_list.short_description = "Full dataliste"
 
 def giro_list(modeladmin, request, queryset):
-    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'filename=giroar.csv'
 
     dc = csv.writer(response, quoting=csv.QUOTE_ALL)
@@ -117,13 +115,13 @@ def giro_list(modeladmin, request, queryset):
                  "Betalt",
                  "Dato",
                  "Lokallag",
-                 u"Fødd".encode("utf-8"),
+                 u"Fødd".encode('utf-8'),
                  "Epost",
                  "Mobnr",
-                 u"For år".encode("utf-8"),
+                 u"For år".encode('utf-8'),
                  "Korleis",
                  "KID",
-                 u"Beløp".encode("utf-8"),
+                 u"Beløp".encode('utf-8'),
                  "Medlem-ID",
                  "Giro-ID",
                  ])
@@ -153,7 +151,7 @@ def giro_list(modeladmin, request, queryset):
              g.medlem.id,
              g.pk]
 
-        dc.writerow([unicode(s).encode("utf-8") for s in a])
+        dc.writerow([unicode(s).encode('utf-8') for s in a])
 
     return response
 giro_list.short_description = "Enkel giroliste"
@@ -169,7 +167,7 @@ def pdf_giro(modeladmin, request, queryset):
         from reportlab.pdfbase.ttfonts import TTFont
 
         pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB.ttf'))
-        response = HttpResponse(content_type="application/pdf")
+        response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'filename=girosending.pdf'
 
         buf = StringIO()
@@ -177,9 +175,9 @@ def pdf_giro(modeladmin, request, queryset):
         # Create the PDF object, using the StringIO object as its "file."
         pdf = canvas.Canvas(buf)
 
-        if not request.POST.get("ink-utmeld"):
+        if not request.POST.get('ink-utmeld'):
             queryset = queryset.filter(medlem__utmeldt_dato__isnull=True)
-        if not request.POST.get("ink-betalt"):
+        if not request.POST.get('ink-betalt'):
             queryset = queryset.exclude(innbetalt__isnull=False)
 
         for giro in queryset:
@@ -223,7 +221,7 @@ def pdf_giro(modeladmin, request, queryset):
         "g_frist": g_frist,
     }
 
-    return TemplateResponse(request, "admin/pdf_giro.html", context,
+    return TemplateResponse(request, 'admin/pdf_giro.html', context,
             current_app=modeladmin.admin_site.name)
 pdf_giro.short_description = "Lag giro-PDF"
 
