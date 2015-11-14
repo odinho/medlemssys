@@ -50,6 +50,7 @@ def members_meld_ut(modeladmin, request, queryset):
             m.save()
 members_meld_ut.short_description = "Meld ut"
 
+
 def simple_member_list(modeladmin, request, queryset):
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'filename=medlemer.csv'
@@ -63,13 +64,18 @@ def simple_member_list(modeladmin, request, queryset):
                  "Mobiltelefon",
                  "Epost",
                  "Lokallag",
-                 "Betalt"])
+                 "Betalt",
+                 u"Beløp".encode('utf-8'),
+                 "KID"])
     for m in queryset:
-        belop = m.gjeldande_giro()
-        if belop:
-            belop = belop.innbetalt_belop
-        if not belop:
-            belop = '-'
+        giro = m.gjeldande_giro()
+        belop = '-'
+        innbetalt = '-'
+        kid = ''
+        if giro:
+            belop = giro.belop
+            innbetalt = giro.innbetalt_belop
+            kid = giro.kid
         postadr, poststad = '', ''
         adr = m.full_postadresse(namn=False, as_list=True)
         if len(adr) == 1:
@@ -85,10 +91,13 @@ def simple_member_list(modeladmin, request, queryset):
              m.mobnr,
              m.epost,
              m.lokallag_display(),
-             belop]
+             innbetalt,
+             belop,
+             kid]
         dc.writerow([unicode(s).encode('utf-8') for s in a])
     return response
 simple_member_list.short_description = "Enkel medlemsliste"
+
 
 def csv_list(modeladmin, request, queryset):
     response = HttpResponse(content_type='text/csv; charset=utf-8')
@@ -102,6 +111,7 @@ def csv_list(modeladmin, request, queryset):
 
     return response
 csv_list.short_description = "Full dataliste"
+
 
 def giro_list(modeladmin, request, queryset):
     response = HttpResponse(content_type='text/csv; charset=utf-8')
@@ -155,6 +165,7 @@ def giro_list(modeladmin, request, queryset):
 
     return response
 giro_list.short_description = "Enkel giroliste"
+
 
 @transaction.commit_on_success
 def pdf_giro(modeladmin, request, queryset):
@@ -242,6 +253,7 @@ def _pdf_p(pdf, text, x, y, size_w=None, size_h=None):
     p.wrapOn(pdf, size_w*cm, size_h*cm)
     p.drawOn(pdf, x*cm, y*cm - used_h)
 
+
 def _giro_faktura(pdf, request, m, giro):
     from reportlab.lib.units import cm #, mm
 
@@ -267,8 +279,8 @@ def _giro_faktura(pdf, request, m, giro):
                    now=datetime.date.today(),
                    frist=request.POST.get('frist')),
         15, 26, size_w=4, size_h=6)
-
     return pdf
+
 
 def _giro_medlemskort(pdf, request, m, giro):
     from reportlab.lib.units import cm #, mm
@@ -358,6 +370,7 @@ def lag_giroar(modeladmin, request, queryset):
             g.save()
 lag_giroar.short_description = "Opprett giroar"
 
+
 def giro_status_ferdig(modeladmin, request, queryset):
     with reversion.create_revision():
         reversion.set_comment("Giro status ferdig admin action")
@@ -372,6 +385,7 @@ def giro_status_ferdig(modeladmin, request, queryset):
             g.save()
 giro_status_ferdig.short_description = "Sett giro betalt"
 
+
 def giro_status_postlagt(modeladmin, request, queryset):
     with reversion.create_revision():
         for g in queryset:
@@ -380,6 +394,7 @@ def giro_status_postlagt(modeladmin, request, queryset):
         reversion.set_comment("Giro status postlagt admin action")
         reversion.set_user(request.user)
 giro_status_postlagt.short_description = "Sett girostatus 'Manuelt postlagt'"
+
 
 def giro_status_ventar(modeladmin, request, queryset):
     with reversion.create_revision():
