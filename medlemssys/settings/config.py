@@ -30,6 +30,7 @@ LAG_CSV    = PROJECT_ROOT + "nmu-lag.csv"
 ALLOWED_HOSTS = ('.nynorsk.no',)
 
 KONTONUMMER = "3450 65 48618"
+ORGNUMMER = "959 358 451"
 #MEDIA_ROOT = join(PROJECT_ROOT, 'static')
 #MEDIA_URL = '/static/'
 

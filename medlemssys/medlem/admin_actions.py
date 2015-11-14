@@ -269,13 +269,16 @@ def _giro_faktura(pdf, request, m, giro):
         Kundenr: {m.pk}<br/>
         Fakturanr: {g.pk}<br/>
         Fakturadato: {now}<br/>
+        Organisasjonsnr: {orgnr}<br/>
         Betalingsfrist: {frist}<br/>
+        <br/>
         Til konto: <b>{kontonr}</b><br/>
         KID-nummer: <b>{g.kid}</b><br/>
         Å betala: <b>{g.belop},00</b><br/>
         """.format(m=m,
                    g=giro,
                    kontonr=settings.KONTONUMMER,
+                   orgnr=settings.ORGNUMMER,
                    now=datetime.date.today(),
                    frist=request.POST.get('frist')),
         15, 26, size_w=4, size_h=6)
