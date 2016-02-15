@@ -36,6 +36,7 @@ from innhenting import mod10
 def generate_password(length=7):
     return ''.join(random.choice('abcdefghjkmnpqrstuvwxyz23456789') for x in range(length))
 
+
 class Val(models.Model):
     tittel = models.CharField(_("kort forklaring"), max_length=100, unique=True)
     forklaring = models.TextField(_("lang forklaring"), blank=True)
@@ -49,6 +50,11 @@ class Val(models.Model):
 
     def __unicode__(self):
         return self.tittel
+
+    def num_medlem(self):
+        return self.medlem_set.count()
+    num_medlem.short_description = "medlemstal"
+
 
 class Lokallag(models.Model):
     namn = models.CharField(_("namn"), max_length=255, unique=True)
@@ -79,13 +85,15 @@ class Lokallag(models.Model):
     def styreepostar(self):
         if self.epost:
             return [self.epost]
-        return self.rollemedlem.exclude(epost='').values_list('epost', flat=True)
+        return self.rollemedlem.exclude(epost='').values_list('epost',
+                                                              flat=True)
 
     def styret(self):
         return self.rolle_set.all()
 
     def styret_admin(self):
-        styret = [u"{} ({})".format(x.medlem.admin_change(), x.rolletype) for x in self.styret()]
+        styret = [u"{} ({})".format(x.medlem.admin_change(), x.rolletype)
+                  for x in self.styret()]
         return u', '.join(styret)
     styret_admin.short_description = _("Styret")
     styret_admin.allow_tags = True
@@ -100,6 +108,7 @@ class Lokallag(models.Model):
 
     def __unicode__(self):
         return self.namn
+
 
 class Innmeldingstype(models.Model):
     namn = models.CharField(_("namn"), max_length=255, unique=True)
@@ -189,8 +198,8 @@ class Medlem(models.Model):
     merknad = models.TextField(_("merknad"), blank=True, default="")
 
     # Spesialfelt, denormalisert felt frå Giro
-    _siste_medlemspengar = models.PositiveIntegerField(blank=True, null=True,
-            editable=False, default=None)
+    _siste_medlemspengar = models.PositiveIntegerField(
+        blank=True, null=True, editable=False, default=None)
 
     # Medlemsskapet
     innmeldt_dato = models.DateField(
@@ -586,9 +595,13 @@ class Rolletype(models.Model):
         verbose_name_plural = "rolle i lokallag"
         ordering = ['namn']
 
+    def rolle_num(self):
+        return self.rolle_set.count()
+    rolle_num.short_description = "Folk med rolle"
+
 class Rolle(models.Model):
     medlem = models.ForeignKey(Medlem)
-    lokallag = models.ForeignKey(Lokallag)
+    lokallag = models.ForeignKey(Lokallag, related_name='rolle_set')
     rolletype = models.ForeignKey(Rolletype, blank=True, null=True)
 
     class Meta:
@@ -603,7 +616,8 @@ class LokallagOvervaking(models.Model):
     medlem = models.ForeignKey(Medlem, blank=True, null=True)
     epost = models.CharField(_("epost"), max_length=255, blank=True,
             help_text="""Vert brukt dersom medlem ikkje er satt""")
-    lokallag = models.ForeignKey(Lokallag)
+    lokallag = models.ForeignKey(
+        Lokallag, related_name='lokallag_overvaking_set')
     deaktivert = models.DateTimeField(blank=True, null=True)
     sist_oppdatert = models.DateTimeField(auto_now=True)
 
@@ -626,12 +640,16 @@ class LokallagOvervaking(models.Model):
     def __unicode__(self):
         ekstra = ""
         if self.deaktivert and self.deaktivert < datetime.datetime.now():
-            ekstra = " (deaktivert)"
+            ekstra += " (deaktivert)"
+        if not len(self.epostar()):
+            ekstra += " (tom)"
 
         if self.medlem:
             return u"%s overvakar %s%s" % (self.medlem, self.lokallag, ekstra)
         elif self.epost:
             return u"%s overvakar %s%s" % (self.epost, self.lokallag, ekstra)
+        elif self.lokallag.styreepostar():
+            return u"Styret overvakar %s%s" % (self.lokallag, ekstra)
         else:
             return u"Overvaking %s%s" % (self.lokallag, ekstra)
 
@@ -654,3 +672,11 @@ class PostNummer(models.Model):
 
     def __unicode__(self):
         return u"{0} {1}".format(self.postnr, self.poststad)
+
+    def num_medlem(self):
+        return Medlem.objects.filter(postnr=self.postnr).count()
+    num_medlem.short_description = "medlemstal"
+
+    def num_teljande_medlem(self):
+        return Medlem.objects.filter(postnr=self.postnr).teljande().count()
+    num_teljande_medlem.short_description = "teljande"

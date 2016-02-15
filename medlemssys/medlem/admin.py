@@ -169,32 +169,60 @@ class MedlemAdmin(CompareVersionAdmin):
 class RolleInline(admin.TabularInline):
     model = models.Rolle
     extra = 0
+    raw_id_fields = ['medlem']
 
 
 class LokallagAdmin(CompareVersionAdmin):
-    list_display = ('pk', 'namn', 'num_medlem', 'andsvar',
-        'lokalsats', 'aktivt', 'styret_admin',)
+    list_display = ('pk', 'namn_med_stad', 'num_medlem', 'andsvar',
+                    'epost', 'aktivt', 'styret_admin', 'overvakingar')
     list_editable = ('andsvar', 'aktivt',)
     list_per_page = 200
+    list_filter = (
+        'aktivt',
+        'rolle_set__rolletype',
+        'lokalsats',
+    )
     inlines = [RolleInline,]
     prepopulated_fields = {'slug': ('namn',)}
 
+    def overvakingar(self, obj):
+        def html(o):
+            print(o.epostar_admin())
+            return u'<a href="{url}" title="Til: {epostar}">{tekst}</a>'.format(
+                url=reverse('admin:medlem_lokallagovervaking_change',
+                            args=(o.pk,)),
+                epostar=o.epostar_admin(), tekst=unicode(o))
+        return u', '.join(html(o) for o in obj.lokallag_overvaking_set.all())
+    overvakingar.allow_tags = True
+
+    def namn_med_stad(self, obj):
+        return u'<span title="kommunar: {}\nfylke: {}">{}</span>'.format(
+            obj.kommunes, obj.fylke, obj.namn)
+    namn_med_stad.allow_tags = True
+    namn_med_stad.admin_order_field = 'namn'
+
 
 class LokallagOvervakingAdmin(CompareVersionAdmin):
+    date_hierarchy = 'sist_oppdatert'
     model = models.LokallagOvervaking
     list_display = ('__unicode__', 'lokallag', 'medlem', 'epost',
-                    'epostar_admin', 'sist_oppdatert')
+                    'styreepostar', 'sist_oppdatert')
     list_per_page = 250
+    list_filter = ('deaktivert', 'lokallag__aktivt')
     fields = ('medlem', 'epost', 'lokallag', 'deaktivert', 'sist_oppdatert',
               'epostar_admin')
     readonly_fields = ('sist_oppdatert', 'epostar_admin',)
     raw_id_fields = ['medlem']
+
+    def styreepostar(self, obj):
+        return ', '.join(obj.lokallag.styreepostar())
 
 
 class ValInline(admin.TabularInline):
     model = models.Medlem.val.through
     raw_id_fields = ['medlem']
 class ValAdmin(CompareVersionAdmin):
+    list_display = ('tittel', 'forklaring', 'num_medlem')
     model = models.Val
     inlines = [ValInline,]
     fieldsets = (
@@ -260,14 +288,27 @@ class GiroAdmin(CompareVersionAdmin):
     medlem_admin_change.allow_tags = True
 
 
+class RolletypeAdmin(CompareVersionAdmin):
+    list_display = ('namn', 'rolle_num')
+    inlines = [RolleInline,]
+
+
+class PostNummerAdmin(CompareVersionAdmin):
+    list_display = ('__unicode__', 'postnr', 'poststad',
+                    'num_teljande_medlem', 'num_medlem', 'folketal',
+                    'bydel', 'kommune', 'fylke', 'sist_oppdatert')
+    list_filter = ('fylke', 'datakvalitet')
+    date_hierarchy = 'sist_oppdatert'
+    list_per_page = 400
+
+
 admin.site.register(models.Medlem, MedlemAdmin)
 admin.site.register(models.Lokallag, LokallagAdmin)
 admin.site.register(models.Val, ValAdmin)
 admin.site.register(models.Giro, GiroAdmin)
 admin.site.register(models.LokallagOvervaking, LokallagOvervakingAdmin)
-
-admin.site.register(models.Rolletype)
-admin.site.register(models.PostNummer)
+admin.site.register(models.Rolletype, RolletypeAdmin)
+admin.site.register(models.PostNummer, PostNummerAdmin)
 
 # Ta med lokallag ekstra (XXX: Usikkert om eg treng rolletype og giro)
 #reversion.register(Medlem, follow=["rolle_set", "giroar", "lokallag"])
