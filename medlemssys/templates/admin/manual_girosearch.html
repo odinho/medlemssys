@@ -22,7 +22,7 @@ table ul { padding: 0 0 0 1em; }
     {% if giroar %}
     <div class=form-row>
     <p><table><tr><th>Søk <th>medlemsid <th>giroid <th>KID <th>giro <th>person </tr>
-    {% for giro in giroar %}
+    {% for giro in giroar %}
     {% if 'error' in giro %}
       <tr class=error>
             <td>{{ giro.search }}
