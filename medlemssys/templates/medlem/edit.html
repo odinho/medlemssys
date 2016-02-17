@@ -51,10 +51,13 @@
         Ring og SMS
       {% val_option object 'Ikkje ring' 'Ikkje SMS' %}
         Berre SMS
+      {% val_option object 'Ikkje SMS' 'Ikkje ring' %}
+        Berre ring
       {% val_option object 'Ikkje ring,Ikkje SMS' '' %}
         Ingen telefonbruk
       </select>
 
+      {% comment %}
       <tr><td><label>epost</label> <td><select name=val_epost id=val_epost>
       {% val_option object '' 'Ikkje epost,Ikkje lokallagsepost' %}
         Frå lokallag og NMU
@@ -64,8 +67,9 @@
         Frå NMU
       {% val_option object 'Ikkje epost,Ikkje lokallagsepost' '' %}
         Ingen epost
+      {% endcomment %}
       <tr><td><td>
-      <label><input type=checkbox name=val_nyhendebrev {% val_checked object 'Ikkje nyhendebrev' %} value='Ikkje nyhendebrev'>Ikkje motta nyhendebrev (omtrent 1 gong i månaden)</label>
+      <label><input type=checkbox name=val_nyhendebrev {% val_checked object 'Ikkje nyhendebrev' %} value='Ikkje nyhendebrev'>Ikkje motta nyhendebrev (eit par gongar i året)</label>
 
     </table>
     <div style="width:100%; clear:both; margin-bottom:20px;"></div>
@@ -74,7 +78,7 @@
 {% for r in object.lokallagsrolle.all %}
 <h2>{{ r }}</h2>
 <p>Sidan du har ei rolle i {{ r }}, so kan du sjå medlemslistene til {{ r }}.
-<p><a href='{{ r.listing }}'>Lokallagslister for {{ r }}</a>
+<p><a href='{{ r.listing }}?user_id={{ object.id }}&nykel={{ object.nykel }}'>Lokallagslister for {{ r }}</a>
 {% endfor %}
 </div>
 {% endblock %}

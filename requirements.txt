@@ -8,6 +8,7 @@ reportlab
 #django-reversion-compare
 git+http://github.com/Velmont/django-reversion-compare.git@production#egg=django-reversion-compare
 diff-match-patch
+six
 
 
 # Optional (not in use)

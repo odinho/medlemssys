@@ -18,11 +18,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count
 from django.shortcuts import render_to_response, get_object_or_404
 
 from models import Medlem, Lokallag
+
 
 @login_required
 def home(request):
@@ -34,18 +36,25 @@ def home(request):
         'lokallag': lokallag,
     })
 
-@login_required
+
 def lokallag_home(request, slug):
     lokallag = get_object_or_404(Lokallag, slug=slug)
 
     if not request.user.is_staff:
-        try:
-            medlem_prof = request.user.get_profile()
-        except ObjectDoesNotExist:
-            return render_to_response("error.html", { 'message': """Brukaren din er
-            ikkje kopla opp mot ein medlemsprofil. Det må til for å få løyve til å
-            sjå ting.""" })
-
+        if request.user.is_authenticated():
+            try:
+                medlem_prof = request.user.get_profile()
+            except ObjectDoesNotExist:
+                return render_to_response("error.html", { 'message': """Brukaren din er
+                ikkje kopla opp mot ein medlemsprofil. Det må til for å få løyve til å
+                sjå ting.""" })
+        elif request.GET.get('user_id'):
+            medlem_prof = get_object_or_404(Medlem, pk=request.GET['user_id'])
+            if (not medlem_prof.nykel or medlem_prof.nykel
+                                             != request.GET.get('nykel')):
+                return redirect_to_login(request.get_full_path())
+        else:
+            return redirect_to_login(request.get_full_path())
         if not medlem_prof.lokallagsrolle.filter(slug=slug).exists():
             return render_to_response("error.html", { 'message': "Du har inga rolle i dette lokallaget." })
 
