@@ -141,7 +141,7 @@ INNMELDINGSTYPAR = (
 
 
 class MedlemManager(models.Manager):
-    def get_query_set(self):
+    def get_queryset(self):
         mod_name = settings.BEHAVIOUR_MODULE
         mod = import_module(mod_name)
         try:
@@ -155,7 +155,7 @@ class MedlemManager(models.Manager):
     def __getattr__(self, attr, *args):
         if attr.startswith("_"):
             raise AttributeError
-        return getattr(self.get_query_set(), attr, *args)
+        return getattr(self.get_queryset(), attr, *args)
 
 
 class Medlem(models.Model):
@@ -428,7 +428,8 @@ class Medlem(models.Model):
             self.mobnr = ''.join(self.mobnr.split())
         super(Medlem, self).save(*args, **kwargs)
 
-@transaction.commit_on_success
+
+@transaction.atomic
 def update_denormalized_fields():
     for date in (Giro.objects.values('gjeldande_aar')
                  .distinct().order_by('gjeldande_aar')):
@@ -444,9 +445,6 @@ def update_denormalized_fields():
           medlem__utmeldt_dato__gte=datetime.date.today())
        .delete())
 
-class MedlemForm(ModelForm):
-    class Meta:
-        model = Medlem
 
 class EndraMedlemForm(ModelForm):
     class Meta:
@@ -454,6 +452,7 @@ class EndraMedlemForm(ModelForm):
         fields = ('fornamn', 'mellomnamn', 'etternamn',
                   'fodt', 'postadr', 'ekstraadr', 'postnr', 'epost', 'mobnr',
                   'borteadr', 'bortepostnr')
+
 
 class InnmeldingMedlemForm(ModelForm):
     class Meta:
@@ -471,6 +470,7 @@ class InnmeldingMedlemForm(ModelForm):
         if commit:
             m.save()
         return m
+
 
 
 #def add_medlem_to_newsletters(sender, **kwargs):

@@ -44,7 +44,7 @@ class Command(BaseCommand):
             self.clean_stale()
             self.create_lokallagovervakingar()
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def clean_stale(self):
         stale = LokallagOvervaking.objects.filter(
             lokallag__aktivt=False,
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             lo.deaktivert = datetime.datetime.now()
             lo.save()
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def create_lokallagovervakingar(self):
         new = Lokallag.objects.filter(aktivt=True, lokallagovervaking__isnull=True)
         for n in new:

@@ -1,19 +1,10 @@
-Django           >= 1.6, < 1.7
+Django           >= 1.7, < 1.8
 django-reversion >= 1.8, < 1.9
 python-dateutil  <  2.0 # 2+ is only for python 3
 django_extensions
 django-apptemplates
-south
 reportlab
 #django-reversion-compare
 git+http://github.com/Velmont/django-reversion-compare.git@production#egg=django-reversion-compare
 diff-match-patch
 six
-
-
-# Optional (not in use)
-#django-tagging  == 0.3.1
-#vobject         == 0.8.1c
-#xlrd            == 0.7.1
-#xlwt            == 0.7.2
-#-e git://github.com/Fantomas42/emencia-django-newsletter.git@051cc6b4e9b17405b8de87411f4dd5a45009dbda#egg=emencia.django.newsletter-0.1-py2.6-dev

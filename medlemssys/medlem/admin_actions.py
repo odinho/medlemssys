@@ -36,7 +36,7 @@ import admin # reversion
 from .forms import SuggestedLokallagForm
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def members_meld_ut(modeladmin, request, queryset):
     today = timezone.now().date()
     with reversion.create_revision():
@@ -169,7 +169,7 @@ def giro_list(modeladmin, request, queryset):
 giro_list.short_description = "Enkel giroliste"
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def pdf_giro(modeladmin, request, queryset):
     # User has already written some text, make PDF
     if request.POST.get('post'):
@@ -336,7 +336,7 @@ def _giro_medlemskort(pdf, request, m, giro):
     return pdf
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def lag_giroar(modeladmin, request, queryset):
     from medlem.models import Giro
 
@@ -411,7 +411,7 @@ def giro_status_ventar(modeladmin, request, queryset):
 giro_status_ventar.short_description = "Sett girostatus 'Ventar'"
 
 
-@transaction.commit_on_success
+@transaction.atomic
 def suggest_lokallag(modeladmin, request, queryset):
     if request.POST.get('post'):
         updated = []

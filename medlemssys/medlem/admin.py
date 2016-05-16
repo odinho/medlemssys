@@ -127,7 +127,7 @@ class MedlemAdmin(CompareVersionAdmin):
         return actions
 
 
-    def queryset(self, request):
+    def get_queryset(self, request):
         self._get_params = request.GET
 
         # use our manager, rather than the default one

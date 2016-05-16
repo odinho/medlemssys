@@ -83,7 +83,7 @@ class StadFilter(ListFilter):
 
     def choices(self, cl):
         from models import PostNummer
-        qs = cl.get_query_set(self.request)
+        qs = cl.get_queryset(self.request)
         yield {
             'selected': self.param('stad_fylke') is None,
             'query_string': cl.get_query_string(

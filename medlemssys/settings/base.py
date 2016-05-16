@@ -35,6 +35,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
 ROOT_URLCONF = 'urls'
 
 INSTALLED_APPS = (
@@ -54,7 +56,6 @@ INSTALLED_APPS = (
 
     'reversion',
     'reversion_compare',
-    'south',
 
 #   'emencia.django.newsletter',
 #   'tagging',

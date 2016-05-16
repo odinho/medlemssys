@@ -34,7 +34,7 @@ class Command(BaseCommand):
     args = '[ ocr_fil.txt ]'
     help = 'Registrerer OCR-innbetalingar'
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def handle(self, *args, **options):
         if len(args):
             fn = args[0]

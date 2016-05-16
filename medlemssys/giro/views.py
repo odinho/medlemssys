@@ -27,7 +27,7 @@ from django.db.models import F
 from medlem.models import Giro
 from models import GiroTemplate
 
-@transaction.commit_on_success
+@transaction.atomic
 def send_ventande_rekningar():
     ventar = Giro.objects.filter(status='V').select_related('medlem')
     for v in ventar:

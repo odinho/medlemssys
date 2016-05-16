@@ -70,7 +70,7 @@ class AccessImporter(object):
         self.lag_fil = lag_fil
         self.bet_fil = bet_fil
 
-    @transaction.commit_on_success
+    @transaction.atomic
     def import_medlem(self):
         liste = csv.reader(open(self.medlem_fil))
         mapping = self.create_mapping(headers=liste.next())
@@ -198,7 +198,7 @@ class AccessImporter(object):
 
     # csv: DIST,FLAG,LLAG,lid,ANDSVAR,LOKALSATS
     # model: namn, fylkeslag, distrikt, andsvar
-    @transaction.commit_on_success
+    @transaction.atomic
     @reversion.create_revision()
     def import_lag(self):
         reversion.set_comment("Import frå Access")
@@ -231,7 +231,7 @@ class AccessImporter(object):
 
     # csv: 0:MEDLNR, 1:BETALT, 2:KONTO, 3:KONTONAMN, 4;DATO, 5:AR, 6:SUM, 7:BETID
     # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
-    @transaction.commit_on_success
+    @transaction.atomic
     @reversion.create_revision()
     def import_bet(self, force_update):
         liste = csv.reader(open(self.bet_fil))
