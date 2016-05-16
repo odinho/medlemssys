@@ -64,6 +64,7 @@ def simple_member_list(modeladmin, request, queryset):
                  "Mobiltelefon",
                  "Epost",
                  "Lokallag",
+                 "Medlemsnummer",
                  "Betalt",
                  u"Beløp".encode('utf-8'),
                  "KID"])
@@ -91,6 +92,7 @@ def simple_member_list(modeladmin, request, queryset):
              m.mobnr,
              m.epost,
              m.lokallag_display(),
+             m.id,
              innbetalt,
              belop,
              kid]
