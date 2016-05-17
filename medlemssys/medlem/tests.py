@@ -23,6 +23,7 @@ import datetime
 from medlem import models
 from medlem.models import Medlem, Giro
 
+
 def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
     year = datetime.date.today().year
     if not name:

@@ -22,18 +22,21 @@ import json
 import re
 import reversion
 import smtplib
+from collections import defaultdict
 from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
 from django.db.models import Q
 from django.http import HttpResponse
+from django.shortcuts import render_to_response
 from django.template import Context, loader
-
-from medlem.models import (
-    Lokallag, Medlem, LokallagOvervaking, Val)
-from .models import LokallagStat
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from medlem import admin
 assert admin # Silence pyflakes
+from medlem.models import (
+    Lokallag, Medlem, LokallagOvervaking, Val)
+from statistikk.models import LokallagStat
+
 
 def update_lokallagstat():
     lokallag = Lokallag.objects.all()
@@ -62,8 +65,6 @@ def update_lokallagstat():
 
     return llstat
 
-from collections import defaultdict
-from django.shortcuts import render_to_response
 
 def vervetopp_json(request):
     nye = Medlem.objects.filter(oppretta__year=2012, status='M')
@@ -81,8 +82,6 @@ def vervetopp_json(request):
 
     return HttpResponse(unicode(json.dumps(count)).encode('utf8'),
             content_type="application/json; charset=utf-8")
-
-from django.views.decorators.clickjacking import xframe_options_exempt
 
 FROM_DATE="2013-08-19"
 TO_DATE="2013-09-29"
@@ -252,6 +251,7 @@ def send_overvakingar():
         overvak.save()
 
     return "Ferdig"
+
 
 def create_overvaking_email(epost_seq, overvaking, lokallag, sist_oppdatering, **ctx):
         ctx['dagar'] = (datetime.datetime.now() - sist_oppdatering).days
