@@ -19,6 +19,8 @@
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 import random
 import datetime
+from importlib import import_module
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
@@ -26,9 +28,7 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.forms import ModelForm
 from django.template.defaultfilters import slugify
-from django.utils.importlib import import_module
 from django.utils.translation import ugettext_lazy as _
-#from emencia.django.newsletter.mailer import mailing_started
 
 from innhenting import mod10
 
@@ -163,8 +163,7 @@ class Medlem(models.Model):
     mellomnamn = models.CharField(_("mellomnamn"), max_length=255,
             blank=True)
     etternamn = models.CharField(_("etternamn"), max_length=255)
-    fodt = models.IntegerField(_(u"født"), max_length=4,
-            blank=True, null=True)
+    fodt = models.IntegerField(_(u"født"), blank=True, null=True)
     # Hadde denne før, men importering gjorde folk so gamle då: default=date.today().year - 17,
 
     # Kontakt
@@ -218,9 +217,9 @@ class Medlem(models.Model):
     # Tilkopla felt
     lokallag = models.ForeignKey(Lokallag,
         blank=True, null=True, on_delete=models.SET_NULL)
-    val = models.ManyToManyField(Val, blank=True, null=True)
+    val = models.ManyToManyField(Val, blank=True)
     lokallagsrolle = models.ManyToManyField(Lokallag,
-        through='Rolle', related_name="rollemedlem", blank=True, null=True)
+        through='Rolle', related_name='rollemedlem', blank=True)
 
     user = models.OneToOneField(User, verbose_name=_("innloggingsbrukar"),
                                 blank=True, null=True)
@@ -472,26 +471,6 @@ class InnmeldingMedlemForm(ModelForm):
         return m
 
 
-
-#def add_medlem_to_newsletters(sender, **kwargs):
-#    from emencia.django.newsletter.models import Contact, MailingList
-#
-#    medlemar = Medlem.objects.all()
-#
-#    subscribers = []
-#    for profile in medlemar:
-#        contact, created = Contact.objects.get_or_create(email=profile.epost,
-#                                                       defaults={'first_name': profile.fornamn,
-#                                                                 'last_name': profile.etternamn,
-#                                                                 'content_object': profile})
-#        subscribers.append(contact)
-#
-#    new_mailing, created = MailingList.objects.get_or_create(name='Alle medlem')
-#    if created:
-#        new_mailing.save()
-#    new_mailing.subscribers.add(*subscribers)
-#    new_mailing.save()
-#mailing_started.connect(add_medlem_to_newsletters)
 
 KONTI = (
     ('A', "Medlemskonto (KID)"),
