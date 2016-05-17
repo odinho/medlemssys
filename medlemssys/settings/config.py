@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 
-# -*- coding: utf-8 -*-
-# Copyright 2009-2014 Odin Hørthe Omdal
+# Copyright 2009-2016 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.
 
@@ -20,6 +19,9 @@
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 from os.path import join, dirname
 
+from base import TEMPLATES
+
+
 PROJECT_ROOT = join(dirname(__file__), '..')
 REPO_ROOT = join(PROJECT_ROOT, '..')
 
@@ -34,12 +36,9 @@ ORGNUMMER = "959 358 451"
 #MEDIA_ROOT = join(PROJECT_ROOT, 'static')
 #MEDIA_URL = '/static/'
 
-TEMPLATE_DIRS = (
-    join(PROJECT_ROOT, 'templates'),
-)
+TEMPLATES[0]['DIRS'].append(join(PROJECT_ROOT, 'templates'))
 
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = "Norsk Målungdom <skriv@nynorsk.no>"

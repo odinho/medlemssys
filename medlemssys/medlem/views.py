@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 
-# Copyright 2009-2014 Odin Hørthe Omdal
+# Copyright 2009-2016 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.
 
@@ -132,13 +132,12 @@ def get_members(terms, limit=20):
         else:
             search = search & search_part
 
+    results = (Medlem.objects.select_related('lokallag')
+               .prefetch_related('giroar')
+               .order_by('-_siste_medlemspengar', '-fodt'))
     if search:
-        return (
-            Medlem.objects.select_related('giroar')
-            .filter(search)
-            .order_by('-_siste_medlemspengar', '-fodt')[:limit])
-
-    return Medlem.objects.select_related('giroar')[:limit]
+        return results.filter(search)[:limit]
+    return results[:limit]
 
 
 @login_required
@@ -154,9 +153,9 @@ def get_members_json(request):
             member_json['lokallag'] = str(member.lokallag)
         else:
             member_json['lokallag'] = "(ingen)"
-        bet = (member.giroar.filter(innbetalt__isnull=False)
-               .order_by('-gjeldande_aar')
-               .values_list('gjeldande_aar', flat=True))
+        bet = (giro.gjeldande_aar for giro in
+               member.giroar.order_by('-gjeldande_aar') if
+               giro.innbetalt)
         member_json['bet'] = [unicode(x) for x in bet]
         results.append(member_json)
     data = json.dumps(results)

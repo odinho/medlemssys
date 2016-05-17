@@ -533,8 +533,14 @@ class Giro(models.Model):
         if self.belop != self.innbetalt_belop:
             belop = '{0}/{1}'.format(self.innbetalt_belop, self.belop)
         if self.betalt():
-            return '<a href="{url}">{img} {belop}</a>'.format(url=url, img='<img src="/static/admin/img/icon-yes.gif" alt="Betalt">', belop=belop)
-        return '<a href="{url}">{img} {belop}</a>'.format(url=url, img='<img src="/static/admin/img/icon-no.gif" alt="Ikkje betalt">', belop=belop)
+            return '<a href="{url}">{img} {belop}</a>'.format(
+                url=url,
+                img='<img src="/static/admin/img/icon-yes.svg" alt="Betalt">',
+                belop=belop)
+        return '<a href="{url}">{img} {belop}</a>'.format(
+            url=url,
+            img='<img src="/static/admin/img/icon-no.svg" alt="Ikkje betalt">',
+            belop=belop)
     admin_change.short_description = _("Giro")
     admin_change.admin_order_field = 'giro'
     admin_change.allow_tags = True

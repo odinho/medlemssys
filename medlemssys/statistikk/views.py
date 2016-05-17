@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 
-# Copyright 2009-2014 Odin Hørthe Omdal
+# Copyright 2009-2016 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.
 
@@ -254,10 +254,12 @@ def send_overvakingar():
 
 
 def create_overvaking_email(epost_seq, overvaking, lokallag, sist_oppdatering, **ctx):
-        ctx['dagar'] = (datetime.datetime.now() - sist_oppdatering).days
-        ctx['lokallag'] = lokallag
-        ctx['overvaking'] = overvaking
-        context = Context(ctx)
+        context = ctx.copy()
+        context.update({
+          'dagar': (datetime.datetime.now() - sist_oppdatering).days,
+          'lokallag': lokallag,
+          'overvaking': overvaking,
+        })
 
         text_content = (loader
                         .get_template('epostar/lokallag_overvaking.txt')

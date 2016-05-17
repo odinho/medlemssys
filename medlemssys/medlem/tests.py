@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 
-# Copyright 2009-2014 Odin Hørthe Omdal
+# Copyright 2009-2016 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.
 
@@ -17,11 +17,15 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
-from django.test import TestCase
 import datetime
 
+from django.contrib.auth.models import User
+from django.test import Client
+from django.test import TestCase
+
 from medlem import models
-from medlem.models import Medlem, Giro
+from medlem.models import Giro
+from medlem.models import Medlem
 
 
 def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
@@ -141,6 +145,7 @@ def lagTestMedlemar():
     # utmeldt til neste år
 
     return medlemar
+
 
 class MedlemTest(TestCase):
 
@@ -266,3 +271,29 @@ class MedlemManagerTest(TestCase):
                 "23-betaltifjor-utmeldtnesteaar",
                 "23-innmeldtifjor-utmeldtiaar",
             ]), set(ifjor))
+
+
+class WebTest(TestCase):
+    def setUp(self):
+        lagTestMedlemar()
+        self.client = Client()
+        user = User.objects.create_user('test_user', password='pass')
+        self.client.force_login(user)
+
+    def test_api_get_members(self):
+        response = self.client.get('/api/get_members.json')
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(len(response.json()), Medlem.objects.count())
+
+    def test_api_get_members_search_term(self):
+        response = self.client.get('/api/get_members.json?term=23-')
+        self.assertEquals(response.status_code, 200)
+        self.assertEquals(
+            {
+                'bet': ['2016'],
+                'lokallag': '(ingen)',
+                'id': 19,
+                'namn': '23-betalt-utmeldtnesteaar E',
+                'alder': 23
+            }, response.json()[0])
+        self.assertEquals(len(response.json()), 7)
