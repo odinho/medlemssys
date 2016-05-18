@@ -94,21 +94,23 @@ function build_table(members) {
     table.tBodies[0].innerHTML = "";
     members.forEach(function(l) {
         console.log("adding to list: " + l.namn);
+        var admin_url = "{% url 'admin:medlem_medlem_change' 1337 %}"
+                .replace(1337, l.id);
         if (pending_navigation)
         {
             console.log("pending_nav, going to " + l.namn);
-            window.location = "/admin/medlem/medlem/" + l.id + "/";
+            window.location = admin_url;
             pending_navigation = false;
         }
         var tr = document.createElement("tr");
         tr.dataset['id'] = l.id;
-        tr.innerHTML = "<td><a href='/admin/medlem/medlem/" + l.id + "/'>"
+        tr.innerHTML = "<td><a href='" + admin_url + "'>"
                  + l.namn + "</a> (" + l.alder + ")</td>"
                  + "<td>" + (''+l.bet).replace(/,/g, ', ') + "</td>"
                  + "<td>" + l.lokallag + "</td></tr>";
 
         tr.addEventListener('click', function() {
-            window.location = "/admin/medlem/medlem/" + l.id + "/";
+            window.location = admin_url;
             return false;
         });
         table.tBodies[0].appendChild(tr);
