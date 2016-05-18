@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 
-# Copyright 2009-2014 Odin Hørthe Omdal
+# Copyright 2009-2016 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.
 
@@ -415,9 +415,11 @@ class Medlem(models.Model):
         except IndexError:
             return None
 
+    def admin_url(self):
+        return reverse('admin:medlem_medlem_change', args=(self.pk,))
+
     def admin_change(self):
-        url = reverse('admin:medlem_medlem_change', args=(self.pk,))
-        return u'<a href="{0}">{1}</a>'.format(url, self)
+        return u'<a href="{0}">{1}</a>'.format(self.admin_url(), self)
     admin_change.short_description = _("Medlem")
     admin_change.admin_order_field = 'medlem'
     admin_change.allow_tags = True
@@ -570,6 +572,7 @@ class Giro(models.Model):
 
         super(Giro, self).save(*args, **kwargs)
 
+
 class Rolletype(models.Model):
     namn = models.CharField(_("rollenamn"), max_length=64)
 
@@ -577,12 +580,13 @@ class Rolletype(models.Model):
         return self.namn
 
     class Meta:
-        verbose_name_plural = "rolle i lokallag"
+        verbose_name_plural = "rolletyper"
         ordering = ['namn']
 
     def rolle_num(self):
         return self.rolle_set.count()
     rolle_num.short_description = "Folk med rolle"
+
 
 class Rolle(models.Model):
     medlem = models.ForeignKey(Medlem)
@@ -590,7 +594,7 @@ class Rolle(models.Model):
     rolletype = models.ForeignKey(Rolletype, blank=True, null=True)
 
     class Meta:
-        verbose_name_plural = "rolle i lokallag"
+        verbose_name_plural = "roller"
         ordering = ['rolletype', 'medlem']
 
     def __unicode__(self):
@@ -607,7 +611,7 @@ class LokallagOvervaking(models.Model):
     sist_oppdatert = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = "overvaking av lokallag"
+        verbose_name_plural = "lokallagovervakingar"
 
     def epostar(self):
         if self.medlem:

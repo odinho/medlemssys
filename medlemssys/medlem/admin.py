@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 
-# Copyright 2009-2014 Odin Hørthe Omdal
+# Copyright 2009-2016 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.
 
@@ -19,7 +19,6 @@
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 import datetime
 
-from django.conf import settings
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
@@ -109,13 +108,6 @@ class MedlemAdmin(CompareVersionAdmin):
                 admin_actions.suggest_lokallag,
                 admin_actions.members_meld_ut,
               ]
-
-    class Media:
-        css = {
-            "all": (
-                settings.STATIC_URL + "medlem.css",
-                settings.STATIC_URL + "css/forms.css",)
-        }
 
     def get_actions(self, request):
         """Puts the delete action on the bottom"""
@@ -281,6 +273,19 @@ class GiroAdmin(CompareVersionAdmin):
                 admin_actions.csv_list,
                 admin_actions.pdf_giro,
             ]
+
+    def medlem_admin_change(self, obj):
+        return obj.medlem.admin_change()
+    medlem_admin_change.short_description = _("Medlem")
+    medlem_admin_change.admin_order_field = 'medlem'
+    medlem_admin_change.allow_tags = True
+
+
+class RolleAdmin(CompareVersionAdmin):
+    list_filter = ('rolletype', 'lokallag')
+    list_display = ('id', 'medlem_admin_change', 'lokallag', 'rolletype')
+    raw_id_fields = ('medlem', 'lokallag')
+
     def medlem_admin_change(self, obj):
         return obj.medlem.admin_change()
     medlem_admin_change.short_description = _("Medlem")
@@ -308,8 +313,5 @@ admin.site.register(models.Val, ValAdmin)
 admin.site.register(models.Giro, GiroAdmin)
 admin.site.register(models.LokallagOvervaking, LokallagOvervakingAdmin)
 admin.site.register(models.Rolletype, RolletypeAdmin)
+admin.site.register(models.Rolle, RolleAdmin)
 admin.site.register(models.PostNummer, PostNummerAdmin)
-
-# Ta med lokallag ekstra (XXX: Usikkert om eg treng rolletype og giro)
-#reversion.register(Medlem, follow=["rolle_set", "giroar", "lokallag"])
-#reversion.register(Lokallag)
