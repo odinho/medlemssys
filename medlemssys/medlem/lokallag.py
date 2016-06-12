@@ -43,20 +43,25 @@ def lokallag_home(request, slug):
     if not request.user.is_staff:
         if request.user.is_authenticated():
             try:
-                medlem_prof = request.user.get_profile()
+                medlem = request.user.medlem
             except ObjectDoesNotExist:
-                return render_to_response("error.html", { 'message': """Brukaren din er
-                ikkje kopla opp mot ein medlemsprofil. Det må til for å få løyve til å
-                sjå ting.""" })
+                return render_to_response(
+                    "error.html",
+                    {
+                        'message': "Brukaren din er ikkje kopla opp mot ein "
+                        "medlemsprofil. Det må til for å få løyve til å sjå "
+                        "ting."
+                    })
         elif request.GET.get('user_id'):
-            medlem_prof = get_object_or_404(Medlem, pk=request.GET['user_id'])
-            if (not medlem_prof.nykel or medlem_prof.nykel
-                                             != request.GET.get('nykel')):
+            medlem = get_object_or_404(Medlem, pk=request.GET['user_id'])
+            if (not medlem.nykel or medlem.nykel != request.GET.get('nykel')):
                 return redirect_to_login(request.get_full_path())
         else:
             return redirect_to_login(request.get_full_path())
-        if not medlem_prof.lokallagsrolle.filter(slug=slug).exists():
-            return render_to_response("error.html", { 'message': "Du har inga rolle i dette lokallaget." })
+        if not medlem.lokallagsrolle.filter(slug=slug).exists():
+            return render_to_response(
+                "error.html",
+                {'message': "Du har inga rolle i dette lokallaget."})
 
     medlem = Medlem.objects.interessante().filter(lokallag=lokallag)
     betalt_count = Medlem.objects.betalande().filter(lokallag=lokallag).count()
