@@ -25,7 +25,7 @@ import sys
 
 from dateutil.parser import parse
 from django.db import transaction
-import reversion
+from reversion import revisions as reversion
 
 from medlem.models import KONTI
 from medlem.models import Medlem, Lokallag, Giro

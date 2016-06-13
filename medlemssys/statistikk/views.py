@@ -20,16 +20,17 @@
 import datetime
 import json
 import re
-import reversion
 import smtplib
 from collections import defaultdict
+
 from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
-from django.template import Context, loader
+from django.template import loader
 from django.views.decorators.clickjacking import xframe_options_exempt
+from reversion import revisions as reversion
 
 from medlem import admin
 assert admin # Silence pyflakes

@@ -19,7 +19,7 @@
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 import json
 
-import reversion
+from reversion import revisions as reversion
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponse

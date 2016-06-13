@@ -20,7 +20,7 @@
 import csv
 import datetime
 
-import reversion
+from reversion import revisions as reversion
 
 from django.conf import settings
 from django.contrib.admin import helpers
