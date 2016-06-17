@@ -60,8 +60,8 @@ class Command(BaseCommand):
             p.lat = float(row[9])
             p.lon = float(row[10])
             p.datakvalitet = int(row[11])
-            if row[13][0] == "2":
-                p.sist_oppdatert = row[13]
+            if row[-1][0] == "2":
+                p.sist_oppdatert = row[-1]
 
             p.save()
 #           print "'%s' '%s' '%s'" % (row, row[6:7], row[7:8])
