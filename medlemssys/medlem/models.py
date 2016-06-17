@@ -17,6 +17,8 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
+
 import random
 import datetime
 from importlib import import_module
@@ -30,7 +32,7 @@ from django.forms import ModelForm
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 
-from innhenting import mod10
+from medlemssys.innhenting import mod10
 
 
 def generate_password(length=7):
@@ -68,7 +70,7 @@ class Lokallag(models.Model):
 
     aktivt = models.BooleanField(_("aktivt"), default=True)
     epost = models.EmailField(_("epost"), blank=True,
-        help_text=_(u"""Eiga epostliste til styret. Tek prioritet
+        help_text=_("""Eiga epostliste til styret. Tek prioritet
         over å senda enkeltvis til dei som er registrert som styre."""))
 
     class Meta:
@@ -92,9 +94,9 @@ class Lokallag(models.Model):
         return self.rolle_set.all()
 
     def styret_admin(self):
-        styret = [u"{} ({})".format(x.medlem.admin_change(), x.rolletype)
+        styret = ["{} ({})".format(x.medlem.admin_change(), x.rolletype)
                   for x in self.styret()]
-        return u', '.join(styret)
+        return ', '.join(styret)
     styret_admin.short_description = _("Styret")
     styret_admin.allow_tags = True
 
@@ -163,7 +165,7 @@ class Medlem(models.Model):
     mellomnamn = models.CharField(_("mellomnamn"), max_length=255,
             blank=True)
     etternamn = models.CharField(_("etternamn"), max_length=255)
-    fodt = models.IntegerField(_(u"født"), blank=True, null=True)
+    fodt = models.IntegerField(_("født"), blank=True, null=True)
     # Hadde denne før, men importering gjorde folk so gamle då: default=date.today().year - 17,
 
     # Kontakt
@@ -317,7 +319,7 @@ class Medlem(models.Model):
             return "<span class='er-gamal' title='Medlemen er gamal, men " + \
         "framleis teljande (%d år)'>%s</span>" % (self.alder(), self.fodt)
         return "<span title='%d år'>%d</span>" % (self.alder(), self.fodt)
-    fodt_farga.short_description = _(u"Født")
+    fodt_farga.short_description = _("Født")
     fodt_farga.admin_order_field = 'fodt'
     fodt_farga.allow_tags = True
 
@@ -362,7 +364,7 @@ class Medlem(models.Model):
                 adr.append(postnr)
         if as_list:
             return adr
-        return u"\n".join(adr)
+        return "\n".join(adr)
 
     def full_betalingsadresse(self, **kwargs):
         if self.betalt_av:
@@ -380,7 +382,7 @@ class Medlem(models.Model):
 
     def lokallag_display(self):
         if not self.lokallag_id:
-            return u"(ingen)"
+            return "(ingen)"
         return unicode(self.lokallag)
 
     def proposed_lokallag(self):
@@ -419,7 +421,7 @@ class Medlem(models.Model):
         return reverse('admin:medlem_medlem_change', args=(self.pk,))
 
     def admin_change(self):
-        return u'<a href="{0}">{1}</a>'.format(self.admin_url(), self)
+        return '<a href="{0}">{1}</a>'.format(self.admin_url(), self)
     admin_change.short_description = _("Medlem")
     admin_change.admin_order_field = 'medlem'
     admin_change.allow_tags = True
@@ -493,13 +495,17 @@ GIRO_STATUSAR = (
     ('E', "(E) Sendingsfeil"),
     ('M', "Manuelt postlagt"),
     ('F', "Ferdig"),
-    ('U', u"Utgått ubetalt"),
+    ('U', "Utgått ubetalt"),
 )
+
+
+def this_year():
+    return datetime.date.today().year
 
 class Giro(models.Model):
     medlem = models.ForeignKey(Medlem, related_name='giroar')
-    belop = models.PositiveIntegerField(_(u"Beløp"))
-    innbetalt_belop = models.PositiveIntegerField(_(u"Innbetalt beløp"), default=0)
+    belop = models.PositiveIntegerField(_("Beløp"))
+    innbetalt_belop = models.PositiveIntegerField(_("Innbetalt beløp"), default=0)
 
     # XXX This is not really unique, but unique per oppretta_year and oppretta_year - 1
     kid = models.CharField(_("KID-nummer"), max_length=255, blank=True, unique=True)
@@ -512,7 +518,8 @@ class Giro(models.Model):
     desc = models.TextField(_("Forklaring"), blank=True, default="")
 
     status = models.CharField(_("Status"), max_length=1, choices=GIRO_STATUSAR, default="V")
-    gjeldande_aar = models.PositiveIntegerField(_(u"Gjeldande år"), default=lambda: datetime.date.today().year)
+    gjeldande_aar = models.PositiveIntegerField(
+        _("Gjeldande år"), default=this_year)
 
     class Meta:
         verbose_name_plural = "giroar"
@@ -522,7 +529,7 @@ class Giro(models.Model):
         betalt = "IKKJE BETALT"
         if self.betalt():
             betalt = "betalt"
-        return u"%s, %s (%s)" % (self.medlem, self.gjeldande_aar, betalt)
+        return "%s, %s (%s)" % (self.medlem, self.gjeldande_aar, betalt)
 
     def betalt(self):
         if self.innbetalt and self.innbetalt_belop >= self.belop:
@@ -598,7 +605,7 @@ class Rolle(models.Model):
         ordering = ['rolletype', 'medlem']
 
     def __unicode__(self):
-        return u"%s, %s (%s)" % (self.medlem, self.lokallag, self.rolletype)
+        return "%s, %s (%s)" % (self.medlem, self.lokallag, self.rolletype)
 
 
 class LokallagOvervaking(models.Model):
@@ -634,13 +641,13 @@ class LokallagOvervaking(models.Model):
             ekstra += " (tom)"
 
         if self.medlem:
-            return u"%s overvakar %s%s" % (self.medlem, self.lokallag, ekstra)
+            return "%s overvakar %s%s" % (self.medlem, self.lokallag, ekstra)
         elif self.epost:
-            return u"%s overvakar %s%s" % (self.epost, self.lokallag, ekstra)
+            return "%s overvakar %s%s" % (self.epost, self.lokallag, ekstra)
         elif self.lokallag.styreepostar():
-            return u"Styret overvakar %s%s" % (self.lokallag, ekstra)
+            return "Styret overvakar %s%s" % (self.lokallag, ekstra)
         else:
-            return u"Overvaking %s%s" % (self.lokallag, ekstra)
+            return "Overvaking %s%s" % (self.lokallag, ekstra)
 
 class PostNummer(models.Model):
     postnr = models.CharField(max_length=6)
@@ -660,7 +667,7 @@ class PostNummer(models.Model):
         verbose_name_plural = "postnummer"
 
     def __unicode__(self):
-        return u"{0} {1}".format(self.postnr, self.poststad)
+        return "{0} {1}".format(self.postnr, self.poststad)
 
     def num_medlem(self):
         return Medlem.objects.filter(postnr=self.postnr).count()

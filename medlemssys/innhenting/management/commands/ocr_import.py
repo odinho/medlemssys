@@ -18,15 +18,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
-from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError
-from django.db.models import Q
-from django.db import transaction
+
 import os
 
-from medlem.models import Giro
-from medlem.models import update_denormalized_fields
-from ocr import parse_ocr
+from django.conf import settings
+from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
+from django.db import transaction
+from django.db.models import Q
+
+from medlemssys.medlem.models import Giro
+from medlemssys.medlem.models import update_denormalized_fields
+from medlemssys.ocr import parse_ocr
 
 obj = ""
 

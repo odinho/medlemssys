@@ -27,8 +27,8 @@ from dateutil.parser import parse
 from django.db import transaction
 from reversion import revisions as reversion
 
-from medlem.models import KONTI
-from medlem.models import Medlem, Lokallag, Giro
+from medlemssys.medlem.models import KONTI
+from medlemssys.medlem.models import Medlem, Lokallag, Giro
 
 
 logger = logging.getLogger(__name__)

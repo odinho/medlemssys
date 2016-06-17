@@ -21,8 +21,8 @@ import datetime
 import logging
 from django.db.models import Q
 
-from medlem.models import Giro
-from medlem.models import update_denormalized_fields
+from medlemssys.medlem.models import Giro
+from medlemssys.medlem.models import update_denormalized_fields
 
 from . import mod10
 

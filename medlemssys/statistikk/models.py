@@ -17,10 +17,13 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
-from medlem.models import Lokallag
+from medlemssys.medlem.models import Lokallag
+
 
 class LokallagStat(models.Model):
     lokallag = models.ForeignKey(Lokallag, null=True, on_delete=models.SET_NULL)
@@ -40,4 +43,4 @@ class LokallagStat(models.Model):
         unique_together = ('lokallag', 'veke')
 
     def __unicode__(self):
-        return u"{0} {1}".format(self.lokallag, self.veke)
+        return "{0} {1}".format(self.lokallag, self.veke)

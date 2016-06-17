@@ -338,7 +338,7 @@ def _giro_medlemskort(pdf, request, m, giro):
 
 @transaction.atomic
 def lag_giroar(modeladmin, request, queryset):
-    from medlem.models import Giro
+    from medlemssys.medlem.models import Giro
 
     year = datetime.date.today().year
     if not request.POST.get('post'):

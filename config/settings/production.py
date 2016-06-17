@@ -89,8 +89,15 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
 
 # DATABASE CONFIGURATION
 # ------------------------------------------------------------------------------
-# Raises ImproperlyConfigured exception if DATABASE_URL not in os.environ
-DATABASES['default'] = 'postgres://your_database'
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'medlemssys',
+#        'USER': '',
+#        'PASSWORD': '',
+#    }
+#}
 
 # CACHING
 # ------------------------------------------------------------------------------
@@ -157,9 +164,7 @@ LOGGING = {
         },
     },
 }
-SENTRY_CELERY_LOGLEVEL = logging.INFO
 RAVEN_CONFIG = {
-    'CELERY_LOGLEVEL': logging.INFO,
     'DSN': SENTRY_DSN
 }
 

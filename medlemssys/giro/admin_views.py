@@ -21,7 +21,7 @@ from django import forms
 from django.db.models import Q
 from django.shortcuts import render
 
-from medlem.models import Giro
+from medlemssys.medlem.models import Giro
 from .views import send_ventande_rekningar
 
 class GiroSearch(forms.Form):

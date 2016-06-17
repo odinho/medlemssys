@@ -24,7 +24,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from optparse import make_option
 
-from medlem.models import LokallagOvervaking, Lokallag
+from medlemssys.medlem.models import LokallagOvervaking, Lokallag
 
 class Command(BaseCommand):
     args = '[ delete ]'

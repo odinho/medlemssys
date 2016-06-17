@@ -18,16 +18,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
-from django.core.management.base import BaseCommand, CommandError
-from medlem.models import PostNummer
+
 import csv
 import os
+
+from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
+
+from medlemssys.medlem.models import PostNummer
 
 obj = ""
 
 class Command(BaseCommand):
     args = '<Tab seperated Erik Bolstad postnr-CSV files>'
-    help = 'Importerer medlemane inn i databasen'
+    help = """Importerer medlemane inn i databasen"""
 
     def handle(self, *args, **options):
         global obj

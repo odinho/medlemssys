@@ -19,10 +19,12 @@
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 import datetime
 import re
+
 from django.test import TestCase
 
-from medlem.tests import lagTestMedlemar
+from medlemssys.medlem.tests import lagTestMedlemar
 from .views import create_overvaking_email
+
 
 class OvervakingEpostTest(TestCase):
     def setUp(self):

@@ -1,0 +1,33 @@
+# Wheel 0.25+ needed to install certain packages on CPython 3.5+
+# like Pillow and psycopg2
+# See http://bitly.com/wheel-building-fails-CPython-35
+# Verified bug on Python 3.5.1
+wheel==0.29.0
+
+# Bleeding edge Django
+django==1.9.7
+
+# Configuration
+whitenoise==3.2
+
+# Models
+django-model-utils==2.5
+
+# Images
+Pillow==3.2.0
+
+# Python-PostgreSQL Database Adapter
+psycopg2==2.6.1
+
+# Unicode slugification
+unicode-slugify==0.1.3
+django-autoslug==1.9.3
+
+# Time zones support
+pytz==2016.4
+
+
+django-reversion >= 1.10, < 1.11
+django-reversion-compare < 0.7
+python-dateutil  <  2.0 # 2+ is only for python 3
+reportlab

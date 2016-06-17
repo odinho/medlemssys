@@ -13,9 +13,10 @@ from __future__ import absolute_import, unicode_literals
 import os
 
 
-# (medlemssys/config/settings/common.py - 3 = medlemssys/)
-ROOT_DIR = os.path.normpath(os.path.dirname(__file__) + '/../../../')
+# (medlemssys/config/settings/common.py => medlemssys/)
+ROOT_DIR = os.path.normpath(os.path.dirname(__file__) + '/../../')
 APPS_DIR = os.path.join(ROOT_DIR, 'medlemssys')
+
 
 
 # APP CONFIGURATION
@@ -65,9 +66,9 @@ MIDDLEWARE_CLASSES = (
 
 # MIGRATIONS CONFIGURATION
 # ------------------------------------------------------------------------------
-MIGRATION_MODULES = {
-    'sites': 'medlemssys.contrib.sites.migrations'
-}
+#MIGRATION_MODULES = {
+#    'sites': 'medlemssys.contrib.sites.migrations'
+#}
 
 # DEBUG
 # ------------------------------------------------------------------------------
@@ -78,7 +79,7 @@ DEBUG = False
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-FIXTURE_DIRS
 FIXTURE_DIRS = (
-    os.path.join(APPS_DIR, 'fixtures')
+    os.path.join(APPS_DIR, 'fixtures'),
 )
 
 # EMAIL CONFIGURATION
@@ -99,9 +100,11 @@ MANAGERS = ADMINS
 # ------------------------------------------------------------------------------
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
-    'default': os.environ.get('DATABASE_URL', 'postgres:///medlemssys'),
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'medlemssys',
+    }
 }
-DATABASES['default']['ATOMIC_REQUESTS'] = True
 
 
 # GENERAL CONFIGURATION
@@ -208,18 +211,10 @@ AUTHENTICATION_BACKENDS = (
 # SLUGLIFIER
 AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
 
-# CELERY
-# ------------------------------------------------------------------------------
-INSTALLED_APPS += ('medlemssys.taskapp.celery.CeleryConfig',)
-# if you are not using the django database broker (e.g. rabbitmq, redis,
-# memcached), you can remove the next line.
-INSTALLED_APPS += ('kombu.transport.django',)
-BROKER_URL = 'django://'
-
 
 # MEDLEMSSYS CONFIGURATION
 # ------------------------------------------------------------------------------
-BEHAVIOUR_MODULE = 'behaviour.barnogungdom'
+BEHAVIOUR_MODULE = 'medlemssys.behaviour.barnogungdom'
 KONTONUMMER = '3450 65 48618'
 ORGNUMMER = '959 358 451'
 

@@ -15,7 +15,7 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
-from medlem.behaviours import MedlemQuerySetBase
+from medlemssys.medlem.behaviours import MedlemQuerySetBase
 
 class MedlemQuerySet(MedlemQuerySetBase):
     ung_alder = 25

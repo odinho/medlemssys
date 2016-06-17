@@ -24,8 +24,8 @@ from django.test import Client
 from django.test import TestCase
 
 from medlem import models
-from medlem.models import Giro
-from medlem.models import Medlem
+from medlemssys.medlem.models import Giro
+from medlemssys.medlem.models import Medlem
 
 
 def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):

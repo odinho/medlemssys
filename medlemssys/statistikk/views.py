@@ -32,11 +32,11 @@ from django.template import loader
 from django.views.decorators.clickjacking import xframe_options_exempt
 from reversion import revisions as reversion
 
-from medlem import admin
+from medlemssys.medlem import admin
 assert admin # Silence pyflakes
-from medlem.models import (
+from medlemssys.medlem.models import (
     Lokallag, Medlem, LokallagOvervaking, Val)
-from statistikk.models import LokallagStat
+from medlemssys.statistikk.models import LokallagStat
 
 
 def update_lokallagstat():

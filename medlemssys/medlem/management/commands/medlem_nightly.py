@@ -23,8 +23,9 @@ from __future__ import print_function
 
 from django.core.management.base import BaseCommand
 
-from medlem.models import update_denormalized_fields
-from statistikk.views import update_lokallagstat, send_overvakingar
+from medlemssys.medlem.models import update_denormalized_fields
+from medlemssys.statistikk.views import send_overvakingar
+from medlemssys.statistikk.views import update_lokallagstat
 
 
 class Command(BaseCommand):

@@ -19,13 +19,13 @@
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 import smtplib
 
-from django.template import Context, Template
 from django.core.mail import EmailMultiAlternatives
 from django.db import transaction
-from django.db.models import F
+from django.template import Context
+from django.template import Template
 
-from medlem.models import Giro
-from models import GiroTemplate
+from medlemssys.medlem.models import Giro
+from .models import GiroTemplate
 
 @transaction.atomic
 def send_ventande_rekningar():
