@@ -1,1 +1,12 @@
-[{"pk": 1, "model": "giro.girotemplate", "fields": {"trigger": "medlemspengar", "text_template": "Hei {{ medlem.fornamn }}!\r\n\r\nVer venleg og betal medlemspengane dine.\r\n\r\nKr. {{ giro.belop }}\r\nkonto: 1234 1234.\r\nKID: {{\u00a0giro.kid }}", "html_template": "<p>Hei {{ medlem.fornamn }}!\r\n\r\n<p>Ver venleg og betal medlemspengane dine.\r\n\r\n<p>Kr. {{ giro.belop }} til konto 1234 1234.\r\n\r\n<p>KID: {{ giro.kid }}", "subject": "Betal medlemspengar for {{ giro.oppretta.year }}"}}]
+[
+  {
+    "pk": 1,
+    "model": "giro.girotemplate",
+    "fields": {
+      "trigger": "medlemspengar",
+      "text_template": "Hei {{ medlem.fornamn }}!\r\n\r\nVer venleg og betal medlemspengane dine.\r\n\r\nKr. {{ giro.belop }}\r\nkonto: 1234 1234.\r\nKID: {{\u00a0giro.kid }}",
+      "html_template": "<p>Hei {{ medlem.fornamn }}!\r\n\r\n<p>Ver venleg og betal medlemspengane dine.\r\n\r\n<p>Kr. {{ giro.belop }} til konto 1234 1234.\r\n\r\n<p>KID: {{ giro.kid }}",
+      "subject": "Betal medlemspengar for {{ giro.oppretta.year }}"
+    }
+  }
+]
