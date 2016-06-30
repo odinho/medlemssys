@@ -21,6 +21,7 @@ import json
 
 from reversion import revisions as reversion
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.db.models import Q
 from django.http import HttpResponse
 from django.http import HttpResponseForbidden
@@ -134,9 +135,10 @@ def get_members(terms, limit=20):
 
     results = (Medlem.objects.select_related('lokallag')
                .prefetch_related('giroar')
-               .order_by('-_siste_medlemspengar', '-fodt'))
+               .annotate(null_last=Count('_siste_medlemspengar'))
+               .order_by('-null_last', '-_siste_medlemspengar', '-fodt', 'pk'))
     if search:
-        return results.filter(search)[:limit]
+        results = results.filter(search)
     return results[:limit]
 
 

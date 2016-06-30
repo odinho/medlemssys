@@ -23,7 +23,7 @@ from django.contrib.auth.models import User
 from django.test import Client
 from django.test import TestCase
 
-from medlem import models
+from medlemssys.medlem import models
 from medlemssys.medlem.models import Giro
 from medlemssys.medlem.models import Medlem
 
@@ -288,12 +288,10 @@ class WebTest(TestCase):
     def test_api_get_members_search_term(self):
         response = self.client.get('/api/get_members.json?term=23-')
         self.assertEquals(response.status_code, 200)
-        self.assertEquals(
-            {
-                'bet': ['2016'],
-                'lokallag': '(ingen)',
-                'id': 19,
-                'namn': '23-betalt-utmeldtnesteaar E',
-                'alder': 23
-            }, response.json()[0])
+
+        result = response.json()[0]
+        checks = dict(bet=['2016'], lokallag='(ingen)',
+                      namn='23-betalt-utmeldtnesteaar E', alder=23)
+        for key, value in checks.items():
+            self.assertEquals(result[key], value)
         self.assertEquals(len(response.json()), 7)
