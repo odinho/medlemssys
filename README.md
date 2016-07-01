@@ -4,9 +4,14 @@ Medlemssys
 Medlemsregister for norske organisasjonar.
 
 Bygd på datamodellen til Norsk Målungdom sitt gamle Access-register. Ein del
-pragmatiske løysingar som fylgje av det.  Vert sakte modernisert.
+pragmatiske løysingar som fylgje av det.  Ein del hardkoda NMU-ismer, men det
+forsvinn viss nokon (lag saker/issues).  All bruk eg kjenner til har klart seg
+med det som er.  Vert sakte modernisert.
 
-I aktiv bruk sidan 2014.
+- Skrive i Python (Django)
+- I aktiv bruk sidan 2014
+- Kan lesa OCR-filer
+- Admin-grensesnitt med ein del hendig filtrering
 
 
 Installasjon
