@@ -2,43 +2,58 @@
 """
 Production Configurations
 
-- Use djangosecure
-- Use Amazon's S3 for storing static files and uploaded media
-- Use mailgun to send emails
-- Use Redis on Heroku
-
-- Use sentry for error logging
-
+You need to go through this file and change the settings.
 
 """
 from __future__ import absolute_import, unicode_literals
 
-import logging
+from config.settings.common import *  # noqa
 
 
-from .common import *  # noqa
+# Hosts/domain names that are valid for this site
+ALLOWED_HOSTS = []
 
-# SECRET CONFIGURATION
-# ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
-# Raises ImproperlyConfigured exception if DJANGO_SECRET_KEY not in os.environ
-SECRET_KEY = ''
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = 'ENDRA_MEG-e!(o%l1myqy-v(ocxf*xkr)q#=l-^%yxgcod_uicne1wh5ggi1'
 
+# This can be used to implemnet specific behaviours
+BEHAVIOUR_MODULE = 'medlemsys.behaviour.barnogungdom'
 
-# raven sentry client
-# See https://docs.getsentry.com/hosted/clients/python/integrations/django/
-INSTALLED_APPS += ('raven.contrib.django.raven_compat', )
+# Installation specific data
+KONTONUMMER = '3450 65 48618'
+ORGNUMMER = '959 358 451'
+
+# Email
+DEFAULT_FROM_EMAIL = 'Medlemssys <noreply@medlemssys.s0.no>'
+EMAIL_SUBJECT_PREFIX = '[Medlemssys] '
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Database configuration
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'medlemssys',
+#        'USER': '',
+#        'PASSWORD': '',
+#    }
+#}
+
+#
+# Less frequently changed settings
+#
+
+# Custom Admin URL
+#ADMIN_URL = r'^admin/'
 
 # Use Whitenoise to serve static files
 # See: https://whitenoise.readthedocs.io/
-WHITENOISE_MIDDLEWARE = ('whitenoise.middleware.WhiteNoiseMiddleware', )
-MIDDLEWARE_CLASSES = WHITENOISE_MIDDLEWARE + MIDDLEWARE_CLASSES
-RAVEN_MIDDLEWARE = ('raven.contrib.django.raven_compat.middleware.SentryResponseErrorIdMiddleware', )
-MIDDLEWARE_CLASSES = RAVEN_MIDDLEWARE + MIDDLEWARE_CLASSES
-
+#STATIC_ROOT = ''
+MIDDLEWARE_CLASSES = (
+    'whitenoise.middleware.WhiteNoiseMiddleware',) + MIDDLEWARE_CLASSES
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # SECURITY CONFIGURATION
-# ------------------------------------------------------------------------------
 # See https://docs.djangoproject.com/en/1.9/ref/middleware/#module-django.middleware.security
 # and https://docs.djangoproject.com/ja/1.9/howto/deployment/checklist/#run-manage-py-check-deploy
 
@@ -54,30 +69,10 @@ MIDDLEWARE_CLASSES = RAVEN_MIDDLEWARE + MIDDLEWARE_CLASSES
 #CSRF_COOKIE_HTTPONLY = True
 #X_FRAME_OPTIONS = 'DENY'
 
-# SITE CONFIGURATION
-# ------------------------------------------------------------------------------
-# Hosts/domain names that are valid for this site
-# See https://docs.djangoproject.com/en/1.6/ref/settings/#allowed-hosts
-ALLOWED_HOSTS = ['medlemssys.s0.no']
-# END SITE CONFIGURATION
-
 INSTALLED_APPS += ('gunicorn', )
 
 
-# Static Assets
-# ------------------------
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-
-# EMAIL
-# ------------------------------------------------------------------------------
-DEFAULT_FROM_EMAIL = 'Medlemssys <noreply@medlemssys.s0.no>'
-EMAIL_SUBJECT_PREFIX = '[Medlemssys] '
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
-
-
-# TEMPLATE CONFIGURATION
-# ------------------------------------------------------------------------------
+# Template configuration
 # See:
 # https://docs.djangoproject.com/en/dev/ref/templates/api/#django.template.loaders.cached.Loader
 TEMPLATES[0]['OPTIONS']['loaders'] = [
@@ -87,20 +82,9 @@ TEMPLATES[0]['OPTIONS']['loaders'] = [
      ]),
 ]
 
-# DATABASE CONFIGURATION
-# ------------------------------------------------------------------------------
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.postgresql',
-#        'NAME': 'medlemssys',
-#        'USER': '',
-#        'PASSWORD': '',
-#    }
-#}
-
-# CACHING
-# ------------------------------------------------------------------------------
+# Caching
+# Comment out to enable, you obviously need Redis running.
+"""
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -112,7 +96,18 @@ CACHES = {
         }
     }
 }
+"""
 
+
+# Raven Sentry client
+# This is currently disabled. You need to install `raven` and comment out this
+# configuration.
+# See https://docs.getsentry.com/hosted/clients/python/integrations/django/
+"""
+INSTALLED_APPS += ('raven.contrib.django.raven_compat', )
+MIDDLEWARE_CLASSES = (
+    'raven.contrib.django.raven_compat.middleware.'
+    'SentryResponseErrorIdMiddleware',) + MIDDLEWARE_CLASSES
 
 # Sentry Configuration
 SENTRY_DSN = 'your-dsn'
@@ -167,6 +162,5 @@ LOGGING = {
 RAVEN_CONFIG = {
     'DSN': SENTRY_DSN
 }
-
-# Custom Admin URL, use {% url 'admin:index' %}
-#ADMIN_URL = r'^admin/'
+"""
+# Raven end

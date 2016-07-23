@@ -13,9 +13,6 @@ whitenoise==3.2
 # Models
 django-model-utils==2.5
 
-# Images
-Pillow==3.2.0
-
 # Python-PostgreSQL Database Adapter
 psycopg2==2.6.1
 
@@ -25,7 +22,6 @@ django-autoslug==1.9.3
 
 # Time zones support
 pytz==2016.4
-
 
 django-reversion >= 1.10, < 1.11
 django-reversion-compare < 0.7
