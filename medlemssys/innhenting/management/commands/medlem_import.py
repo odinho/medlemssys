@@ -43,43 +43,45 @@ class Command(BaseCommand):
             help="tving gjennom oppdatering av giroar"),
         make_option('--importer',
             dest='importer',
-            default='nmu_access',
-            help="importeringssystem (nmu_access eller nmu_mamut)"),
+            default='guess_csv',
+            help="importeringssystem (guess_csv, nmu_access eller nmu_mamut)"),
         )
 
     def handle(self, *args, **options):
         if options['force_update']:
             self.force_update = True
 
-        medlem_csv = self.get_filename(args, 0, 'MEDLEM_CSV', 'nmu-medl.csv')
-        lag_csv = self.get_filename(args, 1, 'LAG_CSV', 'nmu-lag.csv')
-        bet_csv = self.get_filename(args, 2, 'GIRO_CSV', 'nmu-bet.csv')
 
-        if options['importer'] == 'nmu_access':
-            imp = nmu.AccessImporter(medlem_csv, lag_csv, bet_csv)
+        def getarg(num):
+            try:
+                return args[num]
+            except:
+                return None
+        medlem_csv = getarg(0)
+        lag_csv = getarg(1)
+        bet_csv = getarg(2)
+
+        if options['importer'] == 'guess_csv':
+            imp = nmu.GuessingCSVImporter()
+        elif options['importer'] == 'nmu_access':
+            imp = nmu.AccessImporter()
         elif options['importer'] == 'nmu_mamut':
-            imp = nmu.MamutImporter(medlem_csv, lag_csv, bet_csv)
+            imp = nmu.MamutImporter()
         else:
             raise CommandError("Importeren finst ikkje ({0})".format(options['importer']).encode('utf8'))
 
-        for i in imp.import_lag().values():
-            self.stdout.write(u"Lag: {0}\n".format(i))
+        if lag_csv:
+            for i in imp.import_lag(lag_csv).values():
+                self.stdout.write(u"Lag: {0}\n".format(i))
 
-        for i in imp.import_medlem():
-            self.stdout.write(u"Medlem: {0}\n".format(i))
+        if medlem_csv:
+            for i in imp.import_medlem(medlem_csv):
+                self.stdout.write(u"Medlem: {0}\n".format(i))
 
-        for i in imp.import_bet(force_update=self.force_update):
-            self.stdout.write(u"Betaling: {0}\n".format(i))
+        if bet_csv:
+            for i in imp.import_bet(bet_csv, force_update=self.force_update):
+                self.stdout.write(u"Betaling: {0}\n".format(i))
 
         update_denormalized_fields()
         update_lokallagstat()
         send_overvakingar()
-
-    def get_filename(self, args, num, setting, fallback):
-        if len(args) > num:
-            fn = args[num]
-        else:
-            fn = getattr(settings, setting, fallback)
-        if not os.path.isfile(fn):
-            raise CommandError("Fila finst ikkje ({0})".format(fn).encode('utf8'))
-        return fn

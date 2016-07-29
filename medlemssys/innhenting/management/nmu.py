@@ -17,11 +17,14 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
+
 import csv
 import datetime
 import logging
 import re
 import sys
+import textwrap
 
 from dateutil.parser import parse
 from django.db import transaction
@@ -65,36 +68,19 @@ class AccessImporter(object):
             (33, 0, 'Ikkje Norsk Tidend'), # MNM_B = 31
     )
 
-    def __init__(self, medlem_fil, lag_fil, bet_fil):
-        self.medlem_fil = medlem_fil
-        self.lag_fil = lag_fil
-        self.bet_fil = bet_fil
-
     @transaction.atomic
-    def import_medlem(self):
-        liste = csv.reader(open(self.medlem_fil))
-        mapping = self.create_mapping(headers=liste.next())
-        if not mapping:
-            logger.error(u"%s: ser ikkje ut som ein medlems-csv fil (manglar header?)" % self.medlem_fil)
-            sys.exit()
-
+    def import_medlem(self, medlem_fn):
         with reversion.create_revision():
-            reversion.set_comment(u"Import frå Access")
-
-            for num, rad in enumerate(liste):
-                tmp = {}
-                for typ in self.CSV_MAP.values():
-                    if typ not in mapping:
-                        logger.warning(u"Type '" + unicode(typ) + u"' not in mapping. row = " + unicode(rad))
-                    tmp[typ] = rad[mapping[typ]] \
-                                .decode("utf-8") \
-                                .replace(r"\n", "\n")
-                if not self.clean_medlem_dict(tmp, raw_data=rad):
+            reversion.set_comment(u"CSV import")
+            for num, [medlem_dict, raw_data] in enumerate(
+                    self._get_medlem(medlem_fn)):
+                if not self.clean_medlem_dict(medlem_dict, raw_data):
                     continue
-                val = tmp['_val']
-                tmp = dict((k, tmp[k]) for k in tmp if not k.startswith('_'))
+                val = medlem_dict.get('_val', [])
+                tmp = dict((k, medlem_dict[k]) for k in medlem_dict if not k.startswith('_'))
                 m = Medlem(**tmp)
                 m.save()
+                print("medl", m)
 
                 for v in val:
                     m.set_val(v)
@@ -186,8 +172,24 @@ class AccessImporter(object):
         return True
 
 
+    def _get_medlem(self, medlem_fn):
+        liste = csv.reader(open(medlem_fn))
+        mapping = self._create_mapping(headers=liste.next())
+        if not mapping:
+            logger.error(u"%s: ser ikkje ut som ein medlems-csv fil (manglar header?)" % self.medlem_fil)
+            sys.exit()
+        for rad in liste:
+            tmp = {}
+            for typ in self.CSV_MAP.values():
+                if typ not in mapping:
+                    logger.warning(u"Type '" + unicode(typ) + u"' not in mapping. row = " + unicode(rad))
+                tmp[typ] = rad[mapping[typ]] \
+                            .decode("utf-8") \
+                            .replace(r"\n", "\n")
+            yield tmp, rad
 
-    def create_mapping(self, headers):
+
+    def _create_mapping(self, headers):
         mapping = dict()
         for h in self.CSV_MAP.keys():
             if h in headers:
@@ -195,6 +197,7 @@ class AccessImporter(object):
             else:
                 raise Exception("Fann ikkje {0} som header.".format(h))
         return mapping
+
 
     # csv: DIST,FLAG,LLAG,lid,ANDSVAR,LOKALSATS
     # model: namn, fylkeslag, distrikt, andsvar
@@ -341,15 +344,6 @@ class MamutImporter(AccessImporter):
         else:
             medlem['etternamn'] = '-'
 
-        if (medlem['postnr'].isdigit() and
-                medlem['postnr'] > '0000' and
-                medlem['postnr'] < '9999'):
-            medlem['ekstraadr'] = ''
-        else:
-            medlem['ekstraadr'] = ' '.join((medlem['postnr'],
-                                            medlem['ekstraadr']))
-            medlem['postnr'] = '9999'
-
         medlem['oppretta'] = parse(medlem['innmeldt_dato'],
                 default=datetime.datetime(1800, 1, 1, 0, 0))
         medlem['innmeldt_dato'] = medlem['oppretta'].date()
@@ -401,5 +395,169 @@ class MamutImporter(AccessImporter):
             medlem['lokallag'] = Lokallag.objects.get_or_create(
                 namn=lokallag.strip(),
                 defaults={ 'fylkeslag': '', 'distrikt': '', 'andsvar': ''})[0]
+
+        return True
+
+class GuessingCSVImporter(AccessImporter):
+    MATCH_LOOKUP = {
+      'id': ['pk', 'nr', 'medlemsnr', 'medlemsid', 'mid', 'mnr', 'nummer'],
+      'fornamn': ['fornavn', 'firstname', 'namn', 'navn'],
+      'mellomnamn': ['mellomnavn', 'middlename'],
+      'etternamn': ['etternavn', 'lastname'],
+      'fodt': ['født', 'år', 'born', 'year'],
+      'postnr': ['postnummer', 'zip', 'zipcode'],
+      'epost': ['e-post', 'email'],
+      'postadr': ['postadresse', 'postadresse1' 'gateadresse', 'gateadresse1', 'addresse'],
+      'mobnr': ['mobil', 'tlfmobil', 'tlfnr', 'mobilnummer', 'telefonnummer'],
+      'merknad': ['notat', 'kommentar', 'notes', 'comment', 'extra', 'ekstra'],
+      'kjon': ['kjøn', 'kjønn', 'kjonn', 'sex'],
+      'gjer': ['gjør', 'workplace', 'what'],
+      'innmeldt_dato': ['innmeldttid', 'innmeldt'],
+      'utmeldt_dato': ['utmeldttid', 'utmeldt'],
+      'oppretta': ['created', 'creationdate', 'creationtime',],
+      'oppdatert': ['updated', 'updatedate', 'lastupdated', 'oppdaterttid', 'oppdatertdato'],
+      '_lokallag': ['lokallag', 'lag', 'gruppe'],
+      '_val': ['val', 'valg', 'grupper'],
+      'heimenr': ['tlfheime', 'tlfhjemme', 'tlfprivat', 'privattlf'],
+      'bortepostnr': [],
+      'borteadr': [],
+      'status': [],
+      'mellomnamn': [],
+    }
+
+    REQUIRED = ['id', 'fornamn', 'fodt', 'postnr', 'utmeldt_dato']
+
+    def __init__(self, *args, **kwargs):
+        self._matches = {v: None for v in self.REQUIRED}
+        super(GuessingCSVImporter, self).__init__(*args, **kwargs)
+
+    def _get_medlem(self, medlem_fn):
+        reader = csv.DictReader(open(medlem_fn), delimiter=str(';'))
+        fields = [f.decode('utf-8') for f in reader.fieldnames]
+        if len(fields) < 5:
+            print(textwrap.dedent("""
+                Suspicously few fields: {entr}.
+                Wrong delimiter?  Headers not on first line?
+
+                Quitting.
+                """).format(entr=', '.join(str(s) for s in fields)))
+            sys.exit(1)
+
+        self._create_mapping(fields, self._matches)
+        missing_fields = (
+            set(self.MATCH_LOOKUP.keys()) - set(self._matches.keys()))
+        unused_fields = (
+            set(fields) -
+            set(f.decode('utf-8') for f in self._matches.values()))
+        if missing_fields or unused_fields:
+            print(textwrap.dedent("""
+                The fields and database don't match up perfectly.
+
+                Fields in database that's missing a mapping from CSV:
+                {missing}
+
+                Fields in CSV that's unused for a mapping to database:
+                {unused}
+                """).format(
+                    missing='\n'.join(sorted(missing_fields)),
+                    unused='\n'.join(sorted(unused_fields)))
+                )
+        print(textwrap.dedent("""
+            The mapping between CSV and database is:
+              {mapping}
+            """).format(mapping = self._matches))
+
+        for line in reader:
+            tmp = {db_key: line[csv_key].decode('utf-8') for
+                       db_key, csv_key in self._matches.items()}
+            yield tmp, line
+
+    def _create_mapping(self, input_keys, matches):
+        def find_matches(key_normalizer):
+            for original_key in input_keys:
+                normalized_key = key_normalizer(original_key)
+                for match_key, match_values in self.MATCH_LOOKUP.items():
+                    for match_variation in [match_key] + match_values:
+                        if normalized_key == match_variation:
+                            # csv module in Python 2 is totally fucked up.
+                            # It deals with bytes-as-strings and not unicode
+                            # So this is messed up.
+                            matches[match_key] = original_key.encode('utf-8')
+                            break
+                    if matches.get('match_key'):
+                        continue
+        find_matches(lambda k: ''.join(k.lower().split()))
+        find_matches(lambda k: re.sub(r'[^\w]', '',  k.lower()))
+
+    def clean_medlem_dict(self, medlem, raw_data=None):
+        if not medlem['id'].isdigit():
+            logger.error(u"%s(%s) ugyldig medlemsnummer! Ignorerer medlemen." %
+                (medlem['id'], medlem['fornamn']))
+            return False
+
+        if 'fornamn' in medlem and not 'etternamn' in medlem:
+            namn = medlem['fornamn'].split()
+            if len(namn) > 1:
+                medlem['fornamn'] = " ".join(namn[:-1])
+                medlem['etternamn'] = namn[-1]
+            else:
+                medlem['etternamn'] = '-'
+
+        try:
+            medlem['fodt'] = int(medlem['fodt'])
+        except ValueError:
+            medlem['fodt'] = None
+
+        if len(medlem.get('kjon', '')) > 1:
+            kjon = medlem['kjon'].lower()
+            if kjon in ['g', 'gutt', 'm', 'mann', 'male', 'man']:
+                medlem['kjon'] = 'M'
+            elif kjon in ['j', 'jente', 'k', 'kvinne', 'female', 'woman']:
+                medlem['kjon'] = 'K'
+            else:
+                logger.warning(u"%s(%s) dunno kjon: %s" % (medlem['id'], medlem['fornamn'], medlem['kjon']))
+                medlem['kjon'] = 'U'
+
+        if (medlem['postnr'].isdigit() and
+                medlem['postnr'] > '0000' and
+                medlem['postnr'] < '9999'):
+            medlem['ekstraadr'] = ''
+        else:
+            medlem['ekstraadr'] = ' '.join((medlem['postnr'],
+                                            medlem.get('ekstraadr', '')))
+            medlem['postnr'] = '9999'
+
+        fake_date = datetime.datetime(1800, 1, 1, 0, 0)
+        def makedate(key, fallback=fake_date):
+            try:
+                return parse(medlem[key], default=fallback)
+            except:
+                return fallback
+
+        if not 'oppretta' in medlem:
+            medlem['oppretta'] = makedate('innmeldt_dato')
+        medlem['oppdatert'] =  makedate('oppdatert', datetime.datetime.now())
+        medlem['innmeldt_dato'] = makedate('innmeldt_dato')
+        medlem['utmeldt_dato'] =  makedate('utmeldt_dato', None)
+
+        if not '@' in medlem['epost']:
+            medlem['merknad'] = medlem['epost']
+            medlem['epost'] = ''
+        if '<' in medlem['epost']:
+            m = re.search(r'<([^>]+)>', medlem['epost'])
+            if m and m.group(1):
+                medlem['epost'] = m.group(1)
+        if ' ' in medlem['epost']:
+            raise Exception("Mellomrom i epost")
+
+        if medlem['mobnr']:
+            medlem['mobnr'] = ''.join(medlem['mobnr'].split())
+            if len(medlem['mobnr']) < 4:
+                del medlem['mobnr']
+
+        if medlem.get('_lokallag'):
+            medlem['lokallag'] = Lokallag.objects.get_or_create(
+                namn=medlem['_lokallag'].strip(),
+                defaults={ 'fylke': '', 'kommunes': '', 'andsvar': ''})[0]
 
         return True
