@@ -19,6 +19,8 @@
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 import csv
 import datetime
+import os
+from cStringIO import StringIO
 
 from reversion import revisions as reversion
 
@@ -31,6 +33,15 @@ from django.template import Context, Template
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from reportlab.lib.units import cm #, mm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfgen import canvas
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
+
+from medlemssys.innhenting import mod10
+from medlemssys.medlem.models import Giro
 
 import admin # reversion
 from .forms import SuggestedLokallagForm
@@ -173,12 +184,6 @@ giro_list.short_description = "Enkel giroliste"
 def pdf_giro(modeladmin, request, queryset):
     # User has already written some text, make PDF
     if request.POST.get('post'):
-        import os
-        from cStringIO import StringIO
-        from reportlab.pdfgen import canvas
-        from reportlab.pdfbase import pdfmetrics
-        from reportlab.pdfbase.ttfonts import TTFont
-
         pdfmetrics.registerFont(TTFont('OCRB', os.path.dirname(__file__) + '/../giro/OCRB.ttf'))
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'filename=girosending.pdf'
@@ -240,10 +245,6 @@ pdf_giro.short_description = "Lag giro-PDF"
 
 
 def _pdf_p(pdf, text, x, y, size_w=None, size_h=None):
-    from reportlab.lib.units import cm #, mm
-    from reportlab.platypus import Paragraph
-    from reportlab.lib.styles import getSampleStyleSheet
-
     if not size_w:
         size_w = 19
     if not size_h:
@@ -257,8 +258,6 @@ def _pdf_p(pdf, text, x, y, size_w=None, size_h=None):
 
 
 def _giro_faktura(pdf, request, m, giro):
-    from reportlab.lib.units import cm #, mm
-
     pdf.setFont('Helvetica', 16)
     pdf.drawString(1.0*cm, 16*cm, u"%s" % request.POST.get('title'))
 
@@ -288,10 +287,6 @@ def _giro_faktura(pdf, request, m, giro):
 
 
 def _giro_medlemskort(pdf, request, m, giro):
-    from reportlab.lib.units import cm #, mm
-
-    from innhenting import mod10
-
     pdf.setFont('Helvetica', 16)
     pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
     pdf.setFontSize(12)
@@ -338,8 +333,6 @@ def _giro_medlemskort(pdf, request, m, giro):
 
 @transaction.atomic
 def lag_giroar(modeladmin, request, queryset):
-    from medlemssys.medlem.models import Giro
-
     year = datetime.date.today().year
     if not request.POST.get('post'):
         opts = modeladmin.model._meta
