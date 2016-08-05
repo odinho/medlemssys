@@ -7,8 +7,20 @@ You need to go through this file and change the settings.
 """
 from __future__ import absolute_import, unicode_literals
 
+import os
+
 from config.settings.common import *  # noqa
 
+
+DEBUG = True
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(os.path.normpath(os.path.dirname(__file__)),
+                                 'db.sqlite'),
+        }
+    }
 
 # Hosts/domain names that are valid for this site
 ALLOWED_HOSTS = []
@@ -69,7 +81,8 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 #CSRF_COOKIE_HTTPONLY = True
 #X_FRAME_OPTIONS = 'DENY'
 
-INSTALLED_APPS += ('gunicorn', )
+if not DEBUG:
+    INSTALLED_APPS += ('gunicorn', )
 
 
 # Template configuration
