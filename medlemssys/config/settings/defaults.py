@@ -9,7 +9,7 @@ from __future__ import absolute_import, unicode_literals
 
 import os
 
-from config.settings.common import *  # noqa
+from medlemssys.config.settings import *  # noqa
 
 
 DEBUG = True

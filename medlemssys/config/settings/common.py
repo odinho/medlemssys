@@ -13,10 +13,9 @@ from __future__ import absolute_import, unicode_literals
 import os
 
 
-# (medlemssys/config/settings/common.py => medlemssys/)
-ROOT_DIR = os.path.normpath(os.path.dirname(__file__) + '/../../')
-APPS_DIR = os.path.join(ROOT_DIR, 'medlemssys')
-
+# (./medlemssys/config/settings/__init__.py => ./)
+APPS_DIR = os.path.normpath(os.path.dirname(__file__) + '/../../')
+ROOT_DIR = os.path.normpath(APPS_DIR + '/../')
 
 
 # APP CONFIGURATION
@@ -194,10 +193,10 @@ MEDIA_URL = '/media/'
 
 # URL Configuration
 # ------------------------------------------------------------------------------
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = 'medlemssys.config.urls'
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = 'medlemssys.config.wsgi.application'
 
 # Location of root django.contrib.admin URL, use {% url 'admin:index' %}
 ADMIN_URL = r'^admin/'
