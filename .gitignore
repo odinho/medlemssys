@@ -1,6 +1,10 @@
 *.bak
 *~
 
+build/
+dist/
+medlemssys.egg-info/
+
 *.swp
 *.pyc
 *.sqlite
