@@ -29,7 +29,7 @@ ALLOWED_HOSTS = []
 SECRET_KEY = 'ENDRA_MEG-e!(o%l1myqy-v(ocxf*xkr)q#=l-^%yxgcod_uicne1wh5ggi1'
 
 # This can be used to implemnet specific behaviours
-BEHAVIOUR_MODULE = 'medlemsys.behaviour.barnogungdom'
+BEHAVIOUR_MODULE = 'medlemssys.behaviour.barnogungdom'
 
 # Installation specific data
 KONTONUMMER = '3450 65 48618'
