@@ -3,10 +3,13 @@
 
 build/
 dist/
-medlemssys.egg-info/
+*.egg-info/
+*.egg
+.eggs/
 
 *.swp
-*.pyc
+*.py[cod]
+__pycache__/
 *.sqlite
 *.swo
 *.log
@@ -15,5 +18,3 @@ medlemssys.egg-info/
 *.csv
 
 db/*
-
-medlemssys/settings/local.py
