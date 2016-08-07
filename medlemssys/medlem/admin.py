@@ -179,7 +179,6 @@ class LokallagAdmin(CompareVersionAdmin):
 
     def overvakingar(self, obj):
         def html(o):
-            print(o.epostar_admin())
             return u'<a href="{url}" title="Til: {epostar}">{tekst}</a>'.format(
                 url=reverse('admin:medlem_lokallagovervaking_change',
                             args=(o.pk,)),

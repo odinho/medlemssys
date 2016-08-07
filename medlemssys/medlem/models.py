@@ -465,7 +465,6 @@ class InnmeldingMedlemForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(InnmeldingMedlemForm, self).__init__(*args, **kwargs)
         #self.fields["lokallag"].initial = MyModel.objects.get(id=1)
-        print "i: " + str(dir(self))
 
     def save(self, commit=True, *args, **kwargs):
         m = super(InnmeldingMedlemForm, self).save(commit=False)

@@ -80,7 +80,6 @@ class AccessImporter(object):
                 tmp = dict((k, medlem_dict[k]) for k in medlem_dict if not k.startswith('_'))
                 m = Medlem(**tmp)
                 m.save()
-                print("medl", m)
 
                 for v in val:
                     m.set_val(v)
