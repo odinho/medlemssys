@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 
-# Copyright 2009-2014 Odin Hørthe Omdal
+# Copyright 2009-2016 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.
 
@@ -17,47 +17,48 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
+
 from datetime import date
 
 from django.contrib.admin.filters import DateFieldListFilter
 from django.contrib.admin.filters import ListFilter
 from django.contrib.admin.filters import RelatedFieldListFilter
 from django.contrib.admin.filters import SimpleListFilter
-from django.db.models import F
 from django.db.models import Q
 from django.utils.encoding import smart_unicode
 from django.utils.translation import ugettext as _
 
+from medlemssys.behaviour import get_behaviour
 
-class SporjingFilter(SimpleListFilter):
-    title = _(u"spørjingar")
-    parameter_name = 'sporjing'
+from .models import PostNummer
+
+
+class CustomFilter(SimpleListFilter):
+    behaviour_variable = None
+
+    def __init__(self, *args, **kwargs):
+        self.filters = getattr(get_behaviour(), self.behaviour_variable)
+        return super(CustomFilter, self).__init__(*args, **kwargs)
 
     def lookups(self, request, model_admin):
-        return (
-                ('teljande',      u"Teljande"),
-                ('interessante',  u"Interessante"),
-                ('betalande',     u"Betalande"),
-                ('potensielle',   u"Potensielt teljande"),
-                ('teljandeifjor', u"Teljande (i fjor)"),
-                ('betalandeifjor',u"Betalande (i fjor)"),
-            )
+        return [(v.key, v.title) for v in self.filters]
 
     def queryset(self, request, queryset):
-        year = date.today().year
+       lookup = next((v for v in self.filters if v.key == self.value()), None)
+       if lookup:
+           return lookup.filter(queryset)
 
-        if self.value() == 'teljande':
-            return queryset.teljande()
-        elif self.value() == 'interessante':
-            return queryset.interessante()
-        elif self.value() == 'betalande':
-            return queryset.betalande()
-        elif self.value() == 'potensielle':
-            return queryset.potensielt_teljande()
-        elif self.value() == 'teljandeifjor':
-            return queryset.teljande(year - 1)
-        elif self.value() == 'betalandeifjor':
-            return queryset.betalande(year - 1)
+
+class SporjingFilter(CustomFilter):
+    title = _(u"spørjingar")
+    parameter_name = 'sporjing'
+    behaviour_variable = 'medlem_ui_filters'
+
+
+class GiroSporjingFilter(CustomFilter):
+    title = _(u"giro-spørjingar")
+    parameter_name = 'sporjing'
+    behaviour_variable = 'giro_ui_filters'
 
 
 class StadFilter(ListFilter):
@@ -82,7 +83,6 @@ class StadFilter(ListFilter):
         return ('stad_fylke', 'stad_kommune')
 
     def choices(self, cl):
-        from models import PostNummer
         qs = cl.get_queryset(self.request)
         yield {
             'selected': self.param('stad_fylke') is None,
@@ -142,49 +142,6 @@ class StadFilter(ListFilter):
         elif self.param('stad_fylke'):
             return queryset.fylke(self.param('stad_fylke'))
         return queryset
-
-
-class GiroSporjingFilter(SimpleListFilter):
-    title = _(u"giro-spørjingar")
-    parameter_name = 'sporjing'
-
-    def lookups(self, request, model_admin):
-        return (
-                ('strange', u"Rare/feil giroar"),
-                ('teljandeifjor', u"Teljande (i fjor)"),
-                ('teljande', u"Teljande (i år)"),
-                ('potensieltteljande', u"Potensielt teljande (i år)"),
-            )
-
-    def queryset(self, request, queryset):
-        from .models import Medlem
-        year = date.today().year
-
-        if self.value() == 'strange':
-            not_fully_paid = (
-                ~Q(innbetalt_belop=0) & ~Q(innbetalt_belop=F('belop')))
-            paid_but_not_finished = Q(innbetalt__isnull=False) & ~Q(status='F')
-            unpaid_but_finished = (
-                (Q(innbetalt__isnull=True) | Q(innbetalt_belop=0))
-                    & Q(status='F'))
-            return queryset.filter(not_fully_paid |
-                                   paid_but_not_finished |
-                                   unpaid_but_finished)
-        elif self.value() == 'teljande':
-            return (queryset
-                .filter(medlem__in=(Medlem.objects.teljande()
-                                    .values_list('pk', flat=True)))
-                .filter(gjeldande_aar=year))
-        elif self.value() == 'potensieltteljande':
-            return (queryset
-                .filter(medlem__in=(Medlem.objects.potensielt_teljande()
-                                    .values_list('pk', flat=True)))
-                .filter(gjeldande_aar=year))
-        elif self.value() == 'teljandeifjor':
-            return (queryset
-                .filter(medlem__in=(Medlem.objects.teljande(year - 1)
-                                    .values_list('pk', flat=True)))
-                .filter(gjeldande_aar=year - 1))
 
 
 class FodtFilter(SimpleListFilter):
@@ -288,9 +245,11 @@ class AdditiveSubtractiveFilter(RelatedFieldListFilter):
     def queryset(self, request, queryset):
         for key, value in self.used_parameters.items():
             if value == 'exc':
-                queryset = queryset.exclude(val__id=key.replace(self.paramstart, ''))
+                queryset = queryset.exclude(
+                    val__id=key.replace(self.paramstart, ''))
             elif value == 'inc':
-                queryset = queryset.filter(val__id=key.replace(self.paramstart, ''))
+                queryset = queryset.filter(
+                    val__id=key.replace(self.paramstart, ''))
         return queryset
 
     def choices(self, cl):

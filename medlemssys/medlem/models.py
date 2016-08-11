@@ -17,21 +17,20 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import unicode_literals
 
 import random
 import datetime
-from importlib import import_module
 
-from django.conf import settings
 from django.contrib.auth.models import User
-from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.forms import ModelForm
 from django.template.defaultfilters import slugify
 from django.utils.translation import ugettext_lazy as _
 
+from medlemssys.behaviour import get_behaviour
 from medlemssys.innhenting import mod10
 
 
@@ -144,15 +143,7 @@ INNMELDINGSTYPAR = (
 
 class MedlemManager(models.Manager):
     def get_queryset(self):
-        mod_name = settings.BEHAVIOUR_MODULE
-        mod = import_module(mod_name)
-        try:
-            klass = getattr(mod, 'MedlemQuerySet')
-        except AttributeError:
-            raise ImproperlyConfigured(
-                'Behaviour module "{0}" does not define a '
-                '"MedlemQuerySet" class'.format(mod_name))
-        return klass(self.model)
+        return get_behaviour().queryset_class(self.model)
 
     def __getattr__(self, attr, *args):
         if attr.startswith("_"):

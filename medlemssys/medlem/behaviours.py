@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: ts=4 sts=4 expandtab ai
 
-# Copyright 2009-2014 Odin Hørthe Omdal
+# Copyright 2009-2016 Odin Hørthe Omdal
 
 # This file is part of Medlemssys.
 
@@ -17,18 +17,53 @@
 
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
+
+from collections import namedtuple
 from datetime import date
+
+from django.db.models import F
 from django.db.models import Q
 from django.db.models.query import QuerySet
 
-class MedlemQuerySetBase(QuerySet):
+from .models import PostNummer
+
+
+Lookup = namedtuple('Lookup', 'key title filter')
+
+MEDLEM_LOOKUPS = [
+    Lookup('ikkje_utmelde', "Ikkje utmelde",
+           lambda qs: qs.ikkje_utmelde()),
+    Lookup('interessante', "Interessante",
+           lambda qs: qs.interessante()),
+    Lookup('betalande', "Betalande",
+           lambda qs: qs.betalande()),
+    Lookup('betalandeifjor', "Betalande (i fjor)",
+           lambda qs: qs.betalande(date.today().year - 1)),
+    Lookup('nye', "Nye i år",
+           lambda qs: qs.nye()),
+    Lookup('nye_betalande', "Nye i år (betalande)",
+           lambda qs: qs.betalande_nye()),
+]
+
+def strange_giro(queryset):
+    not_fully_paid = (
+        ~Q(innbetalt_belop=0) & ~Q(innbetalt_belop=F('belop')))
+    paid_but_not_finished = Q(innbetalt__isnull=False) & ~Q(status='F')
+    unpaid_but_finished = (
+        Q(innbetalt__isnull=True) | Q(innbetalt_belop=0)
+            & Q(status='F'))
+    return queryset.filter(not_fully_paid |
+                           paid_but_not_finished |
+                           unpaid_but_finished)
+
+GIRO_LOOKUPS = [
+    Lookup('strange', "Rare/feil giroar", strange_giro),
+]
+
+
+class MedlemQuerySet(QuerySet):
     """Inherit from this base, call the class MedlemQuerySet and
     refer to it from BEHAVIOURS_MODULE in settings"""
-    ung_alder = None
-
-    def __init__(self, *args, **kwargs):
-        assert self.ung_alder
-        super(MedlemQuerySetBase, self).__init__(*args, **kwargs)
 
     def alle(self):
         """Alle oppføringar i registeret"""
@@ -56,30 +91,9 @@ class MedlemQuerySetBase(QuerySet):
                 giroar__innbetalt__isnull=False
             ).distinct()
 
-    def unge(self, year=date.today().year):
-        """Medlem rekna som unge (altso i teljande alder)"""
-        return self.ikkje_utmelde(year) \
-            .filter(
-                fodt__gte = year - self.ung_alder
-            )
-
-    def potensielt_teljande(self, year=date.today().year):
-        return self.unge(year).filter(postnr__gt="0000", postnr__lt="9999") \
-            .exclude(giroar__gjeldande_aar=year,
-                giroar__innbetalt__isnull=False)
-
-    def teljande(self, year=date.today().year):
-        """Medlem i teljande alder, med postnr i Noreg og med betalte
-        medlemspengar"""
-        return self.betalande(year) & self.unge(year).distinct().filter(postnr__gt="0000", postnr__lt="9999")
-
     def nye(self, year=date.today().year):
         """Nyinnmelde medlem i dette året"""
         return self.ikkje_utmelde(year).filter(innmeldt_dato__year=year).distinct()
-
-    def teljande_nye(self, year=date.today().year):
-        """Nyinnmelde medlem som er teljande"""
-        return self.nye(year) & self.teljande(year)
 
     def betalande_nye(self, year=date.today().year):
         """Nyinnmelde medlem som har betalt"""
@@ -99,7 +113,6 @@ class MedlemQuerySetBase(QuerySet):
     # Postnummer
     def fylke(self, fylke):
         """Medlem som ikkje er eksplisitt utmelde"""
-        from models import PostNummer
         nr = PostNummer.objects.filter(fylke=fylke).values_list('postnr', flat=True)
         # Converting the QuerySet __in to a list because of a MySQL performance issue
         return self.alle().filter(
@@ -107,7 +120,6 @@ class MedlemQuerySetBase(QuerySet):
 
     def kommune(self, kommune, fylke=None):
         """Medlem som ikkje er eksplisitt utmelde"""
-        from models import PostNummer
         nr = PostNummer.objects.filter(kommune=kommune)
         if fylke:
             nr = nr.filter(fylke=fylke)
