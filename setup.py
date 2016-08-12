@@ -29,7 +29,7 @@ what you need.  You should load in the data to the database and create yourself
 a user::
 
     medlemssys migrate
-    medlemsys createsuperuser
+    medlemssys createsuperuser
 
 If you chose the production setup, you can run gunicorn::
 
@@ -56,7 +56,6 @@ setup(
     author='Odin Hørthe Omdal',
     author_email='odin.omdal@gmail.com',
     url='https://github.com/odinho/medlemssys',
-    download_url='https://github.com/odinho/medlemssys/tarball/v0.5.1',
     install_requires=[
         'Django >= 1.7, < 1.10',
         'logan',
@@ -84,7 +83,7 @@ setup(
     },
     packages=find_packages(),
     package_data={
-        '': ['templates/*', 'templates/**/*', 'static/**'],
+        '': ['templates/*', 'templates/**/*', 'static/**', 'static/**/*'],
         'medlemssys.giro': ['OCRB.ttf'],
     },
     classifiers=[
