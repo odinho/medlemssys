@@ -72,7 +72,7 @@ setup(
         'production': [
             'django-gunicorn',
             'gunicorn',
-            'psycopg',
+            'psycopg2',
             'raven',
         ],
     },
@@ -84,7 +84,7 @@ setup(
     },
     packages=find_packages(),
     package_data={
-        '': ['templates/**/*', 'static/**'],
+        '': ['templates/*', 'templates/**/*', 'static/**'],
         'medlemssys.giro': ['OCRB.ttf'],
     },
     classifiers=[
