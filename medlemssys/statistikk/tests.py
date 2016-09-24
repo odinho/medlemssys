@@ -24,7 +24,37 @@ from django.test import TestCase
 from django.utils import timezone
 
 from medlemssys.medlem.tests import lagTestMedlemar
+from medlemssys.medlem.models import LokallagOvervaking, Lokallag
+from .views import _get_overvakingar
 from .views import create_overvaking_email
+from .views import update_lokallagstat
+
+
+class OvervakingGenerationTest(TestCase):
+    def setUp(self):
+        self.lokallag = Lokallag.objects.create(namn='Lokallag')
+        self.medlemar = lagTestMedlemar()
+        weeks_ago = timezone.now() - datetime.timedelta(days=14)
+        LokallagOvervaking.objects.create(
+            epost='test@s0.no', lokallag=self.lokallag)
+        LokallagOvervaking.objects.update(sist_oppdatert=weeks_ago)
+        self.overvaking = LokallagOvervaking.objects.get()
+        self.medlemar['12-betalt'].oppretta = weeks_ago
+        self.medlemar['12-betalt'].lokallag = self.lokallag
+        self.medlemar['12-betalt'].save()
+        update_lokallagstat(weeks_ago)
+
+    def test_get_overvakingar(self):
+        self.medlemar['25'].lokallag = self.lokallag
+        self.medlemar['25'].save()
+        ctx_list = []
+        epost_seq, overvak, sist_oppdatering, ctx = next(_get_overvakingar())
+        keys = ['vekkflytta_medlem', 'endra_medlem', 'ukjend_endring',
+                'nye_medlem', 'utmeld_medlem', 'tilflytta_medlem',
+                'nye_infofolk']
+        self.assertEquals(ctx.keys(), keys)
+        self.assertEquals([len(ctx[k]) for k in keys], [0, 0, 0, 1, 0, 0, 0])
+        self.assertEquals(ctx['nye_medlem'][0].fornamn, '25')
 
 
 class OvervakingEpostTest(TestCase):
@@ -38,7 +68,8 @@ class OvervakingEpostTest(TestCase):
                 ['test@s0.no'],
                 'Testovervaking',
                 self.medlemar.values()[0].lokallag,
-                sist_oppdatering=timezone.now() - datetime.timedelta(days=13),
+                sist_oppdatering=timezone.now() -
+                    datetime.timedelta(days=13),
                 nye_medlem=(m12, m25b))
         txt = msg.alternatives[0][0]
         re_epost = (r'.*To nye medlemar.*'

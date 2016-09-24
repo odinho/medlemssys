@@ -31,7 +31,7 @@ from django.shortcuts import render_to_response
 from django.template import loader
 from django.utils import timezone
 from django.views.decorators.clickjacking import xframe_options_exempt
-from reversion import revisions as reversion
+from reversion.models import Version
 
 from medlemssys.medlem import admin
 assert admin # Silence pyflakes
@@ -40,11 +40,12 @@ from medlemssys.medlem.models import (
 from medlemssys.statistikk.models import LokallagStat
 
 
-def update_lokallagstat():
+def update_lokallagstat(time):
+    time = time or timezone.now()
     lokallag = Lokallag.objects.all()
 
     llstat = []
-    LokallagStat.objects.filter(veke="{0:%Y-%W}".format(timezone.now())).delete()
+    LokallagStat.objects.filter(veke="{0:%Y-%W}".format(time)).delete()
 
     for llag in lokallag:
         teljande_list = list(llag.medlem_set.teljande().values_list('pk', flat=True))
@@ -52,7 +53,7 @@ def update_lokallagstat():
         try:
             llstat.append(LokallagStat.objects.create(
                     lokallag = llag,
-                    veke = "{0:%Y-%W}".format(timezone.now()),
+                    veke = "{0:%Y-%W}".format(time),
 
                     teljande = json.dumps(teljande_list),
                     interessante = json.dumps(interessante_list),
@@ -123,7 +124,7 @@ def namn_from_pks(model, val_keys):
 
 
 
-def send_overvakingar():
+def _get_overvakingar():
     for overvak in LokallagOvervaking.objects.filter(
             Q(deaktivert__isnull=True)
             | Q(deaktivert__gt=timezone.now()) ):
@@ -156,7 +157,7 @@ def send_overvakingar():
             sist_statistikk = LokallagStat.objects.filter(
                                 oppretta__gt=sist_oppdatering,
                                 lokallag=overvak.lokallag
-                ).order_by("-oppretta")[0]
+                ).order_by("-oppretta").first()
 
             #stderr(u"LokallagStat for {0}, {1:%Y-%W} fanst ikkje. Brukar {2}" \
             #            .format(overvak.lokallag,
@@ -176,11 +177,12 @@ def send_overvakingar():
         tilflytta_medlem, utmeld_medlem, endra_medlem, ukjend_endring = [], [], [], []
         for m in medlem:
             try:
-                old = reversion.get_for_date(m, sist_oppdatering)
-            except reversion.models.Version.DoesNotExist:
+                old = (Version.objects.get_for_object(m)
+                       .filter(revision__date_created__lte=sist_oppdatering)
+                       .order_by('-revision__date_created')[0])
+            except IndexError:
                 continue
-
-            new = reversion.get_for_object(m)[0]
+            new = Version.objects.get_for_object(m)[0]
 
             def _changed_field(k):
                 if old.field_dict[k] == new.field_dict[k]:
@@ -221,37 +223,37 @@ def send_overvakingar():
                 endra_medlem.append(m)
             else:
                 ukjend_endring.append(m)
-
         if not (len(nye_medlem) + len(nye_infofolk) +
                 len(tilflytta_medlem) + len(endra_medlem) +
                 len(utmeld_medlem) + len(vekkflytta_medlem)):
             # Ikkje send noko dersom det er ingenting å melda
             continue
-
         ctx = {
-               'nye_medlem' : nye_medlem,
-             'nye_infofolk' : nye_infofolk,
-             'endra_medlem' : endra_medlem,
-            'utmeld_medlem' : utmeld_medlem,
-           'ukjend_endring' : ukjend_endring,
-         'tilflytta_medlem' : tilflytta_medlem,
-        'vekkflytta_medlem' : vekkflytta_medlem,
-             }
+            'nye_medlem': nye_medlem,
+            'nye_infofolk': nye_infofolk,
+            'endra_medlem': endra_medlem,
+            'utmeld_medlem': utmeld_medlem,
+            'ukjend_endring': ukjend_endring,
+            'tilflytta_medlem': tilflytta_medlem,
+            'vekkflytta_medlem': vekkflytta_medlem,
+        }
+        yield epost_seq, overvak, sist_oppdatering, ctx
+
+
+def send_overvakingar():
+    for epost_seq, overvak, sist_oppdatering, ctx in _get_overvakingar():
         msg = create_overvaking_email(
                 epost_seq,
                 overvak,
                 overvak.lokallag,
                 sist_oppdatering,
                 **ctx)
-
         try:
             msg.send()
         except smtplib.SMTPRecipientsRefused:
             # TODO Do logging
             continue
-
         overvak.save()
-
     return "Ferdig"
 
 
