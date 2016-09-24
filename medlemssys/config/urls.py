@@ -34,28 +34,37 @@ import medlemssys.statistikk.views as statistikk
 
 
 urlpatterns = [
-    url(r'^$', TemplateView.as_view(template_name='pages/home.html'), name='home'),
+    url(r'^$',
+        TemplateView.as_view(template_name='pages/home.html'), name='home'),
+    url(r'^robots.txt$',
+        TemplateView.as_view(template_name='pages/robots.txt'), name='robots'),
 
-    url(r'^admin/innhenting/import_ocr/', innhenting.import_ocr, name='import_ocr'),
+    url(r'^admin/innhenting/import_ocr/',
+        innhenting.import_ocr, name='import_ocr'),
     url(r'^admin/medlem/giro/send/', giro_admin.send, name='giro_send'),
-    url(r'^admin/medlem/giro/manual/', giro_admin.manual_girosearch, name='giro_manual'),
-    url(r'^admin/revisions/', statistikk_admin.show_revisions, name='show_revisions'),
+    url(r'^admin/medlem/giro/manual/',
+        giro_admin.manual_girosearch, name='giro_manual'),
+    url(r'^admin/revisions/',
+        statistikk_admin.show_revisions, name='show_revisions'),
     # Django Admin, use {% url 'admin:index' %}
     url(settings.ADMIN_URL, include(admin.site.urls)),
 
-    url(r'^accounts/login/$', django.contrib.auth.views.login, { 'template_name': 'login.html' }),
-    url(r'^accounts/logout/$', django.contrib.auth.views.logout, { 'next_page': '/' }),
+    url(r'^accounts/login/$',
+        django.contrib.auth.views.login, { 'template_name': 'login.html' }),
+    url(r'^accounts/logout/$',
+        django.contrib.auth.views.logout, { 'next_page': '/' }),
     url(r'^medlem/opprett', medlem.create_medlem),
-    url(r'^medlem/(?P<id>\d+)/endra/(?P<nykel>\w+)', medlem.edit_medlem, name='medlem_edit'),
+    url(r'^medlem/(?P<id>\d+)/endra/(?P<nykel>\w+)',
+        medlem.edit_medlem, name='medlem_edit'),
     url(r'^medlem/ringjelister', medlem.ringjelister),
-    url(r'^lokallag/$',
-        lokallag.home),
+    url(r'^lokallag/$', lokallag.home),
     url(r'^lokallag/(?P<slug>[-\w]+)/$',
         lokallag.lokallag_home, name='lokallag_home'),
     url(r'^takk', TemplateView.as_view(template_name='takk.html')),
     url(r'^stats/vervetopp/', statistikk.vervetopp),
     url(r'^stats/vervometer/', statistikk.vervometer),
-    url(r'^api/get_members.json', medlem.get_members_json, name='get_members_json'),
+    url(r'^api/get_members.json',
+        medlem.get_members_json, name='get_members_json'),
     url(r'^member/search/', medlem.search, name='search'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
