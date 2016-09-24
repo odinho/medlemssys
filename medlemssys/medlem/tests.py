@@ -28,7 +28,7 @@ from medlemssys.medlem.models import Giro
 from medlemssys.medlem.models import Medlem
 
 
-def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
+def lagMedlem(alder, utmeldt=False, har_betalt=False, name="", **kwargs):
     year = datetime.date.today().year
     if not name:
         name = str(alder)
@@ -37,11 +37,8 @@ def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
         if (utmeldt):
              name += "-utmeld"
 
-    medlem = Medlem(
-        fornamn=name,
-        etternamn="E",
-        fodt=year - alder,
-        postnr="5000")
+    medlem = Medlem(fornamn=name, etternamn="E", fodt=year - alder,
+                    postnr="5000", **kwargs)
 
     if (utmeldt):
         medlem.utmeldt_dato = datetime.date.today()
@@ -57,11 +54,12 @@ def lagMedlem(alder, utmeldt=False, har_betalt=False, name=""):
 
     return medlem
 
-def lagTestMedlemar():
+def lagTestMedlemar(**extra_kwargs):
     medlemar = {}
     year = datetime.date.today().year
 
     def opprett_og_lagra_medlem(*args, **kwargs):
+        kwargs.update(extra_kwargs)
         medlem = lagMedlem(*args, **kwargs)
         medlemar[medlem.fornamn] = medlem
         return medlem
