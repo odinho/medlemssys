@@ -368,7 +368,7 @@ class MamutImporter(AccessImporter):
             sagtopp = next((re.match('Sagt opp (\d+)', x)
                            for x in grupper if 'Sagt opp' in x))
             if not sagtopp:
-                raise Exception("wat! nutin: " + str(grupper))
+                raise Exception("wat! nutin: " + unicode(grupper))
             medlem['utmeldt_dato'] = datetime.date(int(sagtopp.group(1)), 1, 1)
             grupper.remove('Sagt opp ' + sagtopp.group(1))
 
@@ -399,20 +399,24 @@ class MamutImporter(AccessImporter):
 
 class GuessingCSVImporter(AccessImporter):
     MATCH_LOOKUP = {
-      'id': ['pk', 'nr', 'medlemsnr', 'medlemsid', 'mid', 'mnr', 'nummer'],
+      'id': ['pk', 'nr', 'medlemsnr', 'medlnr', 'medlid', 'medlemsid',
+             'mid', 'mnr', 'nummer'],
       'fornamn': ['fornavn', 'firstname', 'namn', 'navn'],
       'mellomnamn': ['mellomnavn', 'middlename'],
       'etternamn': ['etternavn', 'lastname'],
-      'fodt': ['født', 'år', 'born', 'year'],
-      'postnr': ['postnummer', 'zip', 'zipcode'],
+      'fodt': ['født', 'år', 'born', 'year', 'fødeår'],
+      'postnr': ['postnummer', 'zip', 'zipcode', 'post'],
       'epost': ['e-post', 'email'],
-      'postadr': ['postadresse', 'postadresse1' 'gateadresse', 'gateadresse1', 'addresse'],
+      'postadr': ['postadresse', 'postadresse1', 'heimetilskrift',
+                  'heimeadresse', 'hjemmeadresse', 'heaimeadr', 'hjemmeadr',
+                  'htilskrift', 'hadresse', 'htilskr', 'gateadresse',
+                  'gateadresse1', 'addresse', 'tilskrift', 'tilskr', 'adr'],
       'mobnr': ['mobil', 'tlfmobil', 'tlfnr', 'mobilnummer', 'telefonnummer'],
       'merknad': ['notat', 'kommentar', 'notes', 'comment', 'extra', 'ekstra'],
       'kjon': ['kjøn', 'kjønn', 'kjonn', 'sex'],
       'gjer': ['gjør', 'workplace', 'what'],
       'innmeldt_dato': ['innmeldttid', 'innmeldt'],
-      'utmeldt_dato': ['utmeldttid', 'utmeldt'],
+      'utmeldt_dato': ['utmeldttid', 'utmeldt', 'utdato', 'datout'],
       'oppretta': ['created', 'creationdate', 'creationtime',],
       'oppdatert': ['updated', 'updatedate', 'lastupdated', 'oppdaterttid', 'oppdatertdato'],
       '_lokallag': ['lokallag', 'lag', 'gruppe'],
@@ -424,14 +428,17 @@ class GuessingCSVImporter(AccessImporter):
       'mellomnamn': [],
     }
 
-    REQUIRED = ['id', 'fornamn', 'fodt', 'postnr', 'utmeldt_dato']
+    REQUIRED = ['id', 'fornamn', 'fodt', 'postnr']
 
     def __init__(self, *args, **kwargs):
         self._matches = {v: None for v in self.REQUIRED}
         super(GuessingCSVImporter, self).__init__(*args, **kwargs)
 
     def _get_medlem(self, medlem_fn):
-        reader = csv.DictReader(open(medlem_fn), delimiter=str(';'))
+        fp = open(medlem_fn)
+        dialect = csv.Sniffer().sniff(fp.read(1024), delimiters=str(';,'))
+        fp.seek(0)
+        reader = csv.DictReader(open(medlem_fn), dialect=dialect)
         fields = [f.decode('utf-8') for f in reader.fieldnames]
         if len(fields) < 5:
             print(textwrap.dedent("""
@@ -439,7 +446,7 @@ class GuessingCSVImporter(AccessImporter):
                 Wrong delimiter?  Headers not on first line?
 
                 Quitting.
-                """).format(entr=', '.join(str(s) for s in fields)))
+                """).format(entr=', '.join(unicode(s) for s in fields)))
             sys.exit(1)
 
         self._create_mapping(fields, self._matches)
@@ -447,7 +454,7 @@ class GuessingCSVImporter(AccessImporter):
             set(self.MATCH_LOOKUP.keys()) - set(self._matches.keys()))
         unused_fields = (
             set(fields) -
-            set(f.decode('utf-8') for f in self._matches.values()))
+            set(f.decode('utf-8') for f in self._matches.values() if f))
         if missing_fields or unused_fields:
             print(textwrap.dedent("""
                 The fields and database don't match up perfectly.
@@ -465,6 +472,14 @@ class GuessingCSVImporter(AccessImporter):
             The mapping between CSV and database is:
               {mapping}
             """).format(mapping = self._matches))
+        missing_required = [k for k, v in self._matches.items() if not v]
+        if missing_required:
+            print(textwrap.dedent("""
+                Some required fields are missing:
+                  {}
+                """).format(', '.join(missing_required)))
+            sys.exit(1)
+        raw_input('Ctrl+C to stop. Enter to continue.');
 
         for line in reader:
             tmp = {db_key: line[csv_key].decode('utf-8') for
@@ -476,6 +491,8 @@ class GuessingCSVImporter(AccessImporter):
             for original_key in input_keys:
                 normalized_key = key_normalizer(original_key)
                 for match_key, match_values in self.MATCH_LOOKUP.items():
+                    if matches.get(match_key):
+                        continue
                     for match_variation in [match_key] + match_values:
                         if normalized_key == match_variation:
                             # csv module in Python 2 is totally fucked up.
@@ -483,10 +500,9 @@ class GuessingCSVImporter(AccessImporter):
                             # So this is messed up.
                             matches[match_key] = original_key.encode('utf-8')
                             break
-                    if matches.get('match_key'):
-                        continue
         find_matches(lambda k: ''.join(k.lower().split()))
         find_matches(lambda k: re.sub(r'[^\w]', '',  k.lower()))
+        find_matches(lambda k: re.sub(r'[\W\d_-]', '',  k.lower()))
 
     def clean_medlem_dict(self, medlem, raw_data=None):
         if not medlem['id'].isdigit():
@@ -539,17 +555,18 @@ class GuessingCSVImporter(AccessImporter):
         medlem['innmeldt_dato'] = makedate('innmeldt_dato')
         medlem['utmeldt_dato'] =  makedate('utmeldt_dato', None)
 
-        if not '@' in medlem['epost']:
-            medlem['merknad'] = medlem['epost']
-            medlem['epost'] = ''
-        if '<' in medlem['epost']:
-            m = re.search(r'<([^>]+)>', medlem['epost'])
-            if m and m.group(1):
-                medlem['epost'] = m.group(1)
-        if ' ' in medlem['epost']:
-            raise Exception("Mellomrom i epost")
+        if medlem.get('epost'):
+            if not '@' in medlem['epost']:
+                medlem['merknad'] = medlem['epost']
+                medlem['epost'] = ''
+            if '<' in medlem['epost']:
+                m = re.search(r'<([^>]+)>', medlem['epost'])
+                if m and m.group(1):
+                    medlem['epost'] = m.group(1)
+            if ' ' in medlem['epost']:
+                raise Exception("Mellomrom i epost")
 
-        if medlem['mobnr']:
+        if medlem.get('mobnr'):
             medlem['mobnr'] = ''.join(medlem['mobnr'].split())
             if len(medlem['mobnr']) < 4:
                 del medlem['mobnr']
