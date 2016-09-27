@@ -83,7 +83,8 @@ setup(
     },
     packages=find_packages(),
     package_data={
-        '': ['templates/*', 'templates/**/*', 'static/**', 'static/**/*'],
+        '': ['templates/*', 'templates/**/*', 'templates/**/**/*',
+             'static/**', 'static/**/*'],
         'medlemssys.giro': ['OCRB.ttf'],
     },
     classifiers=[
