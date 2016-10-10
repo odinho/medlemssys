@@ -28,6 +28,7 @@ from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.forms import ModelForm
 from django.template.defaultfilters import slugify
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from medlemssys.behaviour import get_behaviour
@@ -625,7 +626,7 @@ class LokallagOvervaking(models.Model):
 
     def __unicode__(self):
         ekstra = ""
-        if self.deaktivert and self.deaktivert < datetime.datetime.now():
+        if self.deaktivert and self.deaktivert < timezone.now():
             ekstra += " (deaktivert)"
         if not len(self.epostar()):
             ekstra += " (tom)"
