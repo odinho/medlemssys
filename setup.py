@@ -64,8 +64,8 @@ setup(
         'pytz',
         'reportlab',
         'python-dateutil',
-        'django-reversion < 1.11',
-        'django-reversion-compare < 0.7',
+        'django-reversion >= 2.0',
+        'django-reversion-compare >= 0.7',
     ],
     extras_require={
         'production': [
