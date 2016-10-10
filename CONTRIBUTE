@@ -1,0 +1,10 @@
+Yes please.
+
+At first now, only how to release:
+
+  # Make a version tag
+  git tag v0.1.1
+  # Create
+  python setup.py sdist bdist_wheel
+  # Upload
+  twine upload dist/*
