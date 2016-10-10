@@ -29,6 +29,7 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
 from django.template import loader
+from django.utils import timezone
 from django.views.decorators.clickjacking import xframe_options_exempt
 from reversion import revisions as reversion
 
@@ -43,7 +44,7 @@ def update_lokallagstat():
     lokallag = Lokallag.objects.all()
 
     llstat = []
-    LokallagStat.objects.filter(veke="{0:%Y-%W}".format(datetime.datetime.now())).delete()
+    LokallagStat.objects.filter(veke="{0:%Y-%W}".format(timezone.now())).delete()
 
     for llag in lokallag:
         teljande_list = list(llag.medlem_set.teljande().values_list('pk', flat=True))
@@ -51,7 +52,7 @@ def update_lokallagstat():
         try:
             llstat.append(LokallagStat.objects.create(
                     lokallag = llag,
-                    veke = "{0:%Y-%W}".format(datetime.datetime.now()),
+                    veke = "{0:%Y-%W}".format(timezone.now()),
 
                     teljande = json.dumps(teljande_list),
                     interessante = json.dumps(interessante_list),
@@ -125,20 +126,20 @@ def namn_from_pks(model, val_keys):
 def send_overvakingar():
     for overvak in LokallagOvervaking.objects.filter(
             Q(deaktivert__isnull=True)
-            | Q(deaktivert__gt=datetime.datetime.now()) ):
+            | Q(deaktivert__gt=timezone.now()) ):
         epost_seq = overvak.epostar()
         if not epost_seq:
             # Noone to send to anyway
             continue
 
-        if ((datetime.datetime.now() - overvak.sist_oppdatert)
+        if ((timezone.now() - overvak.sist_oppdatert)
                 < datetime.timedelta(days=6, seconds=22*60*60)):
             # Har sendt epost for mindre enn 7 dagar sidan, so ikkje send noko no.
             # TODO: Dette er ein sjukt dårleg måte å gjera dette på, fiks betre
             continue
 
         sist_oppdatering = overvak.sist_oppdatert
-        overvak.sist_oppdatert = datetime.datetime.now()
+        overvak.sist_oppdatert = timezone.now()
 
         medlem = overvak.lokallag.medlem_set.alle().filter(oppdatert__gt=sist_oppdatering)
         nye_medlem = list(medlem.filter(oppretta__gt=sist_oppdatering).exclude(status='I'))
@@ -257,7 +258,7 @@ def send_overvakingar():
 def create_overvaking_email(epost_seq, overvaking, lokallag, sist_oppdatering, **ctx):
         context = ctx.copy()
         context.update({
-          'dagar': (datetime.datetime.now() - sist_oppdatering).days,
+          'dagar': (timezone.now() - sist_oppdatering).days,
           'lokallag': lokallag,
           'overvaking': overvaking,
         })

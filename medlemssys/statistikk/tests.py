@@ -21,6 +21,7 @@ import datetime
 import re
 
 from django.test import TestCase
+from django.utils import timezone
 
 from medlemssys.medlem.tests import lagTestMedlemar
 from .views import create_overvaking_email
@@ -37,7 +38,7 @@ class OvervakingEpostTest(TestCase):
                 ['test@s0.no'],
                 'Testovervaking',
                 self.medlemar.values()[0].lokallag,
-                sist_oppdatering=datetime.datetime.now() - datetime.timedelta(days=13),
+                sist_oppdatering=timezone.now() - datetime.timedelta(days=13),
                 nye_medlem=(m12, m25b))
         txt = msg.alternatives[0][0]
         re_epost = (r'.*To nye medlemar.*'
@@ -54,7 +55,7 @@ class OvervakingEpostTest(TestCase):
                 ['test@s0.no'],
                 'Testovervaking',
                 self.medlemar.values()[0].lokallag,
-                sist_oppdatering=datetime.datetime.now() - datetime.timedelta(days=13),
+                sist_oppdatering=timezone.now() - datetime.timedelta(days=13),
                 endra_medlem=(m12, m25b))
         txt = msg.alternatives[0][0]
         re_epost = (
@@ -73,7 +74,7 @@ class OvervakingEpostTest(TestCase):
                 ['test@s0.no'],
                 'Testovervaking',
                 self.medlemar.values()[0].lokallag,
-                sist_oppdatering=datetime.datetime.now() - datetime.timedelta(days=13),
+                sist_oppdatering=timezone.now() - datetime.timedelta(days=13),
                 utmeld_medlem=(m12, m25b))
         txt = msg.alternatives[0][0]
         re_epost = (r'.*To utmelde medlemar.*'
@@ -89,7 +90,7 @@ class OvervakingEpostTest(TestCase):
                 ['test@s0.no'],
                 'Testovervaking',
                 self.medlemar.values()[0].lokallag,
-                sist_oppdatering=datetime.datetime.now() - datetime.timedelta(days=13),
+                sist_oppdatering=timezone.now() - datetime.timedelta(days=13),
                 tilflytta_medlem=(m12, m25b))
         txt = msg.alternatives[0][0]
         re_epost = (r'.*To nytilflytta medlemar.*'
@@ -105,7 +106,7 @@ class OvervakingEpostTest(TestCase):
                 ['test@s0.no'],
                 'Testovervaking',
                 self.medlemar.values()[0].lokallag,
-                sist_oppdatering=datetime.datetime.now() - datetime.timedelta(days=13),
+                sist_oppdatering=timezone.now() - datetime.timedelta(days=13),
                 vekkflytta_medlem=(m12, m25b))
         txt = msg.alternatives[0][0]
         re_epost = (ur'.*To fråflytta medlemar.*'

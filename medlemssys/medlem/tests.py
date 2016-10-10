@@ -22,6 +22,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.test import Client
 from django.test import TestCase
+from django.utils import timezone
 
 from medlemssys.medlem import models
 from medlemssys.medlem.models import Giro
@@ -49,7 +50,7 @@ def lagMedlem(alder, utmeldt=False, har_betalt=False, name="", **kwargs):
         g = Giro(medlem=medlem,
                  belop=80,
                  innbetalt_belop=80,
-                 innbetalt=datetime.datetime.now())
+                 innbetalt=timezone.now())
         g.save()
 
     return medlem
@@ -175,7 +176,7 @@ class MedlemTest(TestCase):
         # actually get saved
         m = lagMedlem(29, har_betalt=True, utmeldt=True)
         g = Giro(medlem=m, belop=20,
-                 innbetalt_belop=20, innbetalt=datetime.datetime.now())
+                 innbetalt_belop=20, innbetalt=timezone.now())
         g.save()
         self.assertEqual(
             [g.belop for g in m.giroar.all()], [20, 80])

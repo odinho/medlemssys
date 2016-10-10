@@ -19,12 +19,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
-import datetime
-from django.core.management.base import BaseCommand
-from django.db import transaction
+
 from optparse import make_option
 
+from django.core.management.base import BaseCommand
+from django.db import transaction
+from django.utils import timezone
+
 from medlemssys.medlem.models import LokallagOvervaking, Lokallag
+
 
 class Command(BaseCommand):
     args = '[ delete ]'
@@ -53,7 +56,7 @@ class Command(BaseCommand):
             deaktivert__isnull=True)
         for lo in stale:
             self.out('Deactivating ' + unicode(lo))
-            lo.deaktivert = datetime.datetime.now()
+            lo.deaktivert = timezone.now()
             lo.save()
 
     @transaction.atomic
