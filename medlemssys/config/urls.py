@@ -25,6 +25,7 @@ from django.contrib import admin
 from django.views.generic import TemplateView
 from django.views import defaults as default_views
 
+import medlemssys.api.urls as api_urls
 import medlemssys.giro.admin_views as giro_admin
 import medlemssys.innhenting.views as innhenting
 import medlemssys.medlem.lokallag as lokallag
@@ -63,9 +64,11 @@ urlpatterns = [
     url(r'^takk', TemplateView.as_view(template_name='takk.html')),
     url(r'^stats/vervetopp/', statistikk.vervetopp),
     url(r'^stats/vervometer/', statistikk.vervometer),
+    url(r'^member/search/', medlem.search, name='search'),
     url(r'^api/get_members.json',
         medlem.get_members_json, name='get_members_json'),
-    url(r'^member/search/', medlem.search, name='search'),
+    url(r'^api/',
+        include(api_urls), name='get_members_json'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

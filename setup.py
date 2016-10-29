@@ -64,6 +64,7 @@ setup(
         'pytz',
         'reportlab',
         'python-dateutil',
+        'djangorestframework >= 3.0',
         'django-reversion >= 2.0',
         'django-reversion-compare >= 0.7',
     ],

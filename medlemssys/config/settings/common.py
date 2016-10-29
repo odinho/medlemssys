@@ -36,6 +36,7 @@ DJANGO_APPS = (
     'django.contrib.admin',
 )
 THIRD_PARTY_APPS = (
+    'rest_framework',  # API
     'reversion',  # History
     'reversion_compare',  # UI for history
 )
@@ -46,6 +47,7 @@ LOCAL_APPS = (
     'medlemssys.innhenting',
     'medlemssys.statistikk',
     'medlemssys.giro',
+    'medlemssys.api',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -210,12 +212,22 @@ AUTHENTICATION_BACKENDS = (
 # SLUGLIFIER
 AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
 
+# REST FRAMEWORK CONFIGURATION
+# ------------------------------------------------------------------------------
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAdminUser',
+    ),
+}
 
 # MEDLEMSSYS CONFIGURATION
 # ------------------------------------------------------------------------------
 BEHAVIOUR_MODULE = 'medlemssys.behaviour.barnogungdom'
 KONTONUMMER = '3450 65 48618'
 ORGNUMMER = '959 358 451'
+
+# Token used for creating medlems via API. To stop stupid bots.
+INNMELDING_TOKEN = 'xxxx'
 
 # Deprecated
 GIRO_CSV = os.path.join(ROOT_DIR, 'nmu-bet.csv')

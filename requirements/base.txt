@@ -23,6 +23,7 @@ django-autoslug==1.9.3
 # Time zones support
 pytz==2016.7
 
+djangorestframework==3.5.1
 django-reversion-compare==0.7.1
 django-reversion==2.0.6
 python-dateutil==2.5.3
