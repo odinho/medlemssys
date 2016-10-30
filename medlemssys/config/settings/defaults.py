@@ -31,6 +31,9 @@ SECRET_KEY = 'ENDRA_MEG-e!(o%l1myqy-v(ocxf*xkr)q#=l-^%yxgcod_uicne1wh5ggi1'
 # Token used for creating medlems via API. To stop stupid bots.
 INNMELDING_TOKEN = '73f1eb2'
 
+# Used for allowing CORS, and where the ?next= redirector can point
+TRUSTED_EXTERNAL_DOMAINS = []
+
 # This can be used to implement specific behaviours [barnogungdom, base]
 BEHAVIOUR_MODULE = 'medlemssys.behaviour.barnogungdom'
 

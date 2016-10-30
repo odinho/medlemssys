@@ -59,10 +59,29 @@ class MedlemInnmelding(APITestCase):
            ('L', 'I', 'H'))
 
     def test_namn_not_empty(self):
-        r = self.client.post(reverse('api-innmelding'),
-            self.create_data(namn=''))
+        r = self.client.post(
+            reverse('api-innmelding'), self.create_data(namn=''))
         self.assertEquals(r.data, {
             'non_field_errors': ['Specify either fornamn+etternamn, or namn']})
+
+    def test_cors_nothing_wo_origin(self):
+        res = self.client.post(
+            reverse('api-innmelding'), self.create_data(namn='x'))
+        self.assertEquals(res.has_header('Access-Control-Allow-Origin'), False)
+
+    def test_cors_allowed(self):
+        res = self.client.post(
+            reverse('api-innmelding'), self.create_data(namn='x'),
+            HTTP_ORIGIN='http://example.com:80')
+        self.assertEquals(res.has_header('Access-Control-Allow-Origin'), True)
+        self.assertEquals(
+            res['Access-Control-Allow-Origin'], 'http://example.com:80')
+
+    def test_cors_disallowed(self):
+        res = self.client.post(
+            reverse('api-innmelding'), self.create_data(namn='x'),
+            HTTP_ORIGIN='http://evil.example.com:80')
+        self.assertEquals(res.has_header('Access-Control-Allow-Origin'), False)
 
     def test_namn(self):
         tests = [

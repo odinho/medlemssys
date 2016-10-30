@@ -20,6 +20,7 @@
 
 from __future__ import unicode_literals
 
+from django.conf import settings
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
@@ -29,8 +30,10 @@ from rest_framework.response import Response
 
 from medlemssys.api import serializers
 from medlemssys.medlem import models as medlem_models
+from medlemssys.utils import add_cors
 
 
+@add_cors
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def medlem_innmelding(request):

@@ -229,6 +229,9 @@ ORGNUMMER = '959 358 451'
 # Token used for creating medlems via API. To stop stupid bots.
 INNMELDING_TOKEN = 'xxxx'
 
+# Used for allowing CORS, and where the ?next= redirector can point
+TRUSTED_EXTERNAL_DOMAINS = ['example.com']
+
 # Deprecated
 GIRO_CSV = os.path.join(ROOT_DIR, 'nmu-bet.csv')
 LAG_CSV = os.path.join(ROOT_DIR, 'nmu-lag.csv')
