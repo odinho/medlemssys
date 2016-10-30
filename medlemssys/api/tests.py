@@ -119,15 +119,15 @@ class MedlemAPI(APITestCase):
 
     def test_disallow_read(self):
         r = self.client.get('/api/medlem/')
-        self.assertEquals(r.status_code, 403)
+        self.assertEquals(r.status_code, 401)
         r = self.client.post('/api/medlem/', {})
-        self.assertEquals(r.status_code, 403)
+        self.assertEquals(r.status_code, 401)
         r = self.client.get('/api/medlem/1/')
-        self.assertEquals(r.status_code, 403)
+        self.assertEquals(r.status_code, 401)
         r = self.client.put('/api/medlem/1/')
-        self.assertEquals(r.status_code, 403)
+        self.assertEquals(r.status_code, 401)
         r = self.client.delete('/api/medlem/1/')
-        self.assertEquals(r.status_code, 403)
+        self.assertEquals(r.status_code, 401)
 
     def test_disallow_non_staff(self):
         user = User.objects.create_user(username='user')
