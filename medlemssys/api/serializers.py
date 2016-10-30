@@ -43,7 +43,8 @@ class InnmeldingMedlemSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data):
-        if data.pop('token', None) != settings.INNMELDING_TOKEN:
+        if (data.pop('token', None) != settings.INNMELDING_TOKEN and
+            not settings.DEBUG):
             raise ValidationError(
                 'Invalid innmelding token')
         if not ('fornamn' in data or 'etternamn' in data):
