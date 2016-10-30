@@ -67,8 +67,7 @@ urlpatterns = [
     url(r'^member/search/', medlem.search, name='search'),
     url(r'^api/get_members.json',
         medlem.get_members_json, name='get_members_json'),
-    url(r'^api/',
-        include(api_urls), name='get_members_json'),
+    url(r'^api/', include(api_urls), name='api-root'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

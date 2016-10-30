@@ -84,6 +84,10 @@ Du kan setja standardfilene i settings/local.py. Instellingane heiter:
     GIRO_CSV
     LAG_CSV
 
+API
+---
+
+Det er eit API på /api/.  `POST /api/token` for å få ein API token å bruka.
 
 Køyr testane
 ------------
