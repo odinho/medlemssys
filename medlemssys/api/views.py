@@ -31,9 +31,11 @@ from rest_framework.response import Response
 from medlemssys.api import serializers
 from medlemssys.medlem import models as medlem_models
 from medlemssys.utils import add_cors
+from medlemssys.utils import add_next_redirect
 
 
 @add_cors
+@add_next_redirect
 @api_view(['POST'])
 @permission_classes((AllowAny,))
 def medlem_innmelding(request):

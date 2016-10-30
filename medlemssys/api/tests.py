@@ -99,6 +99,19 @@ class MedlemInnmelding(APITestCase):
                 [r.data[v] for v in ['fornamn', 'etternamn']],
                 [fn, ln])
 
+    def test_next_redir(self):
+        r = self.client.post(
+            reverse('api-innmelding') + '?next=http://example.com/b',
+            self.create_data(namn='x'))
+        self.assertEquals(r.status_code, 302)
+        self.assertEquals(r.content, '')
+
+    def test_next_disallow_redir(self):
+        r = self.client.post(
+            reverse('api-innmelding') + '?next=http://evil.com/b',
+            self.create_data(namn='x'))
+        self.assertEquals(r.status_code, 201)
+
 
 class MedlemAPI(APITestCase):
     def setUp(self):
