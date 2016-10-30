@@ -37,6 +37,7 @@ DJANGO_APPS = (
 )
 THIRD_PARTY_APPS = (
     'rest_framework',  # API
+    'rest_framework.authtoken',
     'reversion',  # History
     'reversion_compare',  # UI for history
 )
@@ -217,6 +218,11 @@ AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAdminUser',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
     ),
 }
 
