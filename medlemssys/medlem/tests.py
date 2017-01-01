@@ -29,8 +29,10 @@ from medlemssys.medlem.models import Giro
 from medlemssys.medlem.models import Medlem
 
 
+year = datetime.date.today().year
+
+
 def lagMedlem(alder, utmeldt=False, har_betalt=False, name="", **kwargs):
-    year = datetime.date.today().year
     if not name:
         name = str(alder)
         if (har_betalt):
@@ -57,7 +59,6 @@ def lagMedlem(alder, utmeldt=False, har_betalt=False, name="", **kwargs):
 
 def lagTestMedlemar(**extra_kwargs):
     medlemar = {}
-    year = datetime.date.today().year
 
     def opprett_og_lagra_medlem(*args, **kwargs):
         kwargs.update(extra_kwargs)
@@ -183,8 +184,6 @@ class MedlemTest(TestCase):
 
 
 class MedlemManagerTest(TestCase):
-    year = datetime.date.today().year
-
     def setUp(self):
         self.medlemar = lagTestMedlemar()
 
@@ -264,7 +263,7 @@ class MedlemManagerTest(TestCase):
             ]), set(interessante))
 
     def test_interessante_ifjor(self):
-        ifjor = Medlem.objects.interessante(self.year-1).values_list('fornamn', flat=True)
+        ifjor = Medlem.objects.interessante(year-1).values_list('fornamn', flat=True)
         self.assertEqual(set([
                 "23-betaltifjor", "23-innmeldtifjor", "23-betaltiforfjor",
                 "23-betaltifjor-utmeldtnesteaar",
@@ -289,7 +288,7 @@ class WebTest(TestCase):
         self.assertEquals(response.status_code, 200)
 
         result = response.json()[0]
-        checks = dict(bet=['2016'], lokallag='(ingen)',
+        checks = dict(bet=[str(year)], lokallag='(ingen)',
                       namn='23-betalt-utmeldtnesteaar E', alder=23)
         for key, value in checks.items():
             self.assertEquals(result[key], value)
