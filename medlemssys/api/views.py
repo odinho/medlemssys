@@ -21,6 +21,7 @@
 from __future__ import unicode_literals
 
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import api_view
@@ -34,6 +35,7 @@ from medlemssys.utils import add_cors
 from medlemssys.utils import add_next_redirect
 
 
+@csrf_exempt
 @add_cors
 @add_next_redirect
 @api_view(['POST'])
