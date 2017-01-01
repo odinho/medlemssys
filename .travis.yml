@@ -1,9 +1,18 @@
 sudo: false
 language: python
 python:
-  - "2.7"
+- '2.7'
 install: pip install -r requirements/local.txt
 script: python manage.py test
 cache:
   directories:
-    - $HOME/.cache/pip/wheels
+  - $HOME/.cache/pip/wheels
+deploy:
+  provider: pypi
+  user: velmont.no
+  password:
+    secure: ww7KQxYU5ho7UDbviTStUKirTCoRAhPmFTXVHBd3KlAlgtm5LU5Tap9+Qke1Dn8lZJ/CxvrHv3lTFRJLPvhnwvcqTxtLXxHKkhZoa2mnyxvOa9+9muZVNVxXZCgAY5ehIvrWHCz8TU4e1hMIiXHRH7bAgXf3bcDz+2q5qtJZ2VljT25ULPvpgD9trVd0kljXy7DhES7oDMwWATFTfuf7jQkrRkiyXYV1BjLp+RAZMtbxS4gbGbUWGVOk2E69SR4USd1hQza1JNpMfnPdIU4T8uCknU4DjVI9oGxKjK/X31Hw0DxSXRvtq4lBX3EDFjjvaRMWsyh2zkrDWZqODRFc9mUVr+Rllk6N898W0SBrdyENhZOFCU+HoM4y5AEutgpxP82mRpYtlssSGsljivZAao2NE28/kBv1mCk70wL4FiUZUpzBi4k5HqSEtGalLSA06xLXOl6ttpu3bsgBYinj/ZQbVurm3yhAeDgP0mBB4wHU9rlcp10YAWj43toHVHLoCWIjoWcK3i5o6eWw2GbL5Std2RLBdoB1HaEgrLvqs2G40BttKMhjZ6qrw13CyC5ExwgyL+Ek/BPWf27kiOHd2hXego+k3GXICsz9U1nLPDdvPBPlhEScFxO73CJBoc2/Lqz39UqljWD9raGkyhn1IThJ0pTK7BYff5SZ7dGfTNc=
+  on:
+    tags: true
+    repo: odinho/medlemssys
+  distributions: sdist bdist_wheel
