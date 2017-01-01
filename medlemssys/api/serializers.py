@@ -30,21 +30,22 @@ from medlemssys.medlem.models import Medlem
 class InnmeldingMedlemSerializer(serializers.ModelSerializer):
     namn = serializers.CharField(write_only=True, required=False)
     token = serializers.CharField(write_only=True)
+
     class Meta:
         fields = (
             'fornamn', 'etternamn', 'postnr', 'fodt', 'epost', 'mobnr',
             'stad', 'namn', 'token')
         model = Medlem
         extra_kwargs = {
-           'fodt': { 'required': True },
-           'fornamn': { 'required': False },
-           'etternamn': { 'required': False },
-           'stad': { 'read_only': True },
+           'fodt': {'required': True},
+           'fornamn': {'required': False},
+           'etternamn': {'required': False},
+           'stad': {'read_only': True},
         }
 
     def validate(self, data):
-        if (data.pop('token', None) != settings.INNMELDING_TOKEN and
-            not settings.DEBUG):
+        if not settings.INNMELDING_TOKEN and not settings.DEBUG or (
+                data.pop('token', None) != settings.INNMELDING_TOKEN):
             raise ValidationError(
                 'Invalid innmelding token')
         if not ('fornamn' in data or 'etternamn' in data):
