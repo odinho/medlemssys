@@ -142,7 +142,10 @@ class MedlemAPI(APITestCase):
         self.client.force_authenticate(user)
         r = self.client.get('/api/medlem/')
         self.assertEquals(r.status_code, 200)
-        self.assertEquals(len(r.data), 19)
+        self.assertEquals(r.data['count'], 19)
+        self.assertEquals(len(r.data['results']), 19)
+        self.assertEquals(
+            r.data['results'][0]['fornamn'], '23-betalt-utmeldtnesteaar')
 
     def test_medlem_single(self):
         user = User.objects.create_user(username='user', is_staff=True)
