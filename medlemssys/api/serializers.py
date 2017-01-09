@@ -33,13 +33,14 @@ class InnmeldingMedlemSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'fornamn', 'etternamn', 'postnr', 'fodt', 'epost', 'mobnr',
+            'id', 'fornamn', 'etternamn', 'postnr', 'fodt', 'epost', 'mobnr',
             'stad', 'namn', 'token')
         model = Medlem
         extra_kwargs = {
+           'etternamn': {'required': False},
            'fodt': {'required': True},
            'fornamn': {'required': False},
-           'etternamn': {'required': False},
+           'id': {'read_only': True},
            'stad': {'read_only': True},
         }
 

@@ -49,9 +49,10 @@ class MedlemInnmelding(APITestCase):
         r = self.client.post(reverse('api-innmelding'),
             self.create_data(fornamn='Å', etternamn='L'))
         self.assertEquals(status.HTTP_201_CREATED, r.status_code)
+        self.assertTrue(int(r.data.pop('id')) > 0, 'valid id')
         self.assertEquals(r.data, {
             'fornamn': 'Å', 'etternamn': 'L', 'fodt': 2000, 'postnr': '5003',
-            'stad': '?', 'mobnr': '', 'epost': ''
+            'stad': '?', 'mobnr': '', 'epost': '',
         })
         self.assertEquals(
            Medlem.objects.values_list(
