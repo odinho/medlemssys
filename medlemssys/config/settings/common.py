@@ -235,7 +235,7 @@ KONTONUMMER = '3450 65 48618'
 ORGNUMMER = '959 358 451'
 
 # Token used for creating medlems via API. To stop stupid bots.
-INNMELDING_TOKEN = 'xxxx'
+INNMELDING_TOKEN = ''
 
 # Used for allowing CORS, and where the ?next= redirector can point
 TRUSTED_EXTERNAL_DOMAINS = ['example.com']

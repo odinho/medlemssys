@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.test import override_settings
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -30,11 +31,11 @@ from medlemssys.medlem.models import Medlem
 from medlemssys.medlem.tests import lagTestMedlemar
 
 
-class MedlemInnmelding(APITestCase):
+class MedlemInnmeldingDefaultSettings(APITestCase):
     def create_data(self, **kw):
-        kw.update(dict(
-            token=settings.INNMELDING_TOKEN, postnr='5003', fodt=2000))
-        return kw
+        data = dict(token=settings.INNMELDING_TOKEN, postnr='5003', fodt=2000)
+        data.update(kw)
+        return data
 
     def test_disallow_read(self):
         r = self.client.get(reverse('api-innmelding'))
@@ -45,6 +46,21 @@ class MedlemInnmelding(APITestCase):
         self.assertEquals(status.HTTP_400_BAD_REQUEST, r.status_code)
         self.assertEquals(r.data.keys(), ['postnr', 'fodt', 'token'])
 
+    def test_create(self):
+        r = self.client.post(reverse('api-innmelding'),
+            self.create_data(fornamn='Å', etternamn='L'))
+        self.assertEquals(status.HTTP_400_BAD_REQUEST, r.status_code)
+        # Not really the message we're after, but it works
+        self.assertEquals('This field may not be blank.', r.data['token'][0])
+        r2 = self.client.post(reverse('api-innmelding'),
+            self.create_data(fornamn='Å', etternamn='L', token='x'))
+        self.assertEquals(status.HTTP_400_BAD_REQUEST, r2.status_code)
+        self.assertEquals(
+            'Invalid innmelding token', r2.data['non_field_errors'][0])
+
+
+@override_settings(INNMELDING_TOKEN='x')
+class MedlemInnmelding(MedlemInnmeldingDefaultSettings):
     def test_create(self):
         r = self.client.post(reverse('api-innmelding'),
             self.create_data(fornamn='Å', etternamn='L'))
