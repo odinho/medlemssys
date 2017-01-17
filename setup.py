@@ -31,10 +31,9 @@ a user::
     medlemssys migrate
     medlemssys createsuperuser
 
-If you chose the production setup, you can run gunicorn::
+If you chose the production setup, you can run gunicorn using a handy wrapper::
 
-    export DJANGO_SETTINGS_MODULE=medlemssys_conf
-    gunicorn --bind 0.0.0.0:8000 medlemssys.config.wsgi:application
+    medlemssys gunicorn --bind 0.0.0.0:8000
 
 You can of course also try the django development server to just test your
 register::
