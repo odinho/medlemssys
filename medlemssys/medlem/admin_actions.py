@@ -203,7 +203,10 @@ def pdf_giro(modeladmin, request, queryset):
             if not giro:
                 continue
             if request.POST.get('pdf_type') == 'medlemskort':
-                pdf = _giro_medlemskort(pdf, request, m, giro)
+                pdf = _giro(pdf, request, m, giro)
+                pdf = _medlemskort(pdf, request, m, giro)
+            elif request.POST.get('pdf_type') == 'giro':
+                pdf = _giro(pdf, request, m, giro)
             else:
                 pdf = _giro_faktura(pdf, request, m, giro)
             pdf.showPage()
@@ -286,7 +289,21 @@ def _giro_faktura(pdf, request, m, giro):
     return pdf
 
 
-def _giro_medlemskort(pdf, request, m, giro):
+def _medlemskort(pdf, request, m, giro):
+    # Medlemskort
+    pdf.setFont('Helvetica', 12)
+    pdf.drawString(13.0*cm, 14.9*cm, u"%s" % unicode(m))
+
+    pdf.setFont('OCRB', 11)
+
+    pdf.drawString(13.8*cm, 14.3*cm, u"%s" % m.pk)
+    pdf.drawString(18.1*cm, 14.3*cm, u"%s" % giro.gjeldande_aar)
+    pdf.drawString(13.0*cm, 12.7*cm, u"%s" % giro.belop)
+    pdf.drawString(14.8*cm, 12.7*cm, u"%s" % '00')
+    return pdf
+
+
+def _giro(pdf, request, m, giro):
     pdf.setFont('Helvetica', 16)
     pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
     pdf.setFontSize(12)
@@ -297,16 +314,7 @@ def _giro_medlemskort(pdf, request, m, giro):
 
     _pdf_p(pdf, text_content, 1, 25.5, size_w=18, size_h=13)
 
-    # Medlemskort
-    pdf.drawString(13.0*cm, 14.9*cm, u"%s" % unicode(m))
-
     pdf.setFont('OCRB', 11)
-
-    pdf.drawString(13.8*cm, 14.3*cm, u"%s" % m.pk)
-    pdf.drawString(18.1*cm, 14.3*cm, u"%s" % giro.gjeldande_aar)
-    pdf.drawString(13.0*cm, 12.7*cm, u"%s" % giro.belop)
-    pdf.drawString(14.8*cm, 12.7*cm, u"%s" % '00')
-
     # Giro
     tekst = pdf.beginText(1.2*cm, 5.5*cm)
     for adrdel in m.full_betalingsadresse().split('\n'):
