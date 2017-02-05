@@ -1,9 +1,10 @@
-Lag enkeltliste for å skriva ut direkte frå medlemsreg (som ringjeliste)
-Lag motmæletingarliste
- - tingar
-Automatisk sending av faktura for medlemspengar
-Batch-sending av faktura for medlemspengar
-API? rest-framework, vs django-nap? Solution looking for problem?
+- OCR vel alltid 'medlemskonto (KID)', ikkje gjer det
+- Lag enkeltliste for å skriva ut direkte frå medlemsreg (som ringjeliste)
+- Lag motmæletingarliste
+  - tingar
+- Automatisk sending av faktura for medlemspengar
+- Batch-sending av faktura for medlemspengar
+- API? rest-framework, vs django-nap? Solution looking for problem?
 
 
 ## URL-ar
