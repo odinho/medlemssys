@@ -244,6 +244,7 @@ class GiroAdmin(CompareVersionAdmin):
         'hensikt',
         'konto',
         'belop',
+        'innbetalt_belop',
         filters.MedlemFodtFilter,
         'medlem__lokallag',
         'medlem__status',
