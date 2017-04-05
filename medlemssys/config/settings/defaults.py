@@ -40,6 +40,9 @@ BEHAVIOUR_MODULE = 'medlemssys.behaviour.barnogungdom'
 # Installation specific data
 KONTONUMMER = '3450 65 48618'
 ORGNUMMER = '959 358 451'
+ORG_ADR = '''Organisasjon
+Adresse
+1234 By'''
 
 # Email
 DEFAULT_FROM_EMAIL = 'Medlemssys <noreply@medlemssys.s0.no>'

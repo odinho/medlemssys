@@ -233,6 +233,7 @@ REST_FRAMEWORK = {
 BEHAVIOUR_MODULE = 'medlemssys.behaviour.barnogungdom'
 KONTONUMMER = '3450 65 48618'
 ORGNUMMER = '959 358 451'
+ORG_ADR = ''
 
 # Token used for creating medlems via API. To stop stupid bots.
 INNMELDING_TOKEN = ''

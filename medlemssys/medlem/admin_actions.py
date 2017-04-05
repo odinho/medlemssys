@@ -206,6 +206,7 @@ def pdf_giro(modeladmin, request, queryset):
                 pdf = _giro(pdf, request, m, giro)
                 pdf = _medlemskort(pdf, request, m, giro)
             elif request.POST.get('pdf_type') == 'giro':
+                pdf = _giro_info(pdf, request, m, giro)
                 pdf = _giro(pdf, request, m, giro)
             else:
                 pdf = _giro_faktura(pdf, request, m, giro)
@@ -302,6 +303,18 @@ def _medlemskort(pdf, request, m, giro):
     pdf.drawString(14.8*cm, 12.7*cm, u"%s" % '00')
     return pdf
 
+
+def _giro_info(pdf, request, m, giro):
+    pdf.setFont('OCRB', 11)
+
+    pdf.drawString(1.2*cm, 8.3*cm, u"%s" % request.POST.get('title'))
+
+    tekst = pdf.beginText(11.4*cm, 5.5*cm)
+    for adrdel in settings.ORG_ADR.split('\n'):
+        tekst.textLine(adrdel.strip())
+    pdf.drawText(tekst)
+
+    return pdf
 
 def _giro(pdf, request, m, giro):
     pdf.setFont('Helvetica', 16)
