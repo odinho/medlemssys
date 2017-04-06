@@ -334,7 +334,7 @@ def _giro(pdf, request, m, giro):
     for adrdel in m.full_betalingsadresse().split('\n'):
         tekst.textLine(adrdel.strip())
     pdf.drawText(tekst)
-    if m.har_betalt():
+    if giro.betalt() or (giro.hensikt == 'P' and m.har_betalt()):
         pdf.drawString(18*cm, 12.8*cm, "BETALT")
         pdf.setFillColorRGB(0, 0, 0)
         pdf.rect(0,  5.3*cm, 26*cm, 0.2*cm, stroke=False, fill=True)

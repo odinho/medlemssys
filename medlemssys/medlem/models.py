@@ -316,11 +316,9 @@ class Medlem(models.Model):
     fodt_farga.allow_tags = True
 
     def har_betalt(self):
-        if (self.giroar.filter(gjeldande_aar=datetime.date.today().year,
-                                 innbetalt__isnull=False)).exists():
-            return True
-        else:
-            return False
+        return self.giroar.filter(
+            gjeldande_aar=datetime.date.today().year, hensikt='P',
+            innbetalt__isnull=False).exists()
     har_betalt.short_description = _("Betalt")
     har_betalt.boolean = True
 
