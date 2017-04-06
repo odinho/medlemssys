@@ -391,7 +391,8 @@ def lag_giroar(modeladmin, request, queryset):
         data = form.cleaned_data
         for m in queryset:
             g = Giro(belop=data['belop'], konto=data['konto'],
-                     desc=data['desc'], status=data['status'], medlem=m)
+                     desc=data['desc'], hensikt=data['hensikt'],
+                     medlem=m)
             g.save()
 lag_giroar.short_description = "Opprett giroar"
 
