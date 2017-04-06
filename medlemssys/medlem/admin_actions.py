@@ -378,8 +378,8 @@ def lag_giroar(modeladmin, request, queryset):
 
     if not request.POST.get("ink-utmeld"):
         queryset = queryset.filter(utmeldt_dato__isnull=True)
-
-    queryset = queryset.exclude(giroar__gjeldande_aar=year)
+    if not request.POST.get("ink-betalt"):
+        queryset = queryset.exclude(giroar__gjeldande_aar=year)
 
     with reversion.create_revision():
         reversion.set_comment("Opprett giroar admin action")

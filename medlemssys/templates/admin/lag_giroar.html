@@ -33,6 +33,7 @@
         {% if n_allereie_giro %}
         <div class=form-row>
           <div class=field-box>
+            <input type=checkbox name=ink-betalt> <label for=ink-betalt>Inkluder folk som har betalt</label>
             <p>Det er <strong>{{ n_allereie_giro }} medlem</strong> som allereie har giro for {% now "Y" %}.
             <p class=help>Desse vert det ikkje laga ein giro for.
           </div>
