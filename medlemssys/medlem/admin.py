@@ -231,8 +231,8 @@ class GiroAdmin(CompareVersionAdmin):
     raw_id_fields = ['medlem']
     list_display = ('pk', 'medlem_admin_change', 'kid', 'belop',
                     'innbetalt_belop', 'gjeldande_aar', 'innbetalt', 'konto',
-                    'status')
-    list_editable = ('innbetalt', 'innbetalt_belop', 'gjeldande_aar', 'status', )
+                    'status', 'hensikt')
+    list_editable = ('innbetalt', 'innbetalt_belop', 'gjeldande_aar', 'status', 'hensikt')
     date_hierarchy = 'oppretta'
     search_fields = ('=id', '=kid', '=medlem__id', 'medlem__fornamn',
                      'medlem__etternamn', 'medlem__mellomnamn')
@@ -266,11 +266,13 @@ class GiroAdmin(CompareVersionAdmin):
         }),
     )
     actions = [
+                admin_actions.giro_list,
+                admin_actions.csv_list,
                 admin_actions.giro_status_ferdig,
                 admin_actions.giro_status_postlagt,
                 admin_actions.giro_status_ventar,
-                admin_actions.giro_list,
-                admin_actions.csv_list,
+                admin_actions.giro_hensikt_gaave,
+                admin_actions.giro_hensikt_medlemspengar,
                 admin_actions.pdf_giro,
             ]
 

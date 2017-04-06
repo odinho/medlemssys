@@ -432,6 +432,26 @@ def giro_status_ventar(modeladmin, request, queryset):
 giro_status_ventar.short_description = "Sett girostatus 'Ventar'"
 
 
+def giro_hensikt_gaave(modeladmin, request, queryset):
+    with reversion.create_revision():
+        for g in queryset:
+            g.hensikt='G'
+            g.save()
+        reversion.set_comment("Giro hensikt 'gaave' admin action")
+        reversion.set_user(request.user)
+giro_hensikt_gaave.short_description = u"Sett hensikt 'Gåve'"
+
+
+def giro_hensikt_medlemspengar(modeladmin, request, queryset):
+    with reversion.create_revision():
+        for g in queryset:
+            g.hensikt='P'
+            g.save()
+        reversion.set_comment("Giro hensikt 'medlemspengar' admin action")
+        reversion.set_user(request.user)
+giro_hensikt_medlemspengar.short_description = u"Sett hensikt 'Medlemspengar'"
+
+
 @transaction.atomic
 def suggest_lokallag(modeladmin, request, queryset):
     if request.POST.get('post'):
