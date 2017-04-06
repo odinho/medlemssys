@@ -17,12 +17,18 @@
     <fieldset class="module aligned">
     <div class=form-row>
       <div class=field-box>
-        <label for=belop class=required>Beløp:</label> <input type=text name=belop class=vTextField value="70">
+        <label for=belop class=required>Beløp:</label> {{ form.belop }}
+      </div>
+      <div class=field-box>
+        <label for=konto>Konto:</label> {{ form.konto }}
+      </div>
+      <div class=field-box>
+        <label for=status>Status:</label> {{ form.status }}
       </div>
     </div>
     <div class=form-row>
       <div>
-        <label for=text>Forklaring:</label> <textarea name=text class=vLargeTextField></textarea>
+        <label for=desc>Forklaring:</label> {{ form.desc }}
         <p class=help>Forklaring på korleis desse giroane vart oppretta. T.d. «vanleg medlem 2013».
       </div>
     </div>

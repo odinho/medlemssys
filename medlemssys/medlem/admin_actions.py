@@ -44,6 +44,7 @@ from medlemssys.innhenting import mod10
 from medlemssys.medlem.models import Giro
 
 import admin # reversion
+from .forms import GiroForm
 from .forms import SuggestedLokallagForm
 
 
@@ -355,7 +356,9 @@ def _giro(pdf, request, m, giro):
 @transaction.atomic
 def lag_giroar(modeladmin, request, queryset):
     year = datetime.date.today().year
-    if not request.POST.get('post'):
+    form = GiroForm(request.POST if 'post' in request.POST else None,
+                    initial={'belop':70})
+    if not request.POST.get('post') or not form.is_valid():
         opts = modeladmin.model._meta
         app_label = opts.app_label
         n_utmelde = queryset.filter(utmeldt_dato__isnull=False).count()
@@ -366,6 +369,7 @@ def lag_giroar(modeladmin, request, queryset):
         context = {
             "title": title,
             "queryset": queryset,
+            "form": form,
             "opts": opts,
             "app_label": app_label,
             "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
@@ -384,8 +388,10 @@ def lag_giroar(modeladmin, request, queryset):
     with reversion.create_revision():
         reversion.set_comment("Opprett giroar admin action")
         reversion.set_user(request.user)
+        data = form.cleaned_data
         for m in queryset:
-            g = Giro(belop=request.POST.get('belop'), medlem=m)
+            g = Giro(belop=data['belop'], konto=data['konto'],
+                     desc=data['desc'], status=data['status'], medlem=m)
             g.save()
 lag_giroar.short_description = "Opprett giroar"
 

@@ -21,7 +21,7 @@ from models import Giro
 class GiroForm(forms.ModelForm):
     class Meta:
         model = Giro
-        fields = ('belop', 'konto', 'hensikt', 'desc', 'status')
+        fields = ('belop', 'konto', 'desc', 'status')
 
 class SuggestedLokallagForm(forms.Form):
     lokallag = forms.ChoiceField(choices=[('', '---')],
