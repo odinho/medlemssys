@@ -44,6 +44,8 @@ ORG_ADR = '''Organisasjon
 Adresse
 1234 By'''
 
+VERVETOPP = False # Exposes some data
+
 # Email
 DEFAULT_FROM_EMAIL = 'Medlemssys <noreply@medlemssys.s0.no>'
 EMAIL_SUBJECT_PREFIX = '[Medlemssys] '

@@ -23,10 +23,11 @@ import re
 import smtplib
 from collections import defaultdict
 
+from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 from django.template import loader
 from django.utils import timezone
@@ -91,21 +92,40 @@ TO_DATE="2013-09-29"
 
 @xframe_options_exempt
 def vervetopp(request):
-    vervarar = Medlem.objects.filter(har_verva__innmeldt_dato__gte=FROM_DATE,
-            har_verva__innmeldt_dato__lte=TO_DATE,
-            status="M").distinct()
+    if not settings.VERVETOPP:
+        raise Http404
+    from_ = request.GET.get('from', FROM_DATE)
+    to = request.GET.get('to', TO_DATE)
+    vervarar = Medlem.objects.filter(
+        har_verva__innmeldt_dato__gte=from_,
+        har_verva__innmeldt_dato__lte=to,
+        status="M").distinct()
 
-    nye_vervarar = sorted(vervarar, key=lambda v: (v.har_verva.teljande().count(), v.har_verva.potensielt_teljande().count()), reverse=True)
+    nye_vervarar = sorted(vervarar,
+        key=lambda v: (v.har_verva.teljande().count(),
+        v.har_verva.potensielt_teljande().count()), reverse=True)
 
     return render_to_response('statistikk/vervetopp-embed.html', dict(objects=nye_vervarar))
 
 @xframe_options_exempt
 def vervometer(request):
-    teljande = Medlem.objects.teljande().filter(innmeldt_dato__gte=FROM_DATE,
-            innmeldt_dato__lte=TO_DATE).distinct().count()
-    potensielt_teljande = Medlem.objects.potensielt_teljande().filter(innmeldt_dato__gte=FROM_DATE,
-            innmeldt_dato__lte=TO_DATE).distinct().count()
-    maal = 300
+    if not settings.VERVETOPP:
+        raise Http404
+    from_ = request.GET.get('from', FROM_DATE)
+    to = request.GET.get('to', TO_DATE)
+    teljande = Medlem.objects.teljande().filter(
+        innmeldt_dato__gte=from_,
+        innmeldt_dato__lte=to).distinct().count()
+    potensielt_teljande = Medlem.objects.potensielt_teljande().filter(
+        innmeldt_dato__gte=from_,
+        innmeldt_dato__lte=to).distinct().count()
+    def get_int(n, default):
+        try:
+            return int(request.GET[n])
+        except (ValueError, KeyError) as e:
+            return default
+    start = get_int('start', 1000)
+    maal = get_int('maal', 200)
 
     gjenstaande = maal - (teljande + potensielt_teljande)
 
@@ -114,6 +134,7 @@ def vervometer(request):
                                  'teljande': teljande,
                                  'potensielt_teljande': potensielt_teljande,
                                  'maal': maal,
+                                 'totalt': start+maal,
                                  'gjenstaande': gjenstaande,
                               })
 def namn_from_pks(model, val_keys):

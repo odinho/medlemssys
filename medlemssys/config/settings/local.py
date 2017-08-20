@@ -10,6 +10,8 @@ Local settings
 
 from .common import *  # noqa
 
+VERVETOPP = True
+
 # DEBUG
 # ------------------------------------------------------------------------------
 DEBUG = True

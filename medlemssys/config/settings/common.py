@@ -237,6 +237,7 @@ ORG_ADR = ''
 
 # Token used for creating medlems via API. To stop stupid bots.
 INNMELDING_TOKEN = ''
+VERVETOPP = None
 
 # Used for allowing CORS, and where the ?next= redirector can point
 TRUSTED_EXTERNAL_DOMAINS = ['example.com']
