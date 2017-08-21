@@ -32,6 +32,7 @@ from medlemssys.config.wsgi import application
 
 class Command(BaseCommand):
     help = "Run the production web server"
+    leave_locale_alone = True
 
     def add_arguments(self, parser):
         parser.add_argument('args', nargs=argparse.REMAINDER)
