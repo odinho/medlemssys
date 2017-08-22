@@ -108,7 +108,7 @@ def vervetopp(request):
         pot_teljande = set(m.pk for m in q.potensielt_teljande())
         andre = set(m.pk for m in q).difference(teljande.union(pot_teljande))
         vervedata.append((unicode(v), teljande, pot_teljande, andre))
-    vervedata.sort(key=lambda v: v[1:], reverse=True)
+    vervedata.sort(key=lambda v: [len(k) for k in v[1:]], reverse=True)
 
     return render_to_response(
         'statistikk/vervetopp-embed.html', dict(objects=vervedata))
