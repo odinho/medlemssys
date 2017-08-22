@@ -21,22 +21,16 @@
     <colgroup><col style="width: 40%"></colgroup>
     <tbody>
     {% for o in objects %}
-        <tr><td>{{ o }} <td>{% spaceless %}
-            {% for v in o.har_verva.teljande %}<span class=betalt>B</span>{% endfor %}
-            {% for v in o.har_verva.potensielt_teljande %}<span class=ubetalt>u</span>{% endfor %}
+        <tr><td>{{ o.0 }} <td>{% spaceless %}
+            {% for v in o.1 %}<span class=betalt>B</span>{% endfor %}
+            {% for v in o.2 %}<span class=ubetalt>u</span>{% endfor %}
+            {% for v in o.3 %}<span class=andre>-</span>{% endfor %}
             {% endspaceless %}
+            <!-- {{ o }} -->
             </td>
         </tr>
-        {% comment %}
-        <ul>
-        {% for v in o.verva %}
-          <li>{{ v }}</li>
-        {% endfor %}
-        </ul>
-        {% endcomment %}
-        </li>
     {% endfor %}
     </tbody>
 </table>
 {% endif %}
-<p><small>Oppdaterast ved midnatt kvar arbeidsdag.</small></p>
+<p><small>Oppdaterast kvar arbeidsdag.</small></p>

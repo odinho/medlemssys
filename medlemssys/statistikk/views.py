@@ -96,16 +96,22 @@ def vervetopp(request):
         raise Http404
     from_ = request.GET.get('from', FROM_DATE)
     to = request.GET.get('to', TO_DATE)
+    dt_restrict = dict(innmeldt_dato__gte=from_, innmeldt_dato__lte=to)
     vervarar = Medlem.objects.filter(
-        har_verva__innmeldt_dato__gte=from_,
-        har_verva__innmeldt_dato__lte=to,
-        status="M").distinct()
+        status='M',
+        **{'har_verva__%s' % k: v for k, v in date_restrict.items()}
+    ).distinct()
+    vervedata = []
+    for v in vervarar:
+        q = v.har_verva.filter(**date_restrict)
+        teljande = set(m.pk for m in q.teljande())
+        pot_teljande = set(m.pk for m in q.potensielt_teljande())
+        andre = set(m.pk for m in q).difference(teljande.union(pot_teljande))
+        vervedata.append((unicode(v), teljande, pot_teljande, andre))
+    vervedata.sort(key=lambda v: v[1:], reverse=True)
 
-    nye_vervarar = sorted(vervarar,
-        key=lambda v: (v.har_verva.teljande().count(),
-        v.har_verva.potensielt_teljande().count()), reverse=True)
-
-    return render_to_response('statistikk/vervetopp-embed.html', dict(objects=nye_vervarar))
+    return render_to_response(
+        'statistikk/vervetopp-embed.html', dict(objects=vervedata))
 
 @xframe_options_exempt
 def vervometer(request):
