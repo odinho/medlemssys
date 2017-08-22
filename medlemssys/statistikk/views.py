@@ -99,11 +99,11 @@ def vervetopp(request):
     dt_restrict = dict(innmeldt_dato__gte=from_, innmeldt_dato__lte=to)
     vervarar = Medlem.objects.filter(
         status='M',
-        **{'har_verva__%s' % k: v for k, v in date_restrict.items()}
+        **{'har_verva__%s' % k: v for k, v in dt_restrict.items()}
     ).distinct()
     vervedata = []
     for v in vervarar:
-        q = v.har_verva.filter(**date_restrict)
+        q = v.har_verva.filter(**dt_restrict)
         teljande = set(m.pk for m in q.teljande())
         pot_teljande = set(m.pk for m in q.potensielt_teljande())
         andre = set(m.pk for m in q).difference(teljande.union(pot_teljande))
