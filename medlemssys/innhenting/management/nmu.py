@@ -528,7 +528,7 @@ class GuessingCSVImporter(AccessImporter):
 
         try:
             medlem['fodt'] = int(medlem['fodt'])
-        except ValueError:
+        except (ValueError, KeyError):
             medlem['fodt'] = None
 
         if len(medlem.get('kjon', '')) > 1:
