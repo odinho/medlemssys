@@ -202,9 +202,9 @@ class AccessImporter(object):
     # model: namn, fylkeslag, distrikt, andsvar
     @transaction.atomic
     @reversion.create_revision()
-    def import_lag(self):
+    def import_lag(self, lag_fn=None):
         reversion.set_comment("Import frå Access")
-        liste = csv.reader(open(self.lag_fil))
+        liste = csv.reader(open(lag_fn or self.lag_fil))
         liste.next()
         alle_lag = {}
 
@@ -235,8 +235,8 @@ class AccessImporter(object):
     # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
     @transaction.atomic
     @reversion.create_revision()
-    def import_bet(self, force_update):
-        liste = csv.reader(open(self.bet_fil))
+    def import_bet(self, force_update, bet_fn=None):
+        liste = csv.reader(open(bet_fn or self.bet_fil))
         liste.next()
         try:
             highest_pk = Giro.objects.all().order_by("-pk")[0].pk
@@ -412,10 +412,12 @@ class GuessingCSVImporter(AccessImporter):
                   'htilskrift', 'hadresse', 'htilskr', 'gateadresse',
                   'gateadresse1', 'addresse', 'tilskrift', 'tilskr', 'adr'],
       'mobnr': ['mobil', 'tlfmobil', 'tlfnr', 'mobilnummer', 'telefonnummer'],
-      'merknad': ['notat', 'kommentar', 'notes', 'comment', 'extra', 'ekstra'],
+      'merknad': ['notat', 'merkn', 'kommentar', 'notes', 'comment',
+                  'extra', 'ekstra'],
       'kjon': ['kjøn', 'kjønn', 'kjonn', 'sex'],
       'gjer': ['gjør', 'workplace', 'what'],
-      'innmeldt_dato': ['innmeldttid', 'innmeldt'],
+      'innmeldt_dato': ['innmeldttid', 'innmeldt', 'innmeldtdato',
+                        'datoinn', 'inndato', 'inn'],
       'utmeldt_dato': ['utmeldttid', 'utmeldt', 'utdato', 'datout'],
       'oppretta': ['created', 'creationdate', 'creationtime',],
       'oppdatert': ['updated', 'updatedate', 'lastupdated', 'oppdaterttid', 'oppdatertdato'],
