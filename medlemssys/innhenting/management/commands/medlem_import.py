@@ -19,10 +19,6 @@
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 from __future__ import print_function
 
-import os
-from optparse import make_option
-
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from medlemssys.innhenting.management import nmu
@@ -35,22 +31,24 @@ class Command(BaseCommand):
     args = '[ medlem.csv [ lokallag.csv [ betaling.csv ] ] ]'
     help = "Importerer medlemane inn i databasen"
     force_update = False
-    option_list = BaseCommand.option_list + (
-        make_option('-f', '--force-update',
+
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            '--force-update',
             action='store_true',
             dest='force_update',
             default=False,
-            help="tving gjennom oppdatering av giroar"),
-        make_option('--importer',
+            help="tving gjennom oppdatering av giroar")
+        parser.add_argument(
+            '--importer',
             dest='importer',
             default='guess_csv',
-            help="importeringssystem (guess_csv, nmu_access eller nmu_mamut)"),
-        )
+            help="importeringssystem (guess_csv, nmu_access eller nmu_mamut)")
 
     def handle(self, *args, **options):
         if options['force_update']:
             self.force_update = True
-
 
         def getarg(num):
             try:
@@ -68,7 +66,9 @@ class Command(BaseCommand):
         elif options['importer'] == 'nmu_mamut':
             imp = nmu.MamutImporter()
         else:
-            raise CommandError("Importeren finst ikkje ({0})".format(options['importer']).encode('utf8'))
+            raise CommandError(
+                "Importeren finst ikkje ({0})"
+                .format(options['importer']).encode('utf8'))
 
         if lag_csv:
             for i in imp.import_lag(lag_csv).values():
