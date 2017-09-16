@@ -27,6 +27,7 @@ import sys
 import textwrap
 
 from dateutil.parser import parse
+from django.conf import settings
 from django.db import transaction
 from reversion import revisions as reversion
 
@@ -451,7 +452,10 @@ class GuessingCSVImporter(AccessImporter):
                 """).format(entr=', '.join(unicode(s) for s in fields)))
             sys.exit(1)
 
-        self._create_mapping(fields, self._matches)
+        if hasattr(settings, 'MEDLEM_IMPORT_MAPPING'):
+            self._matches = settings.MEDLEM_IMPORT_MAPPING
+        else:
+            self._create_mapping(fields, self._matches)
         missing_fields = (
             set(self.MATCH_LOOKUP.keys()) - set(self._matches.keys()))
         unused_fields = (
@@ -473,6 +477,8 @@ class GuessingCSVImporter(AccessImporter):
         print(textwrap.dedent("""
             The mapping between CSV and database is:
               {mapping}
+
+            You can create a custom mapping using 'settings.MEDLEM_IMPORT_MAPPING'
             """).format(mapping = self._matches))
         missing_required = [k for k, v in self._matches.items() if not v]
         if missing_required:
