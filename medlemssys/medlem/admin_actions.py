@@ -244,8 +244,8 @@ def pdf_giro(modeladmin, request, queryset):
         "g_frist": g_frist,
     }
 
-    return TemplateResponse(request, 'admin/pdf_giro.html', context,
-            current_app=modeladmin.admin_site.name)
+    request.current_app = modeladmin.admin_site.name
+    return TemplateResponse(request, 'admin/pdf_giro.html', context)
 pdf_giro.short_description = "Lag giro-PDF"
 
 
@@ -377,8 +377,8 @@ def lag_giroar(modeladmin, request, queryset):
             "n_allereie_giro": n_allereie_giro,
         }
 
-        return TemplateResponse(request, "admin/lag_giroar.html", context,
-                current_app=modeladmin.admin_site.name)
+        request.current_app = modeladmin.admin_site.name
+        return TemplateResponse(request, "admin/lag_giroar.html", context)
 
     if not request.POST.get("ink-utmeld"):
         queryset = queryset.filter(utmeldt_dato__isnull=True)
@@ -519,6 +519,7 @@ def suggest_lokallag(modeladmin, request, queryset):
         "suggested_new": suggested_new,
         "totally_new": totally_new,
     }
+    request.current_app = modeladmin.admin_site.name
     return TemplateResponse(request, "admin/proposed_lokallag.html",
-              context, current_app=modeladmin.admin_site.name)
+              context)
 suggest_lokallag.short_description = _(u"Foreslå lokallag")

@@ -56,7 +56,7 @@ setup(
     author_email='odin.omdal@gmail.com',
     url='https://github.com/odinho/medlemssys',
     install_requires=[
-        'Django >= 1.7, < 1.10',
+        'Django >= 1.10, < 1.11',
         'logan',
         'whitenoise',
         'django-model-utils',

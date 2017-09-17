@@ -24,11 +24,12 @@ import random
 import datetime
 
 from django.contrib.auth.models import User
-from django.core.urlresolvers import reverse
 from django.db import models, transaction
 from django.forms import ModelForm
 from django.template.defaultfilters import slugify
+from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import format_html, format_html_join
 from django.utils.translation import ugettext_lazy as _
 
 from medlemssys.behaviour import get_behaviour
@@ -94,11 +95,10 @@ class Lokallag(models.Model):
         return self.rolle_set.all()
 
     def styret_admin(self):
-        styret = ["{} ({})".format(x.medlem.admin_change(), x.rolletype)
-                  for x in self.styret()]
-        return ', '.join(styret)
+        return format_html_join(
+            ', ', '{} ({})',
+            ((x.medlem.admin_change(), x.rolletype) for x in self.styret()))
     styret_admin.short_description = _("Styret")
-    styret_admin.allow_tags = True
 
     def save(self, *args, **kwargs):
         if not self.slug or self.slug == "":
@@ -310,15 +310,17 @@ class Medlem(models.Model):
         if self.alder() == None:
             return "?"
         if not self.er_teljande():
-            return "<span class='ikkje-teljande' title='Medlemen er ikkje " + \
-               "teljande (%d år)'>%s</span>" % (self.alder(), self.fodt)
+            return format_html(
+                "<span class='ikkje-teljande' title='Medlemen er ikkje "
+                "teljande ({} år)'>{}</span>", self.alder(), self.fodt)
         elif self.er_gamal():
-            return "<span class='er-gamal' title='Medlemen er gamal, men " + \
-        "framleis teljande (%d år)'>%s</span>" % (self.alder(), self.fodt)
-        return "<span title='%d år'>%d</span>" % (self.alder(), self.fodt)
+            return format_html(
+                "<span class='er-gamal' title='Medlemen er gamal, men "
+                "framleis teljande ({} år)'>{}</span>", self.alder(), self.fodt)
+        return format_html("<span title='{} år'>{}</span>", self.alder(),
+                           self.fodt)
     fodt_farga.short_description = _("Født")
     fodt_farga.admin_order_field = 'fodt'
-    fodt_farga.allow_tags = True
 
     def har_betalt(self):
         return self.giroar.filter(
@@ -328,10 +330,10 @@ class Medlem(models.Model):
     har_betalt.boolean = True
 
     def status_html(self):
-        return "<abbr title='%s'>%s</abbr>" % (self.get_status_display(), self.status)
+        return format_html("<abbr title='{}'>{}</abbr>",
+                           self.get_status_display(), self.status)
     status_html.short_description = _("Status")
     status_html.admin_order_field = 'status'
-    status_html.allow_tags = True
 
     def full_adresse(self, **kwargs):
         if 'namn' not in kwargs:
@@ -416,10 +418,9 @@ class Medlem(models.Model):
         return reverse('admin:medlem_medlem_change', args=(self.pk,))
 
     def admin_change(self):
-        return '<a href="{0}">{1}</a>'.format(self.admin_url(), self)
+        return format_html('<a href="{0}">{1}</a>', self.admin_url(), self)
     admin_change.short_description = _("Medlem")
     admin_change.admin_order_field = 'medlem'
-    admin_change.allow_tags = True
 
     def save(self, *args, **kwargs):
         if self.mobnr and ' ' in self.mobnr:
@@ -536,18 +537,14 @@ class Giro(models.Model):
         belop = str(self.innbetalt_belop)
         if self.belop != self.innbetalt_belop:
             belop = '{0}/{1}'.format(self.innbetalt_belop, self.belop)
-        if self.betalt():
-            return '<a href="{url}">{img} {belop}</a>'.format(
-                url=url,
-                img='<img src="/static/admin/img/icon-yes.svg" alt="Betalt">',
-                belop=belop)
-        return '<a href="{url}">{img} {belop}</a>'.format(
+        return format_html(
+            '<a href="{url}"><img src="/static/admin/img/icon-{yesno}.svg" alt="{alt}">&nbsp;{belop}</a>',
             url=url,
-            img='<img src="/static/admin/img/icon-no.svg" alt="Ikkje betalt">',
+            yesno={True: 'yes', False: 'no'}[self.betalt()],
+            alt={True: 'Betalt', False: 'Ikkje betalt'}[self.betalt()],
             belop=belop)
     admin_change.short_description = _("Giro")
     admin_change.admin_order_field = 'giro'
-    admin_change.allow_tags = True
 
     def save(self, *args, **kwargs):
         if not self.medlem.er_innmeldt() and self.innbetalt is None:

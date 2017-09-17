@@ -4,8 +4,7 @@
 # Verified bug on Python 3.5.1
 wheel==0.29.0
 
-# Bleeding edge Django
-django==1.9.10
+Django==1.10.8
 
 # Configuration
 whitenoise==3.3.0
@@ -23,7 +22,7 @@ django-autoslug==1.9.3
 # Time zones support
 pytz==2017.2
 
-djangorestframework==3.5.1
+djangorestframework==3.6.4
 django-reversion-compare==0.7.1
 django-reversion==2.0.6
 python-dateutil==2.5.3

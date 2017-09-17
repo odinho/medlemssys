@@ -22,6 +22,7 @@ import datetime
 from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext_lazy as _
+from django.utils.html import format_html, format_html_join
 from reversion_compare.admin import CompareVersionAdmin
 
 from . import admin_actions
@@ -138,12 +139,10 @@ class MedlemAdmin(CompareVersionAdmin):
             querystring['lokallag__isnull'] = True
         else:
             querystring['lokallag__id__exact'] = obj.lokallag.pk
-        return u'<a href="{0}?{1}">{2}</a>'.format(url,
-                                                   querystring.urlencode(),
-                                                   obj.lokallag_display())
+        return format_html(u'<a href="{0}?{1}">{2}</a>', url,
+                           querystring.urlencode(), obj.lokallag_display())
     lokallag_changelist.short_description = _("Lokallag")
     lokallag_changelist.admin_order_field = 'lokallag__namn'
-    lokallag_changelist.allow_tags = True
 
     def siste_giro_info(self, obj):
         gjeldande = obj.gjeldande_giro()
@@ -151,11 +150,10 @@ class MedlemAdmin(CompareVersionAdmin):
             return gjeldande.admin_change()
         fjor = obj.gjeldande_giro(datetime.date.today().year - 1)
         if fjor:
-            return '{0}: {1}'.format(fjor.gjeldande_aar, fjor.admin_change())
-        return '&mdash;'
+            return format_html('{0}: ', fjor.gjeldande_aar) + fjor.admin_change()
+        return format_html('&mdash;')
     siste_giro_info.short_description = _("Siste giro")
     siste_giro_info.admin_order_field = 'giroar'
-    siste_giro_info.allow_tags = True
 
 
 class RolleInline(admin.TabularInline):
@@ -178,18 +176,20 @@ class LokallagAdmin(CompareVersionAdmin):
     prepopulated_fields = {'slug': ('namn',)}
 
     def overvakingar(self, obj):
-        def html(o):
-            return u'<a href="{url}" title="Til: {epostar}">{tekst}</a>'.format(
-                url=reverse('admin:medlem_lokallagovervaking_change',
-                            args=(o.pk,)),
-                epostar=o.epostar_admin(), tekst=unicode(o))
-        return u', '.join(html(o) for o in obj.lokallag_overvaking_set.all())
-    overvakingar.allow_tags = True
+        return format_html_join(
+            u', ', u'<a href="{0}" title="Til: {1}">{2}</a>',
+            (
+                (reverse('admin:medlem_lokallagovervaking_change',
+                      args=(o.pk,)),
+                o.epostar_admin(),
+                unicode(o))
+            for o in obj.lokallag_overvaking_set.all()
+            )
+        )
 
     def namn_med_stad(self, obj):
-        return u'<span title="kommunar: {}\nfylke: {}">{}</span>'.format(
-            obj.kommunes, obj.fylke, obj.namn)
-    namn_med_stad.allow_tags = True
+        return format_html(u'<span title="kommunar: {}\nfylke: {}">{}</span>',
+                           obj.kommunes, obj.fylke, obj.namn)
     namn_med_stad.admin_order_field = 'namn'
 
 
@@ -280,7 +280,6 @@ class GiroAdmin(CompareVersionAdmin):
         return obj.medlem.admin_change()
     medlem_admin_change.short_description = _("Medlem")
     medlem_admin_change.admin_order_field = 'medlem'
-    medlem_admin_change.allow_tags = True
 
 
 class RolleAdmin(CompareVersionAdmin):
@@ -292,7 +291,6 @@ class RolleAdmin(CompareVersionAdmin):
         return obj.medlem.admin_change()
     medlem_admin_change.short_description = _("Medlem")
     medlem_admin_change.admin_order_field = 'medlem'
-    medlem_admin_change.allow_tags = True
 
 
 class RolletypeAdmin(CompareVersionAdmin):

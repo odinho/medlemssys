@@ -72,8 +72,8 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Use Whitenoise to serve static files
 # See: https://whitenoise.readthedocs.io/
 #STATIC_ROOT = ''
-MIDDLEWARE_CLASSES = (
-    'whitenoise.middleware.WhiteNoiseMiddleware',) + MIDDLEWARE_CLASSES
+MIDDLEWARE = (
+    'whitenoise.middleware.WhiteNoiseMiddleware',) + MIDDLEWARE
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # SECURITY CONFIGURATION
@@ -129,9 +129,9 @@ CACHES = {
 # See https://docs.getsentry.com/hosted/clients/python/integrations/django/
 """
 INSTALLED_APPS += ('raven.contrib.django.raven_compat', )
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'raven.contrib.django.raven_compat.middleware.'
-    'SentryResponseErrorIdMiddleware',) + MIDDLEWARE_CLASSES
+    'SentryResponseErrorIdMiddleware',) + MIDDLEWARE
 
 # Sentry Configuration
 SENTRY_DSN = 'your-dsn'

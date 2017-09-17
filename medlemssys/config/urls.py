@@ -33,7 +33,6 @@ import medlemssys.medlem.views as medlem
 import medlemssys.statistikk.admin_views as statistikk_admin
 import medlemssys.statistikk.views as statistikk
 
-
 urlpatterns = [
     url(r'^$',
         TemplateView.as_view(template_name='pages/home.html'), name='home'),
@@ -72,6 +71,13 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
+    try:
+        import debug_toolbar
+        urlpatterns += [
+            url(r'^__debug__/', include(debug_toolbar.urls)),
+        ]
+    except:
+        pass
     # This allows the error pages to be debugged during development, just visit
     # these url in browser to see how these error pages look like.
     urlpatterns += [

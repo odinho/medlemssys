@@ -228,6 +228,9 @@ class AdditiveSubtractiveFilter(RelatedFieldListFilter):
         self.using_params = []
         self.paramstart = "adv_" + field.get_attname()
 
+        # workaround django 1.10 running expected_parameters before
+        # getting lookup choices
+        self.lookup_choices = self.field_choices(field, request, model_admin)
         super(AdditiveSubtractiveFilter, self).__init__(
             field, request, params, model, model_admin, field_path)
 
