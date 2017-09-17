@@ -205,8 +205,12 @@ class Medlem(models.Model):
             choices=INNMELDINGSTYPAR, default='U')
     innmeldingsdetalj = models.CharField(_("detalj om innmelding"), max_length=255,
         blank=True, help_text=_("Skriv inn vervemedlem i hakeparantesar ([1234])"))
-    verva_av = models.ForeignKey('Medlem', related_name='har_verva', blank=True, null=True)
-    betalt_av = models.ForeignKey('Medlem', related_name='betalar_for', blank=True, null=True)
+    verva_av = models.ForeignKey(
+        'Medlem', related_name='har_verva', blank=True, null=True,
+        on_delete=models.SET_NULL)
+    betalt_av = models.ForeignKey(
+        'Medlem', related_name='betalar_for', blank=True, null=True,
+        on_delete=models.SET_NULL)
 
     # Tilkopla felt
     lokallag = models.ForeignKey(Lokallag,
@@ -216,7 +220,8 @@ class Medlem(models.Model):
         through='Rolle', related_name='rollemedlem', blank=True)
 
     user = models.OneToOneField(User, verbose_name=_("innloggingsbrukar"),
-                                blank=True, null=True)
+                                blank=True, null=True,
+                                on_delete=models.SET_NULL)
     oppretta = models.DateTimeField(_("oppretta"), auto_now_add=True)
     oppdatert = models.DateTimeField(_("oppdatert"), auto_now=True)
     nykel = models.CharField(_("nykel"), max_length=255,
@@ -492,7 +497,8 @@ def this_year():
     return datetime.date.today().year
 
 class Giro(models.Model):
-    medlem = models.ForeignKey(Medlem, related_name='giroar')
+    medlem = models.ForeignKey(
+       Medlem, related_name='giroar', on_delete=models.CASCADE)
     belop = models.PositiveIntegerField(_("Beløp"))
     innbetalt_belop = models.PositiveIntegerField(_("Innbetalt beløp"), default=0)
 
@@ -585,9 +591,11 @@ class Rolletype(models.Model):
 
 
 class Rolle(models.Model):
-    medlem = models.ForeignKey(Medlem)
-    lokallag = models.ForeignKey(Lokallag, related_name='rolle_set')
-    rolletype = models.ForeignKey(Rolletype, blank=True, null=True)
+    medlem = models.ForeignKey(Medlem, on_delete=models.CASCADE)
+    lokallag = models.ForeignKey(Lokallag, related_name='rolle_set',
+                                 on_delete=models.CASCADE)
+    rolletype = models.ForeignKey(Rolletype, blank=True, null=True,
+                                  on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name_plural = "roller"
@@ -598,11 +606,13 @@ class Rolle(models.Model):
 
 
 class LokallagOvervaking(models.Model):
-    medlem = models.ForeignKey(Medlem, blank=True, null=True)
+    medlem = models.ForeignKey(Medlem, blank=True, null=True,
+                               on_delete=models.CASCADE)
     epost = models.CharField(_("epost"), max_length=255, blank=True,
             help_text="""Vert brukt dersom medlem ikkje er satt""")
     lokallag = models.ForeignKey(
-        Lokallag, related_name='lokallag_overvaking_set')
+        Lokallag, related_name='lokallag_overvaking_set',
+        on_delete=models.CASCADE)
     deaktivert = models.DateTimeField(blank=True, null=True)
     sist_oppdatert = models.DateTimeField(auto_now=True)
 

@@ -48,7 +48,7 @@ urlpatterns = [
     url(r'^admin/revisions/',
         statistikk_admin.show_revisions, name='show_revisions'),
     # Django Admin, use {% url 'admin:index' %}
-    url(settings.ADMIN_URL, include(admin.site.urls)),
+    url(settings.ADMIN_URL, admin.site.urls),
 
     url(r'^accounts/login/$',
         django.contrib.auth.views.login, { 'template_name': 'login.html' }),
