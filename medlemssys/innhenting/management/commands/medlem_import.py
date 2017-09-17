@@ -28,12 +28,21 @@ from medlemssys.statistikk.views import update_lokallagstat
 
 
 class Command(BaseCommand):
-    args = '[ medlem.csv [ lokallag.csv [ betaling.csv ] ] ]'
     help = "Importerer medlemane inn i databasen"
     force_update = False
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            'medlem_csv', help="fil å lesa medlemar frå")
+        parser.add_argument(
+            '--lokallag',
+            dest='lokallag_csv',
+            help="fil å lesa lokallag frå")
+        parser.add_argument(
+            '--betaling',
+            dest='betaling_csv',
+            help="fil å lesa betalingar frå")
         parser.add_argument(
             '--force-update',
             action='store_true',
@@ -50,15 +59,6 @@ class Command(BaseCommand):
         if options['force_update']:
             self.force_update = True
 
-        def getarg(num):
-            try:
-                return args[num]
-            except:
-                return None
-        medlem_csv = getarg(0)
-        lag_csv = getarg(1)
-        bet_csv = getarg(2)
-
         if options['importer'] == 'guess_csv':
             imp = nmu.GuessingCSVImporter()
         elif options['importer'] == 'nmu_access':
@@ -70,16 +70,17 @@ class Command(BaseCommand):
                 "Importeren finst ikkje ({0})"
                 .format(options['importer']).encode('utf8'))
 
-        if lag_csv:
-            for i in imp.import_lag(lag_csv).values():
+        if options['lokallag_csv']:
+            for i in imp.import_lag(options['lokallag_csv']).values():
                 self.stdout.write(u"Lag: {0}\n".format(i))
 
-        if medlem_csv:
-            for i in imp.import_medlem(medlem_csv):
+        if options['medlem_csv']:
+            for i in imp.import_medlem(options['medlem_csv']):
                 self.stdout.write(u"Medlem: {0}\n".format(i))
 
-        if bet_csv:
-            for i in imp.import_bet(bet_csv, force_update=self.force_update):
+        if options['betaling_csv']:
+            for i in imp.import_bet(options['betaling_csv'],
+                                    force_update=self.force_update):
                 self.stdout.write(u"Betaling: {0}\n".format(i))
 
         update_denormalized_fields()

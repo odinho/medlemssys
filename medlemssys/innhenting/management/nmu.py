@@ -42,7 +42,7 @@ def aware(date):
     return timezone.make_aware(date, timezone.get_current_timezone())
 
 def dt(date, default=None):
-    return aware(parse(dt, default=default))
+    return aware(parse(date, default=default))
 
 
 class AccessImporter(object):
@@ -79,7 +79,6 @@ class AccessImporter(object):
 
     @transaction.atomic
     def import_medlem(self, medlem_fn):
-        num = 0
         with reversion.create_revision():
             reversion.set_comment(u"CSV import")
             for num, [medlem_dict, raw_data] in enumerate(
@@ -101,6 +100,24 @@ class AccessImporter(object):
                 elif num%200 == 0 and num != 0:
                     yield unicode(num)
 
+    #@transaction.atomic
+    #def import_bet(self, bet_fn):
+    #    with reversion.create_revision():
+    #        reversion.set_comment(u"CSV import")
+    #        for num, [bet_dict, raw_data] in enumerate(
+    #                self._get_bet(bet_fn)):
+    #            if not self.clean_bet_dict(bet_dict, raw_data):
+    #                continue
+    #            tmp = dict((k, bet_dict[k]) for k in bet_dict if not k.startswith('_'))
+    #            m = Medlem(**tmp)
+    #            m.save()
+
+    #            # Print first 200 names
+    #            if num < 199:
+    #                yield u"{0:>3}. {1}".format(unicode(num), unicode(m))
+
+    #            elif num%200 == 0 and num != 0:
+    #                yield unicode(num)
 
     re_medlnr = re.compile(r'\[(\d+)\]')
     def clean_medlem_dict(self, medlem, raw_data=None):
@@ -244,7 +261,7 @@ class AccessImporter(object):
     # model (giro): medlem, belop, kid, oppretta, innbetalt, konto, hensikt, desc
     @transaction.atomic
     @reversion.create_revision()
-    def import_bet(self, force_update, bet_fn=None):
+    def import_bet(self, bet_fn=None, force_update=False):
         liste = csv.reader(open(bet_fn or self.bet_fil))
         liste.next()
         try:
@@ -592,3 +609,61 @@ class GuessingCSVImporter(AccessImporter):
                 defaults={ 'fylke': '', 'kommunes': '', 'andsvar': ''})[0]
 
         return True
+
+    @transaction.atomic
+    @reversion.create_revision()
+    def import_bet(self, bet_fn=None, force_update=False):
+        liste = csv.reader(open(bet_fn or self.bet_fil))
+        liste.next()
+        try:
+            highest_pk = Giro.objects.all().order_by("-pk")[0].pk
+        except:
+            highest_pk = -1
+
+        for num, rad in enumerate(liste):
+            if num % 1000 == 0 and num != 0:
+                yield unicode(num)
+
+            # Hopp over ferdig-importerte betalingar
+            if not force_update and int(rad[0]) < highest_pk:
+                continue
+
+            if not force_update and Giro.objects.filter(pk=rad[0]).exists():
+                continue
+
+            g = Giro(pk=rad[0], hensikt='P', status='F')
+
+            # Finn andsvarleg medlem
+            try:
+                g.medlem = Medlem.objects.alle().get(pk=rad[1])
+            except Medlem.DoesNotExist:
+                logger.warning(u"Fann ikkje medlem %s. %s " % (rad[1], rad))
+                continue
+
+            # Kor mykje pengar inn?
+            try:
+                g.belop = float(rad[3])
+            except ValueError:
+                g.belop = 0
+                logger.warning(u"Beløp = 0: {0}, {1}".format(g.medlem, rad))
+
+            if len(rad[2]) > 3:
+                g.innbetalt = dt(rad[2])
+                g.innbetalt_belop = g.belop
+            else:
+                logger.warning(u"Ikkje innbetalt! {0}, {1}".format(g.medlem, rad))
+
+            try:
+                g.oppretta = aware(datetime.datetime(int(rad[2]), 1, 1, 0, 0))
+            except ValueError:
+                logger.warning(u"Gjettar oppretta==innbetalt: {0}, {1}".format(g.medlem, rad))
+                g.oppretta = g.innbetalt
+
+            g.gjeldande_aar = g.oppretta.year
+
+            g.desc = rad[4]
+
+            g.save()
+
+            if num < 99:
+                yield unicode(g)
