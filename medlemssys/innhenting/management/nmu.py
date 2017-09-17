@@ -29,6 +29,7 @@ import textwrap
 from dateutil.parser import parse
 from django.conf import settings
 from django.db import transaction
+from django.utils import timezone
 from reversion import revisions as reversion
 
 from medlemssys.medlem.models import KONTI
@@ -36,6 +37,13 @@ from medlemssys.medlem.models import Medlem, Lokallag, Giro
 
 
 logger = logging.getLogger(__name__)
+
+def aware(date):
+    return timezone.make_aware(date, timezone.get_current_timezone())
+
+def dt(date, default=None):
+    return aware(parse(dt, default=default))
+
 
 class AccessImporter(object):
     # REGISTERKODE,LAGSNR,MEDLNR,FORNAMN,MELLOMNAMN,ETTERNAMN,TILSKRIFT1,TILSKRIFT2,POST,VERVA,VERV,LP,GJER,MERKNAD,FØDEÅR,KJØNN,INN,INNMEDL,UTB,UT_DATO,MI,MEDLEMINF,TLF_H,TLF_A,E_POST,H_TILSKR1,H_TILSKR2,H_POST,H_TLF,Ring_B,Post_B,Epost_B,MM_B,MNM_B,BRUKHEIME,FARRETOR,RETUR,REGBET,HEIMEADR,REGISTRERT,TILSKRIFT_ENDRA
@@ -71,6 +79,7 @@ class AccessImporter(object):
 
     @transaction.atomic
     def import_medlem(self, medlem_fn):
+        num = 0
         with reversion.create_revision():
             reversion.set_comment(u"CSV import")
             for num, [medlem_dict, raw_data] in enumerate(
@@ -90,7 +99,6 @@ class AccessImporter(object):
                     yield u"{0:>3}. {1}".format(unicode(num), unicode(m))
 
                 elif num%200 == 0 and num != 0:
-                    transaction.commit()
                     yield unicode(num)
 
 
@@ -128,14 +136,14 @@ class AccessImporter(object):
             logger.warning(u"%s(%s) kjon too long: %s" % (medlem['id'], medlem['fornamn'], medlem['kjon']))
             medlem['kjon'] = medlem['kjon'][0].upper()
 
-        medlem['oppretta'] = parse(medlem['innmeldt_dato'],
-                default=datetime.datetime(1800, 1, 1, 0, 0))
+        medlem['oppretta'] = dt(medlem['innmeldt_dato'],
+                default=dt('1800-01-01 00:00'))
         medlem['innmeldt_dato'] = medlem['oppretta'].date()
-        medlem['oppdatert'] = datetime.datetime.now()
+        medlem['oppdatert'] = timezone.now()
 
         if len(medlem['utmeldt_dato']) > 2:
             a = medlem['utmeldt_dato']
-            medlem['utmeldt_dato'] = parse(medlem['utmeldt_dato'], default=None)
+            medlem['utmeldt_dato'] = dt(medlem['utmeldt_dato'], default=None)
             if hasattr(medlem['utmeldt_dato'], 'date'):
                 medlem['utmeldt_dato'] = medlem['utmeldt_dato'].date()
             else:
@@ -246,7 +254,6 @@ class AccessImporter(object):
 
         for num, rad in enumerate(liste):
             if num % 1000 == 0 and num != 0:
-                transaction.commit()
                 yield unicode(num)
 
             # Hopp over ferdig-importerte betalingar
@@ -292,13 +299,13 @@ class AccessImporter(object):
                 logger.warning(u"Beløp = 0: {0}, {1}".format(g.medlem, rad))
 
             if len(rad[4]) > 3:
-                g.innbetalt = parse(rad[4])
+                g.innbetalt = dt(rad[4])
                 g.innbetalt_belop = g.belop
             else:
                 logger.warning(u"Ikkje innbetalt! {0}, {1}".format(g.medlem, rad))
 
             try:
-                g.oppretta = datetime.datetime(int(rad[5]), 1, 1, 0, 0)
+                g.oppretta = aware(datetime.datetime(int(rad[5]), 1, 1, 0, 0))
             except ValueError:
                 logger.warning(u"Gjettar oppretta==innbetalt: {0}, {1}".format(g.medlem, rad))
                 g.oppretta = g.innbetalt
@@ -344,10 +351,10 @@ class MamutImporter(AccessImporter):
         else:
             medlem['etternamn'] = '-'
 
-        medlem['oppretta'] = parse(medlem['innmeldt_dato'],
+        medlem['oppretta'] = dt(medlem['innmeldt_dato'],
                 default=datetime.datetime(1800, 1, 1, 0, 0))
         medlem['innmeldt_dato'] = medlem['oppretta'].date()
-        medlem['oppdatert'] = parse(medlem['oppdatert'],
+        medlem['oppdatert'] = dt(medlem['oppdatert'],
                 default=datetime.datetime(1800, 1, 1, 0, 0))
 
 
@@ -550,16 +557,16 @@ class GuessingCSVImporter(AccessImporter):
                                             medlem.get('ekstraadr', '')))
             medlem['postnr'] = '9999'
 
-        fake_date = datetime.datetime(1800, 1, 1, 0, 0)
+        fake_date = aware(datetime.datetime(1800, 1, 1, 0, 0))
         def makedate(key, fallback=fake_date):
             try:
-                return parse(medlem[key], default=fallback)
+                return dt(medlem[key], default=fallback)
             except:
                 return fallback
 
         if not 'oppretta' in medlem:
             medlem['oppretta'] = makedate('innmeldt_dato')
-        medlem['oppdatert'] =  makedate('oppdatert', datetime.datetime.now())
+        medlem['oppdatert'] =  makedate('oppdatert', timezone.now())
         medlem['innmeldt_dato'] = makedate('innmeldt_dato')
         medlem['utmeldt_dato'] =  makedate('utmeldt_dato', None)
 

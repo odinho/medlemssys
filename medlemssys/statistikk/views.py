@@ -41,7 +41,7 @@ from medlemssys.medlem.models import (
 from medlemssys.statistikk.models import LokallagStat
 
 
-def update_lokallagstat(time):
+def update_lokallagstat(time=None):
     time = time or timezone.now()
     lokallag = Lokallag.objects.all()
 
