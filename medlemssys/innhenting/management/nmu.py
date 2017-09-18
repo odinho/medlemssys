@@ -463,7 +463,10 @@ class GuessingCSVImporter(AccessImporter):
 
     def _get_medlem(self, medlem_fn):
         fp = open(medlem_fn)
-        dialect = csv.Sniffer().sniff(fp.read(1024), delimiters=str(';,'))
+        try:
+            dialect = csv.Sniffer().sniff(fp.read(1024), delimiters=str(';,'))
+        except csv.Error:
+            dialect = csv.excel
         fp.seek(0)
         reader = csv.DictReader(open(medlem_fn), dialect=dialect)
         fields = [f.decode('utf-8') for f in reader.fieldnames]
@@ -589,7 +592,7 @@ class GuessingCSVImporter(AccessImporter):
 
         if medlem.get('epost'):
             if not '@' in medlem['epost']:
-                medlem['merknad'] = medlem['epost']
+                medlem['merknad'] = medlem.get('merknad', '') + medlem['epost']
                 medlem['epost'] = ''
             if '<' in medlem['epost']:
                 m = re.search(r'<([^>]+)>', medlem['epost'])
@@ -623,6 +626,8 @@ class GuessingCSVImporter(AccessImporter):
         for num, rad in enumerate(liste):
             if num % 1000 == 0 and num != 0:
                 yield unicode(num)
+            for i, r in enumerate(rad):
+                rad[i] = r.decode('utf-8')
 
             # Hopp over ferdig-importerte betalingar
             if not force_update and int(rad[0]) < highest_pk:
@@ -636,13 +641,14 @@ class GuessingCSVImporter(AccessImporter):
             # Finn andsvarleg medlem
             try:
                 g.medlem = Medlem.objects.alle().get(pk=rad[1])
-            except Medlem.DoesNotExist:
+            except (Medlem.DoesNotExist, ValueError):
                 logger.warning(u"Fann ikkje medlem %s. %s " % (rad[1], rad))
                 continue
 
             # Kor mykje pengar inn?
             try:
-                g.belop = float(rad[3])
+                g.belop = float(re.sub(r'[\xa0\s]+', '',
+                                       rad[3].replace(',', '.')))
             except ValueError:
                 g.belop = 0
                 logger.warning(u"Beløp = 0: {0}, {1}".format(g.medlem, rad))
@@ -653,14 +659,10 @@ class GuessingCSVImporter(AccessImporter):
             else:
                 logger.warning(u"Ikkje innbetalt! {0}, {1}".format(g.medlem, rad))
 
-            try:
-                g.oppretta = aware(datetime.datetime(int(rad[2]), 1, 1, 0, 0))
-            except ValueError:
-                logger.warning(u"Gjettar oppretta==innbetalt: {0}, {1}".format(g.medlem, rad))
-                g.oppretta = g.innbetalt
-
-            g.gjeldande_aar = g.oppretta.year
-
+            g.oppretta = g.innbetalt
+            if not g.oppretta:
+                logger.warning(u"Ingen oppretta %s %s %s" % (g, g.medlem, rad))
+            g.gjeldande_aar = g.oppretta and g.oppretta.year or datetime.datetime.now().year
             g.desc = rad[4]
 
             g.save()
