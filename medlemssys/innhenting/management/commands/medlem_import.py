@@ -34,14 +34,13 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)
         parser.add_argument(
-            'medlem_csv', help="fil å lesa medlemar frå")
+            '--medlem', dest='medlem_csv',
+            help="fil å lesa medlemar frå")
         parser.add_argument(
-            '--lokallag',
-            dest='lokallag_csv',
+            '--lokallag', dest='lokallag_csv',
             help="fil å lesa lokallag frå")
         parser.add_argument(
-            '--betaling',
-            dest='betaling_csv',
+            '--betaling', dest='betaling_csv',
             help="fil å lesa betalingar frå")
         parser.add_argument(
             '--force-update',
@@ -70,6 +69,9 @@ class Command(BaseCommand):
                 "Importeren finst ikkje ({0})"
                 .format(options['importer']).encode('utf8'))
 
+        if not (options['lokallag_csv'] or options['medlem_csv'] or
+                options['betaling_csv']):
+            self.stdout.write(u"Ingen filer valt, ingen importering skjer.")
         if options['lokallag_csv']:
             for i in imp.import_lag(options['lokallag_csv']).values():
                 self.stdout.write(u"Lag: {0}\n".format(i))
