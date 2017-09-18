@@ -601,6 +601,11 @@ class GuessingCSVImporter(AccessImporter):
             if ' ' in medlem['epost']:
                 raise Exception("Mellomrom i epost")
 
+        for k in ['MEDLNR', 'LNR.NM', 'PNR']:
+            if raw_data.get(k):
+                medlem['merknad'] = (medlem['merknad'] +
+                    u'\n%s: %s' % (k, raw_data[k].decode('utf-8')))
+
         if medlem.get('mobnr'):
             medlem['mobnr'] = ''.join(medlem['mobnr'].split())
             if len(medlem['mobnr']) < 4:
@@ -613,6 +618,7 @@ class GuessingCSVImporter(AccessImporter):
 
         return True
 
+    # Temp
     @transaction.atomic
     @reversion.create_revision()
     def import_bet(self, bet_fn=None, force_update=False):
