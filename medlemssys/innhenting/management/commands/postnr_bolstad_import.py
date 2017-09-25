@@ -26,26 +26,30 @@ from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
 from medlemssys.medlem.models import PostNummer
+from medlemssys.innhenting.management import nmu
 
 obj = ""
 
 class Command(BaseCommand):
-    args = '<Tab seperated Erik Bolstad postnr-CSV files>'
-    help = """Importerer medlemane inn i databasen"""
+    help = """Importerer postnr"""
+
+    def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
+        parser.add_argument(
+            'postnr_csv',
+            help="Tab seperated Erik Bolstad postnr-CSV files")
 
     def handle(self, *args, **options):
         global obj
         obj = self
-        if 'force_update' in options:
-            self.force_update = True
 
-        if not os.path.isfile(args[0]):
+        if not os.path.isfile(options['postnr_csv']):
             raise CommandError("Fila finst ikkje ({0})".format(args[0]).encode('utf8'))
 
         # 0       1         2                3            4         5      6       7        8      9    10   11            12                       13
         # POSTNR, POSTSTAD, POSTNR- OG STAD, BRUKSOMRÅDE, FOLKETAL, BYDEL, KOMMNR, KOMMUNE, FYLKE, LAT, LON, DATAKVALITET, DATAKVALITETSFORKLARING, SIST OPPDATERT
         csv.register_dialect('tabs', delimiter='\t')
-        read = csv.reader(open(args[0]), dialect='tabs')
+        read = csv.reader(open(options['postnr_csv']), dialect='tabs')
         row = read.next()
         if row[0] != 'POSTNR' or row[11] != 'DATAKVALITET':
             raise CommandError("Ser ikkje ut som den korrekte type fila")
@@ -65,7 +69,7 @@ class Command(BaseCommand):
             p.lon = float(row[10])
             p.datakvalitet = int(row[11])
             if row[-1][0] == "2":
-                p.sist_oppdatert = row[-1]
+                p.sist_oppdatert = nmu.dt(row[-1])
 
             p.save()
 #           print "'%s' '%s' '%s'" % (row, row[6:7], row[7:8])
