@@ -517,7 +517,7 @@ class GuessingCSVImporter(AccessImporter):
         raw_input('Ctrl+C to stop. Enter to continue.');
 
         for line in reader:
-            tmp = {db_key: line[csv_key].decode('utf-8') for
+            tmp = {db_key: line[csv_key].decode('utf-8').strip() for
                        db_key, csv_key in self._matches.items()}
             yield tmp, line
 
@@ -540,6 +540,11 @@ class GuessingCSVImporter(AccessImporter):
         find_matches(lambda k: re.sub(r'[\W\d_-]', '',  k.lower()))
 
     def clean_medlem_dict(self, medlem, raw_data=None):
+        for k, v in medlem.items():
+            if len(v) > 255 or k=='postnr' and len(v) > 4:
+                logger.error(u"%s(%s) %s er lang: %s" %
+                (medlem['id'], medlem['fornamn'], k, v))
+                sys.exit(1)
         if not medlem['id'].isdigit():
             logger.error(u"%s(%s) ugyldig medlemsnummer! Ignorerer medlemen." %
                 (medlem['id'], medlem['fornamn']))
@@ -606,6 +611,9 @@ class GuessingCSVImporter(AccessImporter):
                 medlem['merknad'] = (medlem['merknad'] +
                     u'\n%s: %s' % (k, raw_data[k].decode('utf-8')))
 
+        if len(medlem.get('postadr')) > 255:
+            logger.warning(u"%s(%s) postadr for lang: %s" % (medlem['id'], medlem['fornamn'], medlem['postadr']))
+            medlem['postadr'] = medlem['postadr'][:255]
         if medlem.get('mobnr'):
             medlem['mobnr'] = ''.join(medlem['mobnr'].split())
             if len(medlem['mobnr']) < 4:
