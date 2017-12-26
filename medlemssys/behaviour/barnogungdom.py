@@ -37,8 +37,8 @@ class BarnOgUngdomMedlemQuerySet(MedlemQuerySet):
 
     def potensielt_teljande(self, year=date.today().year):
         return self.unge(year).filter(postnr__gt="0000", postnr__lt="9999") \
-            .exclude(giroar__gjeldande_aar=year,
-                giroar__innbetalt__isnull=False)
+            .exclude(id__in=self.alle().filter(giroar__gjeldande_aar=year,
+                giroar__innbetalt__isnull=False))
 
     def teljande(self, year=date.today().year):
         """Medlem i teljande alder, med postnr i Noreg og med betalte

@@ -1,3 +1,5 @@
+- OCR for hensikt=gåve, set Ferdig om beløpet er meir enn 0
++ uthenting av giro er heilt feil, 'exclude()' fungerer ikkje som du trur
 - OCR vel alltid 'medlemskonto (KID)', ikkje gjer det
 - Lag enkeltliste for å skriva ut direkte frå medlemsreg (som ringjeliste)
 - Lag motmæletingarliste
