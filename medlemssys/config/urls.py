@@ -44,6 +44,7 @@ urlpatterns = [
     url(r'^admin/medlem/giro/send/', giro_admin.send, name='giro_send'),
     url(r'^admin/medlem/giro/manual/',
         giro_admin.manual_girosearch, name='giro_manual'),
+    url(r'^admin/medlem/giro/gaaver/', giro_admin.gaaver, name='giro_gaaver'),
     url(r'^admin/revisions/',
         statistikk_admin.show_revisions, name='show_revisions'),
     # Django Admin, use {% url 'admin:index' %}

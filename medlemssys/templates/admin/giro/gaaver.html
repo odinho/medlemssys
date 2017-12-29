@@ -1,0 +1,25 @@
+{% extends "admin/giro/base.html" %}
+
+{% block content %}
+    <fieldset class="module aligned">
+    <div class=form-row>
+      <div>
+      {% if objects %}
+        <table>
+        <tr><th>Medlem <th>ID <th>Innbetalt <th>Merknad
+        {% for m, amount in objects %}
+          <tr>
+            <td>{{ m.admin_change|safe }}
+            <td>{{ m.pk }}
+            <td>{{ amount }}
+            <td>{{ m.merknad }}
+        {% endfor %}
+        </table>
+        <p><ul><li><a href={{ admin_url }}>Vis desse i admin</a></ul>
+      {% else %}
+        <div style='font-size:2em;color:#bbb;margin:2em 0 2em 3em'>&mdash; Ingen :/ &mdash;</div>
+      {% endif %}
+      </div>
+    </div>
+    </fieldset>
+{% endblock %}

@@ -17,11 +17,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
 from django import forms
 from django.db.models import Q
 from django.shortcuts import render
 
 from medlemssys.medlem.models import Giro
+from medlemssys.medlem.models import Medlem
 from .views import send_ventande_rekningar
 
 class GiroSearch(forms.Form):
@@ -42,6 +45,29 @@ def send(request):
         'ventar': ventar,
         'title': "Send ventande giroar",
     })
+
+def gaaver(request):
+    try:
+        over = int(request.GET['over'])
+    except:
+        over = 500
+    year = request.GET.get('aar', datetime.date.today().year)
+    p = {}
+    for g in Giro.objects.filter(
+            innbetalt_belop__gt=0, gjeldande_aar=year, hensikt='G'):
+        p[g.medlem.pk] = p.get(g.medlem.pk, 0) + g.innbetalt_belop
+    over_amount = {id: b for id, b in p.items() if b>=over}
+    medlemar = Medlem.objects.filter(id__in=over_amount.keys())
+    objects = [(m, over_amount[m.pk]) for m in medlemar]
+    admin_url = '/admin/medlem/medlem/?id__in=%s' % (
+        ','.join(str(k) for k in over_amount.keys()))
+    return render(request, 'admin/giro/gaaver.html', {
+        'objects': objects,
+        'admin_url': admin_url,
+        'title': u"Medlem med gåver over {over} for {year}".format(
+            over=over, year=year),
+    })
+
 
 def manual_girosearch(request):
     if request.method == 'POST':
