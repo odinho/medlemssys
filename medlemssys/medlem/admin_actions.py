@@ -27,12 +27,14 @@ from reversion import revisions as reversion
 from django.conf import settings
 from django.contrib.admin import helpers
 from django.db import transaction
+from django.db.models.query import QuerySet
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from django.template import Context, Template
 from django.template.response import TemplateResponse
 from django.utils import timezone
 from django.utils.translation import ugettext as _
+from django.utils.encoding import force_text
 from reportlab.lib.units import cm #, mm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -120,9 +122,12 @@ def csv_list(modeladmin, request, queryset):
     dc = csv.writer(response)
     dc.writerow(model_to_dict(queryset[0]).keys())
     for m in queryset:
-        a = model_to_dict(m).values()
-        dc.writerow([unicode(s).encode('utf-8') for s in a])
-
+        row = []
+        for k, v in model_to_dict(m).items():
+            if isinstance(v, QuerySet):
+                v = ', '.join(force_text(k) for k in v)
+            row.append(unicode(v).encode('utf-8'))
+        dc.writerow(row)
     return response
 csv_list.short_description = "Full dataliste"
 
