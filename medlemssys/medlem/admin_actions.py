@@ -69,6 +69,7 @@ def simple_member_list(modeladmin, request, queryset):
     response = HttpResponse(content_type='text/csv; charset=utf-8')
     response['Content-Disposition'] = 'filename=medlemer.csv'
 
+    year = datetime.date.today().year
     dc = csv.writer(response, quoting=csv.QUOTE_ALL)
     dc.writerow(["Namn",
                  u"Fødd".encode('utf-8'),
@@ -79,18 +80,18 @@ def simple_member_list(modeladmin, request, queryset):
                  "Epost",
                  "Lokallag",
                  "Medlemsnummer",
+                 "Giro %d" % (year-1),
                  "Betalt",
                  u"Beløp".encode('utf-8'),
                  "KID"])
-    for m in queryset:
-        giro = m.gjeldande_giro()
-        belop = '-'
-        innbetalt = '-'
-        kid = ''
+    def get_giro(year):
+        giro = m.gjeldande_giro(year)
         if giro:
-            belop = giro.belop
-            innbetalt = giro.innbetalt_belop
-            kid = giro.kid
+            return (giro.innbetalt_belop, giro.belop, giro.kid)
+        return ('-', '-', '')
+    for m in queryset:
+        innbetalt, belop, kid = get_giro(year)
+        ifjor = get_giro(year-1)
         postadr, poststad = '', ''
         adr = m.full_postadresse(namn=False, as_list=True)
         if len(adr) == 1:
@@ -107,6 +108,7 @@ def simple_member_list(modeladmin, request, queryset):
              m.epost,
              m.lokallag_display(),
              m.id,
+             "%s/%s (%s)" % ifjor,
              innbetalt,
              belop,
              kid]
