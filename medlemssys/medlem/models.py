@@ -408,7 +408,8 @@ class Medlem(models.Model):
             ordered.append(last)
         return ordered
 
-    def gjeldande_giro(self, year=datetime.date.today().year):
+    def gjeldande_giro(self, year=None):
+        year = year or datetime.date.today().year
         try:
             return self.giroar.filter(gjeldande_aar=year)[0]
         except IndexError:

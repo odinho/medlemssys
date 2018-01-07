@@ -28,25 +28,29 @@ from .base import BaseBehaviour
 class BarnOgUngdomMedlemQuerySet(MedlemQuerySet):
     ung_alder = 25
 
-    def unge(self, year=date.today().year):
+    def unge(self, year=None):
         """Medlem rekna som unge (altso i teljande alder)"""
+        year = year or date.today().year
         return self.ikkje_utmelde(year) \
             .filter(
                 fodt__gte = year - self.ung_alder
             )
 
-    def potensielt_teljande(self, year=date.today().year):
+    def potensielt_teljande(self, year=None):
+        year = year or date.today().year
         return self.unge(year).filter(postnr__gt="0000", postnr__lt="9999") \
             .exclude(id__in=self.alle().filter(giroar__gjeldande_aar=year,
                 giroar__innbetalt__isnull=False))
 
-    def teljande(self, year=date.today().year):
+    def teljande(self, year=None):
         """Medlem i teljande alder, med postnr i Noreg og med betalte
         medlemspengar"""
+        year = year or date.today().year
         return self.betalande(year) & self.unge(year).distinct().filter(postnr__gt="0000", postnr__lt="9999")
 
-    def teljande_nye(self, year=date.today().year):
+    def teljande_nye(self, year=None):
         """Nyinnmelde medlem som er teljande"""
+        year = year or date.today().year
         return self.nye(year) & self.teljande(year)
 
 

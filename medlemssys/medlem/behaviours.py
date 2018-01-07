@@ -71,36 +71,42 @@ class MedlemQuerySet(QuerySet):
             return self.filter(**self.core_filters)
         return self
 
-    def ikkje_utmelde(self, year=date.today().year):
+    def ikkje_utmelde(self, year=None):
         """Medlem som ikkje er eksplisitt utmelde"""
+        year = year or date.today().year
         return self.alle().filter(
             Q(utmeldt_dato__isnull=True) | Q(utmeldt_dato__gte=date(year+1, 1, 1))
         )
 
-    def utmelde(self, year=date.today().year):
+    def utmelde(self, year=None):
         """Medlem som er utmelde"""
+        year = year or date.today().year
         return self.alle().filter(
             utmeldt_dato__isnull=False, utmeldt_dato__lt=date(year+1, 1, 1)
         )
 
-    def betalande(self, year=date.today().year):
+    def betalande(self, year=None):
         """Medlem med ein medlemspengeinnbetaling inneverande år"""
+        year = year or date.today().year
         return self.ikkje_utmelde(year) \
             .filter(
                 giroar__gjeldande_aar=year,
                 giroar__innbetalt__isnull=False
             ).distinct()
 
-    def nye(self, year=date.today().year):
+    def nye(self, year=None):
         """Nyinnmelde medlem i dette året"""
+        year = year or date.today().year
         return self.ikkje_utmelde(year).filter(innmeldt_dato__year=year).distinct()
 
-    def betalande_nye(self, year=date.today().year):
+    def betalande_nye(self, year=None):
         """Nyinnmelde medlem som har betalt"""
+        year = year or date.today().year
         return self.nye(year) & self.betalande(year)
 
-    def interessante(self, year=date.today().year):
+    def interessante(self, year=None):
         """Medlem som har betalt i år eller i fjor."""
+        year = year or date.today().year
         return self.ikkje_utmelde(year) \
             .filter(
                 Q(innmeldt_dato__year=year) |
