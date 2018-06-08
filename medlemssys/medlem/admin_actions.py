@@ -439,6 +439,16 @@ def giro_status_ventar(modeladmin, request, queryset):
 giro_status_ventar.short_description = "Sett girostatus 'Ventar'"
 
 
+def giro_status_ubetalt(modeladmin, request, queryset):
+    with reversion.create_revision():
+        for g in queryset:
+            g.status='U'
+            g.save()
+        reversion.set_comment("Giro status 'utgått ubetalt' admin action")
+        reversion.set_user(request.user)
+giro_status_ubetalt.short_description = "Sett girostatus 'Utgått ubetalt'"
+
+
 def giro_hensikt_gaave(modeladmin, request, queryset):
     with reversion.create_revision():
         for g in queryset:

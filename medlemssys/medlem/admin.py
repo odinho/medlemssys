@@ -271,6 +271,7 @@ class GiroAdmin(CompareVersionAdmin):
                 admin_actions.giro_status_ferdig,
                 admin_actions.giro_status_postlagt,
                 admin_actions.giro_status_ventar,
+                admin_actions.giro_status_ubetalt,
                 admin_actions.giro_hensikt_gaave,
                 admin_actions.giro_hensikt_medlemspengar,
                 admin_actions.pdf_giro,
