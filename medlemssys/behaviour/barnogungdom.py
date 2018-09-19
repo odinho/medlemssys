@@ -62,7 +62,7 @@ class Behaviour(BaseBehaviour):
         Lookup('potensielle', "Potensielt teljande",
                lambda qs: qs.potensielt_teljande()),
         Lookup('nye_teljande', "Teljande (nye i år)",
-               lambda qs: qs.nye_teljande()),
+               lambda qs: qs.teljande_nye()),
         Lookup('teljandeifjor', "Teljande (i fjor)",
                lambda qs: qs.teljande(date.today().year - 1)),
     ]
