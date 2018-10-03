@@ -2,5 +2,6 @@ Tips: les HTML-eposten, den er oppdatert.
 
 {{ lokallag }} oppdatering
 
+lenke: {{ host }}/{{ lokallag.listing }}
 -- 
 {{ overvaking }}

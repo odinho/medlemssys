@@ -4,7 +4,7 @@
 
 <h1>{{ lokallag }} medlemsliste</h1>
 
-<p>So, kva er endra dei siste {{ dagar }} dagane? <small>(ps, du finn <a href="http://medlem.nynorsk.no/{{ lokallag.listing }}">oppdaterte medlemslister i registeret</a>)</small>
+<p>So, kva er endra dei siste {{ dagar }} dagane? <small>(ps, du finn <a href="{{ host }}/{{ lokallag.listing }}">oppdaterte medlemslister i registeret</a>)</small>
 
 {% if nye_medlem %}
 
@@ -12,7 +12,7 @@
         {% with nye_medlem.0 as m  %}
         <h2>{{ m }} har meldt seg inn!</h2>
         <p>
-            {% if m.fodt %}{{ m.fornamn }} er fødd {{ m.fodt }}, rundt {{ m.alder }} år med andre ord. {% else %}Me veit ikkje kva årstal {{ m.fornamn }} er fødd. Dersom du veit, sei frå til <a href="mailto:skriv@nynorsk.no">skrivarstova</a>.{% endif %}
+            {% if m.fodt %}{{ m.fornamn }} er fødd {{ m.fodt }}, rundt {{ m.alder }} år med andre ord. {% else %}Me veit ikkje kva årstal {{ m.fornamn }} er fødd. Dersom du veit, sei frå til <a href="mailto:{{ email }}">skrivarstova</a>.{% endif %}
             Elles har {{ m.pronomen }} {{ m.har_betalt|yesno:"allereie betalt medlemspengar for i år – so ingen stress der.,framleis ikkje betalt medlemspengar for i år (det er iallfall ikkje registrert enno)." }}
             Kanhenda du kunne {% if m.epost %}senda ein epost (<a href="mailto:{{m.epost}}">{{m.epost}}</a>),{% endif %} {% if m.mobnr %}skriva ein liten SMS (<a href="sms:{{ m.mobnr }}">{{ m.mobnr }}</a>),{% endif %}{% if m.epost or m.mobnr %} eller {% endif %}ta personleg kontakt med {{ m.pronomen }} og ynskja velkomen? Folk ventar ofte litt kontakt når dei nettopp har meldt seg inn og er enkle å få med på ting. Ha noko lågterskel lagaktivitet klar og invitér {{ m.pronomen }}!</p>
         {% endwith %}
@@ -150,4 +150,4 @@
 
 <p>-- <br><small>{{ overvaking }}<br>
 Norsk Målungdom sitt medlemsregister</small><br>
-http://medlem.nynorsk.no/{{ lokallag.listing }}</p>
+{{ host }}/{{ lokallag.listing }}</p>

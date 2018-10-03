@@ -278,6 +278,8 @@ VERVETOPP = None
 
 # Used for allowing CORS, and where the ?next= redirector can point
 TRUSTED_EXTERNAL_DOMAINS = ['example.com']
+DEFAULT_HOST = ''
+DEFAULT_EMAIL = ''
 
 # Deprecated
 GIRO_CSV = os.path.join(ROOT_DIR, 'nmu-bet.csv')

@@ -24,6 +24,7 @@ if DEBUG:
 
 # Hosts/domain names that are valid for this site
 ALLOWED_HOSTS = []
+DEFAULT_HOST = "https://example.com/"
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'ENDRA_MEG-e!(o%l1myqy-v(ocxf*xkr)q#=l-^%yxgcod_uicne1wh5ggi1'
@@ -47,7 +48,8 @@ Adresse
 VERVETOPP = False # Exposes some data
 
 # Email
-DEFAULT_FROM_EMAIL = 'Medlemssys <noreply@medlemssys.s0.no>'
+DEFAULT_EMAIL = 'noreply@medlemssys.s0.no'
+DEFAULT_FROM_EMAIL = 'Medlemssys <{}>'.format(DEFAULT_EMAIL)
 EMAIL_SUBJECT_PREFIX = '[Medlemssys] '
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 

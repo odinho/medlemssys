@@ -11,6 +11,8 @@ Local settings
 from .common import *  # noqa
 
 VERVETOPP = True
+DEFAULT_EMAIL = 'test@example.com'
+DEFAULT_HOST = 'http://localhost'
 
 # DEBUG
 # ------------------------------------------------------------------------------

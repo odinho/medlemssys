@@ -35,10 +35,11 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from reversion.models import Version
 
 from medlemssys.medlem import admin
-assert admin # Silence pyflakes
 from medlemssys.medlem.models import (
     Lokallag, Medlem, LokallagOvervaking, Val)
 from medlemssys.statistikk.models import LokallagStat
+
+assert admin # Silence pyflakes
 
 
 def update_lokallagstat(time=None):
@@ -290,6 +291,8 @@ def create_overvaking_email(epost_seq, overvaking, lokallag, sist_oppdatering, *
           'dagar': (timezone.now() - sist_oppdatering).days,
           'lokallag': lokallag,
           'overvaking': overvaking,
+          'host': settings.DEFAULT_HOST,
+          'email': settings.DEFAULT_EMAIL,
         })
 
         text_content = (loader
@@ -301,7 +304,11 @@ def create_overvaking_email(epost_seq, overvaking, lokallag, sist_oppdatering, *
         emne = (loader
                 .get_template('epostar/lokallag_overvaking_emnefelt.txt')
                 .render(context))
-        msg = EmailMultiAlternatives(" ".join(emne.split())[:-1], text_content, "skriv@nynorsk.no", epost_seq)
+        msg = EmailMultiAlternatives(
+            " ".join(emne.split())[:-1],
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            epost_seq)
         msg.attach_alternative(html_content, "text/html")
 
         return msg
