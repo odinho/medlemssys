@@ -43,6 +43,7 @@ from reportlab.platypus import Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
 
 from medlemssys.innhenting import mod10
+from medlemssys.giro.models import GiroTemplate
 from medlemssys.medlem.models import Giro
 
 import admin # reversion
@@ -210,14 +211,20 @@ def pdf_giro(modeladmin, request, queryset):
             m = giro.medlem
             if not giro:
                 continue
+            context = Context({
+                'medlem': m,
+                'giro': giro,
+                'host': settings.DEFAULT_HOST,
+                'email': settings.DEFAULT_EMAIL,
+            })
             if request.POST.get('pdf_type') == 'medlemskort':
-                pdf = _giro(pdf, request, m, giro)
-                pdf = _medlemskort(pdf, request, m, giro)
+                pdf = _giro(pdf, request, context)
+                pdf = _medlemskort(pdf, request, context)
             elif request.POST.get('pdf_type') == 'giro':
-                pdf = _giro_info(pdf, request, m, giro)
-                pdf = _giro(pdf, request, m, giro)
+                pdf = _giro_info(pdf, request, context)
+                pdf = _giro(pdf, request, context)
             else:
-                pdf = _giro_faktura(pdf, request, m, giro)
+                pdf = _giro_faktura(pdf, request, context)
             pdf.showPage()
             if request.POST.get('merk-postlagt'):
                 giro.status = 'M'
@@ -237,6 +244,13 @@ def pdf_giro(modeladmin, request, queryset):
     n_utmelde = queryset.filter(medlem__utmeldt_dato__isnull=False).count()
     n_betalte = queryset.filter(innbetalt__isnull=False).count()
     g_frist = datetime.date.today() + datetime.timedelta(30)
+    try:
+        template = GiroTemplate.objects.get(trigger="medlemspengar-pdf2")
+        suggested_title = template.subject
+        suggested_text = template.html_template
+    except GiroTemplate.DoesNotExist:
+        suggested_title = ""
+        suggested_text = ""
 
     title = _("Lag giro-PDF-ar ({c} giroar)".format(c=queryset.count()))
 
@@ -249,6 +263,8 @@ def pdf_giro(modeladmin, request, queryset):
         "n_utmelde": n_utmelde,
         "n_betalte": n_betalte,
         "g_frist": g_frist,
+        "suggested_title": suggested_title,
+        "suggested_text": suggested_text,
     }
 
     request.current_app = modeladmin.admin_site.name
@@ -269,13 +285,17 @@ def _pdf_p(pdf, text, x, y, size_w=None, size_h=None):
     p.drawOn(pdf, x*cm, y*cm - used_h)
 
 
-def _giro_faktura(pdf, request, m, giro):
+def _giro_faktura(pdf, request, context):
+    giro = context['giro']
+    m = context['medlem']
+
+    title = Template(request.POST.get('title')).render(context)
     pdf.setFont('Helvetica', 16)
-    pdf.drawString(1.0*cm, 16*cm, u"%s" % request.POST.get('title'))
+    pdf.drawString(1.0*cm, 16*cm, u"%s" % title)
 
     pdf.setFontSize(11)
     text = request.POST.get('text')
-    text_content = Template(text).render(Context({'medlem': m, 'giro': giro})).replace('\n', '<br/>')
+    text_content = Template(text).render(context).replace('\n', '<br/>')
     _pdf_p(pdf, text_content, 1, 15.5, size_w=19, size_h=13)
     _pdf_p(pdf, m.full_betalingsadresse().replace('\n', '<br/>\n'), 1, 26, size_w=8, size_h=6)
     _pdf_p(pdf, u"""\
@@ -298,7 +318,10 @@ def _giro_faktura(pdf, request, m, giro):
     return pdf
 
 
-def _medlemskort(pdf, request, m, giro):
+def _medlemskort(pdf, request, context):
+    giro = context['giro']
+    m = context['medlem']
+
     # Medlemskort
     pdf.setFont('Helvetica', 12)
     pdf.drawString(13.0*cm, 14.9*cm, u"%s" % unicode(m))
@@ -312,10 +335,11 @@ def _medlemskort(pdf, request, m, giro):
     return pdf
 
 
-def _giro_info(pdf, request, m, giro):
-    pdf.setFont('OCRB', 11)
+def _giro_info(pdf, request, context):
+    title = Template(request.POST.get('title')).render(context)
 
-    pdf.drawString(1.2*cm, 8.3*cm, u"%s" % request.POST.get('title'))
+    pdf.setFont('OCRB', 11)
+    pdf.drawString(1.2*cm, 8.3*cm, u"%s" % title)
 
     tekst = pdf.beginText(11.4*cm, 5.5*cm)
     for adrdel in settings.ORG_ADR.split('\n'):
@@ -324,14 +348,17 @@ def _giro_info(pdf, request, m, giro):
 
     return pdf
 
-def _giro(pdf, request, m, giro):
+def _giro(pdf, request, context):
+    giro = context['giro']
+    m = context['medlem']
+    title = Template(request.POST.get('title')).render(context)
+
     pdf.setFont('Helvetica', 16)
-    pdf.drawString(1.0*cm, 26*cm, u"%s" % request.POST.get('title'))
+    pdf.drawString(1.0*cm, 26*cm, u"%s" % title)
     pdf.setFontSize(12)
 
     text_template = Template(request.POST.get('text'))
-    text_context = Context({'medlem': m, 'giro': giro})
-    text_content = text_template.render(text_context).replace('\n', '<br/>')
+    text_content = text_template.render(context).replace('\n', '<br/>')
 
     _pdf_p(pdf, text_content, 1, 25.5, size_w=18, size_h=13)
 

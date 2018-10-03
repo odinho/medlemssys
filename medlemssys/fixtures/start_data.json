@@ -8,5 +8,15 @@
       "html_template": "<p>Hei {{ medlem.fornamn }}!\r\n\r\n<p>Ver venleg og betal medlemspengane dine.\r\n\r\n<p>Kr. {{ giro.belop }} til konto 1234 1234.\r\n\r\n<p>KID: {{ giro.kid }}",
       "subject": "Betal medlemspengar for {{ giro.oppretta.year }}"
     }
+  },
+  {
+    "pk": 2,
+    "model": "giro.girotemplate",
+    "fields": {
+      "trigger": "medlemspengar-pdf",
+      "text_template": "-- ikkje i bruk --",
+      "html_template": "<font size=11>Gode {{ medlem.fornamn }}!</font>\n\n<font size=11>Takk for at du betalar! Her kjem den årlege rekninga.</font>\n\n\n\n<font size=12><b>Registrert informasjon</b></font>\nEpost: {{ medlem.epost }}\nTelefon: {{ medlem.mobnr }}\nFødeår: {{ medlem.fodt }}\n\n<font size=8>Du kan sjølv oppdatera informasjonen din på &lt;{{ host }}{{ medlem.get_absolute_url }}&gt;, eller ved å kontakta oss på <i>{{ email }}</i>.</font>",
+      "subject": "Betal for {{ giro.oppretta.year }}"
+    }
   }
 ]
