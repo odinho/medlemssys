@@ -478,6 +478,7 @@ KONTI = (
     ('K', "Kassa"),
     ('B', "Brukskonto"),
     ('S', "SMS"),
+    ('V', "Vipps"),
 )
 HENSIKTER = (
     ('P', "Medlemspengar"),
