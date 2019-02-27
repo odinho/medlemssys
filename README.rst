@@ -50,6 +50,7 @@ Hent ned Erik Bolstad sin CSV (TSV, menmen)-fil og les han inn:
     wget http://www.erikbolstad.no/postnummer-koordinatar/txt/postnummer.csv
     python manage.py postnr_bolstad_import postnummer.csv
 
+Viss du må oppdatera (kvart år), berre slett "PostNummer"-tabellen og køyr linene over på ny.
 
 Importering av medlemsregisterdata
 ----------------------------------
