@@ -245,7 +245,7 @@ def pdf_giro(modeladmin, request, queryset):
     n_betalte = queryset.filter(innbetalt__isnull=False).count()
     g_frist = datetime.date.today() + datetime.timedelta(30)
     try:
-        template = GiroTemplate.objects.get(trigger="medlemspengar-pdf2")
+        template = GiroTemplate.objects.get(trigger="medlemspengar-pdf")
         suggested_title = template.subject
         suggested_text = template.html_template
     except GiroTemplate.DoesNotExist:
