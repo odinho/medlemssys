@@ -16,10 +16,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with Medlemssys.  If not, see <http://www.gnu.org/licenses/>.
 from django.contrib import admin
+from reversion_compare.admin import CompareVersionAdmin
 
 from models import GiroTemplate
 
-class GiroTemplateAdmin(admin.ModelAdmin):
+class GiroTemplateAdmin(CompareVersionAdmin):
     list_display = ('subject', 'trigger')
 
 admin.site.register(GiroTemplate, GiroTemplateAdmin)

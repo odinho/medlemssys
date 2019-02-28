@@ -65,7 +65,7 @@ setup(
         'python-dateutil',
         'djangorestframework >= 3.0',
         'django-reversion >= 2.0',
-        'django-reversion-compare >= 0.7',
+        'django-reversion-compare >= 0.8',
     ],
     extras_require={
         'production': [
