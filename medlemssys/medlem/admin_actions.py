@@ -364,7 +364,7 @@ def _giro(pdf, request, context):
 
     pdf.setFont('OCRB', 11)
     # Giro
-    tekst = pdf.beginText(1.2*cm, 5.5*cm)
+    tekst = pdf.beginText(1.9*cm, 6.0*cm)
     for adrdel in m.full_betalingsadresse().split('\n'):
         tekst.textLine(adrdel.strip())
     pdf.drawText(tekst)
@@ -376,13 +376,13 @@ def _giro(pdf, request, context):
         pdf.rect(0,  1.9*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
         pdf.rect(0, 1.45*cm, 26*cm, 0.2*cm, stroke=False, fill=True)
     else:
-        pdf.drawString(17.1*cm, 9.3*cm, u"%s" % request.POST.get('frist'))
-        pdf.drawString(5.0*cm,  1.58*cm, u"%s" % giro.kid)
-        pdf.drawString(8.5*cm,  1.58*cm, u"%s" % giro.belop)
-        pdf.drawString(10.6*cm, 1.58*cm, u"%s" % '00')
-        pdf.drawString(11.9*cm, 1.58*cm,
+        pdf.drawString(16.8*cm, 9.5*cm, u"%s" % request.POST.get('frist'))
+        pdf.drawString(5.0*cm,  2.08*cm, u"%s" % giro.kid)
+        pdf.drawString(8.5*cm,  2.08*cm, u"%s" % giro.belop)
+        pdf.drawString(10.6*cm, 2.08*cm, u"%s" % '00')
+        pdf.drawString(11.9*cm, 2.08*cm,
                        u"%s" % mod10.mod10(unicode(giro.belop) + '00'))
-        pdf.drawString(13.2*cm, 1.58*cm, u"%s" % settings.KONTONUMMER)
+        pdf.drawString(13.2*cm, 2.08*cm, u"%s" % settings.KONTONUMMER)
 
     return pdf
 
