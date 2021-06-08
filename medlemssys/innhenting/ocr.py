@@ -48,15 +48,12 @@ class OCR(object):
         "21": "Nettgiro - kjøp m fritekst",
     }
 
-    def __init__(self):
-        self.data = []
-
     def from_filename(self, path):
         fp = open(path)
-        self._parse(fp)
+        self.data = self._parse(fp)
 
     def from_string(self, string):
-        self._parse(iter(string.splitlines()))
+        self.data = self._parse(iter(string.splitlines()))
 
     def process_to_db(self):
         for f in self.data:
@@ -110,7 +107,8 @@ class OCR(object):
         update_denormalized_fields()
 
 
-    def _parse(self, ocr_data):
+    @classmethod
+    def _parse(cls, ocr_data):
         for row in ocr_data:
             row = row.strip()
             if row[0:8] == "NY000010":
@@ -120,6 +118,7 @@ class OCR(object):
         else:
             raise OCRError('Fann ikkje startrecord for sending')
 
+        data = []
         for row in ocr_data:
             row = row.strip()
 
@@ -139,7 +138,7 @@ class OCR(object):
                     raise OCRError("Venta startrecord 30, fekk {0}. ({1})!".format(row[6:8], row))
 
                 # Transaksjon
-                trans = self.TRANSAKSJONSTYPE[row[4:6]]
+                trans = cls.TRANSAKSJONSTYPE[row[4:6]]
                 dato = row[15:21]
                 dato = datetime.date(2000 + int(dato[4:6]), int(dato[2:4]), int(dato[0:2]))
                 belop = int(row[32:49])/100.0
@@ -156,7 +155,7 @@ class OCR(object):
                     row3 = ocr_data.next()
                     fritekst = row3[15:55]
 
-                self.data.append(dict(
+                data.append(dict(
                             transaksjon=trans,
                             dato=dato,
                             belop=belop,
@@ -165,4 +164,11 @@ class OCR(object):
                             fra_konto=fra_konto,
                             fritekst=fritekst,
                         ))
-        return self.data
+        return data
+
+if __name__ == '__main__':
+    import fileinput
+    import pprint
+
+    data = OCR._parse(fileinput.input())
+    pprint.pprint(data)
