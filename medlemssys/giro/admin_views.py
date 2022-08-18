@@ -20,6 +20,7 @@
 import datetime
 
 from django import forms
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render
 
@@ -46,6 +47,7 @@ def send(request):
         'title': "Send ventande giroar",
     })
 
+@login_required
 def gaaver(request):
     try:
         over = int(request.GET['over'])
